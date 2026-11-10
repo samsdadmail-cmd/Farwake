@@ -131,13 +131,54 @@ function makeMap(seed){const sd=hashStr(seed);terrain=[];features=[];fog=new Arr
  const empties=[];for(let y=4;y<VH-4;y++)for(let x=4;x<VW-4;x++)if(Math.hypot(x-28,y-28)>16&&terrain[index(x,y)].kind!=='water')empties.push({x,y});if(empties.length){const spot=empties[Math.floor(r()*empties.length)];S.ruin={...spot,name:SITES[Math.floor(r()*SITES.length)],seen:false};}
  reveal(28,28,11);
 }
+function guaranteeStartingOre(){
+ if(S.oreStarterChecked)return;
+ const nearby=features.filter(f=>f.type==='ore'&&Math.hypot(f.x-28,f.y-28)<=19);
+ let need=Math.max(0,3-nearby.length);
+ for(let y=12;y<=44&&need>0;y++)for(let x=12;x<=44&&need>0;x++){
+  const d=Math.hypot(x-28,y-28);
+  if(d<10||d>17||!inMap(x,y)||terrain[index(x,y)].kind==='water'||featureAt(x,y)||buildingAt(x,y))continue;
+  if(hash(x,y,hashStr(S.seed)+337)<.77)continue;
+  features.push({x,y,type:'ore',id:'starterore-'+x+'-'+y});need--;
+ }
+ S.oreStarterChecked=true;
+}
+function surveyFrontierGoal(p){
+ const targets=[];
+ for(let y=4;y<VH-4;y++)for(let x=4;x<VW-4;x++){
+  if(!fog[index(x,y)]||!walkable(x,y))continue;
+  const unknown=[[4,0],[-4,0],[0,4],[0,-4]].reduce((n,[dx,dy])=>n+(!fog[index(x+dx,y+dy)]?1:0),0);
+  if(unknown)targets.push({x,y,score:Math.hypot(p.x-x,p.y-y)-unknown*3});
+ }
+ targets.sort((a,b)=>a.score-b.score);
+ for(const f of targets.slice(0,45)){
+  if(findPath(p.x,p.y,[{x:f.x,y:f.y}]).length||Math.hypot(p.x-(f.x+.5),p.y-(f.y+.5))<1.5)return{type:'survey',x:f.x,y:f.y};
+ }
+ return null;
+}
+function focusDiscoveredOre(){
+ const ores=features.filter(f=>f.type==='ore'&&fog[index(f.x,f.y)]);
+ if(!ores.length){notice('No ore discovered yet. Prioritize exploration first.');return}
+ ores.sort((a,b)=>Math.hypot(a.x-camera.x/TS,a.y-camera.y/TS)-Math.hypot(b.x-camera.x/TS,b.y-camera.y/TS));
+ const f=ores[0];camera.x=(f.x+.5)*TS;camera.y=(f.y+.5)*TS;
+ selectedFeature=f.id;selectedBuilding=null;selectedColonist=null;selectedTerrain=null;selectedPile=null;
+ closeSheet();paintHUD();notice('Mineral outcrop found. Mark it for mining.');
+}
+function prioritizeExploration(){
+ const scout=S.colonists.find(p=>p.role==='Surveyor')||S.colonists[0];
+ scout.work='survey';scout.task=null;scout.path=[];scout.action=0;
+ const target=surveyFrontierGoal(scout);
+ if(target)setTask(scout,target);
+ save();openSection('world');
+ notice(target?scout.name+' will survey the frontier.':'No reachable unexplored frontier found.');
+}
 function reveal(cx,cy,r){for(let y=Math.max(0,Math.floor(cy-r));y<Math.min(VH,cy+r+1);y++)for(let x=Math.max(0,Math.floor(cx-r));x<Math.min(VW,cx+r+1);x++)if((x-cx)**2+(y-cy)**2<r*r)fog[index(x,y)]=true;if(S?.ruin&&!S.ruin.seen&&fog[index(S.ruin.x,S.ruin.y)]){S.ruin.seen=true;log('✧','Survey team located '+S.ruin.name+'.');S.resources.knowledge+=5;}}
-function initial(seed){S={v:3,seed,day:1,minute:7*60+20,resources:{scrap:125,wood:42,ore:0,alloy:16,food:75,knowledge:0},colonists:[],buildings:[],events:[],research:[],harvested:[],piles:[],designations:{},goal:0,ruin:null,weather:'clear',weatherClock:0,explore:0};makeMap(seed);uid=1;S.buildings.push({id:uid++,type:'lander',x:26,y:26,w:3,h:3,progress:100,finished:true});S.buildings.push({id:uid++,type:'supplies',x:30,y:26,w:2,h:2,progress:100,finished:true});S.buildings.push({id:uid++,type:'camp',x:26,y:30,w:3,h:2,progress:100,finished:true});for(let i=0;i<5;i++){let p=PROFILES[i];S.colonists.push({id:i+1,name:p.name,role:p.role,trait:p.trait,ambition:p.ambition,coat:p.coat,hue:p.hue,hair:p.hair,x:25.4+i*1.3,y:29.5+(i%2)*.7,energy:85+Math.random()*10,hunger:12+Math.random()*10,mood:82,social:75,skill:2+i%3,work:'auto',task:null,path:[],next:0,action:0,level:0,home:null});}uid=7;log('✦','Expedition Signal One made planetfall. Five specialists ready.');log('⌂','Establish a permanent home, then secure food production.');camera.x=28*TS;camera.y=28*TS;camera.z=1;selectedType=null;preview=null;selectedColonist=null;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;selectedPile=null;tab='build';paused=false;speed=1;renderUI(true);save();}
+function initial(seed){S={v:3,seed,day:1,minute:7*60+20,resources:{scrap:125,wood:42,ore:0,alloy:16,food:75,knowledge:0},colonists:[],buildings:[],events:[],research:[],harvested:[],piles:[],designations:{},goal:0,ruin:null,weather:'clear',weatherClock:0,explore:0};makeMap(seed);guaranteeStartingOre();uid=1;S.buildings.push({id:uid++,type:'lander',x:26,y:26,w:3,h:3,progress:100,finished:true});S.buildings.push({id:uid++,type:'supplies',x:30,y:26,w:2,h:2,progress:100,finished:true});S.buildings.push({id:uid++,type:'camp',x:26,y:30,w:3,h:2,progress:100,finished:true});for(let i=0;i<5;i++){let p=PROFILES[i];S.colonists.push({id:i+1,name:p.name,role:p.role,trait:p.trait,ambition:p.ambition,coat:p.coat,hue:p.hue,hair:p.hair,x:25.4+i*1.3,y:29.5+(i%2)*.7,energy:85+Math.random()*10,hunger:12+Math.random()*10,mood:82,social:75,skill:2+i%3,work:'auto',task:null,path:[],next:0,action:0,level:0,home:null});}uid=7;log('✦','Expedition Signal One made planetfall. Five specialists ready.');log('⌂','Establish a permanent home, then secure food production.');camera.x=28*TS;camera.y=28*TS;camera.z=1;selectedType=null;preview=null;selectedColonist=null;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;selectedPile=null;tab='build';paused=false;speed=1;renderUI(true);save();}
 function log(icon,message){if(!S)return;S.events.unshift({icon,message,day:S.day,time:timeString()});if(S.events.length>50)S.events.length=50;if(S.events.length>2)notice(message);}
 function timeString(){let n=Math.floor(S.minute)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function notice(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.remove('show'),2400)}
 function save(){if(!S)return;try{const clean={...S,colonists:S.colonists.map(p=>({...p,path:[],task:null,action:0})),fog:fog.map(x=>x?1:0),uid};localStorage.setItem(SAVE,JSON.stringify(clean));}catch(e){console.warn('Save failed',e)}}
-function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(o.v!==3||!o.colonists||!o.buildings)return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};features=features.filter(f=>!S.harvested.includes(f.id));for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){p.path=[];p.task=null;p.action=0;p.next=0;p.work=p.work||'auto';p.carry??=null;}if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};return true}catch(e){console.warn(e);return false}}
+function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(o.v!==3||!o.colonists||!o.buildings)return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};features=features.filter(f=>!S.harvested.includes(f.id));guaranteeStartingOre();for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){p.path=[];p.task=null;p.action=0;p.next=0;p.work=p.work||'auto';p.carry??=null;}if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};return true}catch(e){console.warn(e);return false}}
 function buildingAt(x,y,includeBlueprint=true){return S.buildings.find(b=>(includeBlueprint||b.finished)&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)}
 function featureAt(x,y){return features.find(f=>f.x===x&&f.y===y)}
 const NATURAL={
@@ -218,12 +259,12 @@ function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=neighborGoals(
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}let home=S.buildings.find(b=>b.id===p.home&&b.finished)||finished('shelter')[p.id%Math.max(1,finished('shelter').length)]||finished('camp')[0];if(p.energy<30||night){return{type:'rest',x:home.x,y:home.y,w:home.w,h:home.h,id:home.id}}
  if(p.hunger>67)return{type:'eat',x:30,y:26,w:2,h:2};
- const construction=jobs().sort((a,b)=>b.progress-a.progress);if(construction.length&&(p.role==='Engineer'||p.role==='Commander'||p.role==='Medic'||p.work==='build')){const q=construction.find(b=>!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='build'&&z.task.id===b.id));if(q)return{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}}
- if(harvestTaskFor(p))return p.task;
- if(haulTaskFor(p))return p.task;
+ const construction=jobs().sort((a,b)=>b.progress-a.progress);if(p.work!=='survey'&&construction.length&&(p.role==='Engineer'||p.role==='Commander'||p.role==='Medic'||p.work==='build')){const q=construction.find(b=>!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='build'&&z.task.id===b.id));if(q)return{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}}
+ if(p.work!=='survey'&&harvestTaskFor(p))return p.task;
+ if(p.work!=='survey'&&haulTaskFor(p))return p.task;
  const garden=finished('garden');if(garden.length&&(p.role==='Biologist'||p.work==='farm')&&S.resources.food<180)return{type:'farm',id:garden[0].id,x:garden[0].x,y:garden[0].y,w:garden[0].w,h:garden[0].h};
  const workshop=finished('workshop');if(workshop.length&&(p.role==='Engineer'||p.work==='engineer')&&S.resources.ore>=2&&S.resources.scrap>=1&&S.resources.alloy<65)return{type:'craft',id:workshop[0].id,x:workshop[0].x,y:workshop[0].y,w:workshop[0].w,h:workshop[0].h};
- if(p.role==='Surveyor'||p.work==='survey'){const around=[];for(let i=0;i<16;i++){let theta=hash(i,S.day,hashStr(S.seed))*Math.PI*2,range=10+S.explore%20+(i%6);let x=clamp(Math.round(28+Math.cos(theta)*range),2,VW-3),y=clamp(Math.round(28+Math.sin(theta)*range),2,VH-3);if(walkable(x,y))around.push({type:'survey',x,y})}around.sort((a,b)=>(fog[index(a.x,a.y)]?1:0)-(fog[index(b.x,b.y)]?1:0));if(around.length)return around[0];}
+ if(p.role==='Surveyor'||p.work==='survey'){const destination=surveyFrontierGoal(p);if(destination)return destination;}
  if(S.resources.scrap<150||p.role==='Commander'||p.work==='gather'){for(const f of nearFeature('scrap',p).filter(f=>!S.designations?.[f.id])){if(!S.colonists.some(z=>z.id!==p.id&&z.task?.feature===f.id))return{type:'gather',feature:f.id,x:f.x,y:f.y}}}
  if(p.role==='Medic')return{type:'research',x:26,y:26,w:3,h:3};
  if(p.role==='Biologist'){for(const f of nearFeature('bush',p).filter(f=>!S.designations?.[f.id]))return{type:'forage',feature:f.id,x:f.x,y:f.y}}
@@ -318,7 +359,7 @@ function renderUI(force=false){if(!S)return;const nav=$('nav');nav.innerHTML=NAV
  }else if(tab==='crew'){body.innerHTML='<div class="sectioncap">Tap to follow or manage a colonist</div>'+S.colonists.map(p=>'<button class="crewrow" data-action="crew" data-id="'+p.id+'"><span class="avatar" style="background:'+p.coat+'33">'+uiIcon('crew',20)+'</span><span style="flex:1"><b>'+p.name+'</b><div class="sub">'+p.role+' · '+taskLabel(p)+'</div></span><span class="statpill">'+Math.round(p.mood)+'% mood</span></button>').join('');
  }else if(tab==='colony'){const p=power(),built=S.buildings.filter(b=>b.finished).length,unbuilt=jobs().length;body.innerHTML='<div class="splitgrid"><div class="infocard"><b>Settlement</b><p>'+S.colonists.length+' colonists · '+built+' structures · '+unbuilt+' building</p></div><div class="infocard"><b>Infrastructure</b><p>'+p.used+'/'+p.supply+' power used · '+finished('shelter').length*3+' permanent beds</p></div><div class="infocard"><b>Food supply</b><p>'+S.resources.food+' rations · '+finished('garden').length+' active gardens</p></div><div class="infocard"><b>Expedition day</b><p>Day '+S.day+' · '+timeString()+' · '+S.weather+' weather</p></div></div><div class="sectioncap" style="margin-top:11px">Field operations</div><div class="infocard"><b>Active resource orders: '+queuedWork()+'</b><p>Tap trees, mineral outcrops, debris or wild plants on the map to assign field work. Orders stay queued until completed or cancelled.</p></div><div class="sectioncap" style="margin-top:11px">Recent colony history</div>'+S.events.slice(0,9).map(e=>'<div class="event"><span class="eventdot"></span><span><b>Day '+e.day+'</b> '+e.message+'</span></div>').join('');
  }else if(tab==='research'){body.innerHTML='<div class="sectioncap">Earn knowledge through exploration and research work</div>'+Object.entries(TECHS).map(([id,t])=>{const unlocked=S.research.includes(id),blocked=t.requires&&!S.research.includes(t.requires);return '<div class="crewrow" style="cursor:default"><span class="avatar">'+uiIcon('research',21)+'</span><span style="flex:1"><b>'+t.name+'</b><div class="sub">'+t.description+(blocked?' · Requires '+TECHS[t.requires].name:'')+'</div></span><button class="secondary" style="min-width:70px" '+(unlocked||blocked||S.resources.knowledge<t.cost?'disabled':'')+' data-action="research" data-id="'+id+'">'+(unlocked?'Done':t.cost+' knowledge')+'</button></div>'}).join('');
- }else if(tab==='world'){const tiles=fog.filter(Boolean).length;body.innerHTML='<div class="splitgrid"><div class="infocard"><b>Planet seed</b><p>'+S.seed+'</p></div><div class="infocard"><b>Survey progress</b><p>'+Math.round(tiles/fog.length*100)+'% mapped · '+S.explore+' expeditions</p></div></div><div class="sectioncap" style="margin-top:9px">Points of interest</div><div class="infocard"><b>'+(S.ruin?.seen?S.ruin.name:'Unidentified signals')+'</b><p>'+(S.ruin?.seen?'An unusual site discovered beyond the colony. Future exploration systems will expand on it.':'Send your surveyor out to reveal the surrounding wilderness.')+'</p></div><div class="tiny" style="margin-top:8px">New worlds generate different terrain, resources, ruins and paths. The same seed reproduces the starting map.</div>'}
+ }else if(tab==='world'){const tiles=fog.filter(Boolean).length;body.innerHTML='<div class="splitgrid"><div class="infocard"><b>Planet seed</b><p>'+S.seed+'</p></div><div class="infocard"><b>Survey progress</b><p>'+Math.round(tiles/fog.length*100)+'% mapped · '+S.explore+' expeditions</p></div></div><div class="sectioncap" style="margin-top:9px">Exploration &amp; minerals</div><div class="infocard"><b>'+features.filter(f=>f.type==='ore'&&fog[index(f.x,f.y)]).length+' mineral outcrops mapped</b><p>Survey the frontier to reveal ore. Each outcrop yields three raw ore.</p><div class="buttongroup"><button class="primary" data-survey-command="true">Prioritize exploring</button><button class="secondary" data-ore-focus="true">Locate mapped ore</button></div></div><div class="sectioncap" style="margin-top:9px">Points of interest</div><div class="infocard"><b>'+(S.ruin?.seen?S.ruin.name:'Unidentified signals')+'</b><p>'+(S.ruin?.seen?'An unusual site discovered beyond the colony. Future exploration systems will expand on it.':'Send your surveyor out to reveal the surrounding wilderness.')+'</p></div><div class="tiny" style="margin-top:8px">New worlds generate different terrain, resources, ruins and paths. The same seed reproduces the starting map.</div>'}
  body.scrollTop=st;body.scrollLeft=sl;if(tab==='build'&&body.querySelector('.builder'))body.querySelector('.builder').scrollLeft=builderScroll;
  $('headextra').textContent=tab==='crew'?'5 aboard':tab==='research'?S.resources.knowledge+' ✦ available':tab==='build'?jobs().length+' under construction':tab==='world'?'SEED '+S.seed:S.buildings.length+' structures';
  paintHUD();}
@@ -385,7 +426,7 @@ $('sheet').addEventListener('input',e=>{if(e.target.id==='catalogsearch'){catalo
 $('sheet').addEventListener('click',e=>{
  const filter=e.target.closest('[data-filter]');if(filter){catalogGroup=filter.dataset.filter;catalogResults();return}
  const blueprint=e.target.closest('[data-build]');if(blueprint){chooseBlueprint(blueprint.dataset.build);return}
- const move=e.target.closest('[data-unstore]');if(move){reserveOutside(move.dataset.unstore);return} const release=e.target.closest('[data-release]');if(release){releaseReserve(release.dataset.release);return} const next=e.target.closest('[data-open]');if(next){openSection(next.dataset.open);return}
+ if(e.target.closest('[data-survey-command]')){prioritizeExploration();return}if(e.target.closest('[data-ore-focus]')){focusDiscoveredOre();return}const move=e.target.closest('[data-unstore]');if(move){reserveOutside(move.dataset.unstore);return} const release=e.target.closest('[data-release]');if(release){releaseReserve(release.dataset.release);return} const next=e.target.closest('[data-open]');if(next){openSection(next.dataset.open);return}
  const row=e.target.closest('[data-action]');if(!row)return;
  if(row.dataset.action==='crew'){const id=Number(row.dataset.id),p=S.colonists.find(z=>z.id===id);if(p){selectedColonist=id;selectedBuilding=null;camera.x=p.x*TS;camera.y=p.y*TS;profile(id);paintHUD()}}
  else if(row.dataset.action==='research'){research(row.dataset.id);openSection('research')}
