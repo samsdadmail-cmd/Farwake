@@ -1,0 +1,28 @@
+/* Expedition instruments: a slim status rail and a field journal over the map. */
+.app{max-width:none;border:0;background:#1a1c19;padding-inline:env(safe-area-inset-left) env(safe-area-inset-right)}
+.top,.lower{background:#1a1c19;color:#f6efde}
+.brand{height:50px;padding-inline:14px}
+.logo{font:700 19px Georgia,serif;letter-spacing:.16em;display:flex;align-items:center;gap:7px}.logo svg{width:22px;height:22px;color:#d8b57d}
+.subbrand{margin-left:30px;font:8px ui-monospace,monospace;letter-spacing:.13em;color:#c5c0ae}
+.iconbtn,.maptools button{width:40px;min-width:40px;height:40px;border-radius:4px}
+.resbar{height:32px;justify-content:flex-start;padding:0 10px;border-top:1px solid #ffffff14}
+.resource,.resource-expand{border:0;border-radius:0;height:30px}.resource{border-right:1px solid #ffffff16}.resource .k{color:#ccc7b9}
+.mission{text-align:left;border-radius:2px;max-width:72%;background:#171a16eb}
+.nav{min-height:48px;padding:0;gap:0;max-width:640px;margin:auto}
+.navbutton{border-radius:0;flex-direction:row;height:48px;gap:7px;color:#d4d1c6}
+.navbutton .word{font-size:11px}.navbutton .sym svg{width:17px}
+.sheet{background:#20221e;border-radius:8px 8px 0 0;padding-inline:18px}
+.sheet h2,.inspectcard .label{font-family:Georgia,serif;font-weight:500}.sheet h2{font-size:30px}
+.screenhead{border-bottom:1px solid #9d8964}.screenclose,.secondary,.primary,.inspectcard,.searchwrap,.filterchip{border-radius:4px}
+.smallcaps,.eyebrow,.clock,.catalogcost,.ledger td,.capacityline strong{font-family:ui-monospace,monospace}
+.hublist{gap:0}.hubitem,.sectionview .crewrow{border:0;border-bottom:1px solid #ffffff25;border-radius:0;background:transparent}.hubitem .hubicon{background:none}
+.catalogart{background-color:#343930;background-image:linear-gradient(#41463c 1px,transparent 1px),linear-gradient(90deg,#41463c 1px,transparent 1px);background-size:13px 13px;border-radius:0}
+.plate{width:100%;height:100%;object-fit:contain;padding:7px;image-rendering:pixelated}
+.catalogcard{border:0;border-bottom:1px solid #655d4b;background:transparent;border-radius:0;padding:0 0 12px;gap:5px;min-height:0}.catalogcard:disabled{opacity:.64}
+.catalogname{font:18px Georgia,serif}.catalogcost{font-size:10px}.catalogdesc{font-size:11px;color:#cbc9bd}
+.ledger{width:100%;border-collapse:collapse;text-align:right;font-size:13px}.ledger th,.ledger td{padding:12px 3px;border-bottom:1px solid #ffffff20}.ledger th:first-child{text-align:left}.ledger tbody th{font-weight:500}.ledger svg{vertical-align:middle;color:#cfb481}.ledger thead{font-size:10px;color:#c5bdae}.ledger td{font-variant-numeric:tabular-nums}
+.service{display:flex;justify-content:space-between;border-top:1px solid #ffffff21;padding:12px 0;font-size:12px}
+.inspector{max-width:450px;margin:auto}.inspectcard{border-left:3px solid #cba871}.inspectcard .label{font-size:16px}.inspectcard .meta{font-size:11px}.nudge .secondary{height:37px}
+button:focus-visible,input:focus-visible{outline:2px solid #f8d399;outline-offset:2px}
+@media(orientation:landscape) and (max-height:520px){.top{display:flex;align-items:center;justify-content:space-between}.brand{height:44px;flex:1}.resbar{width:40%;border:0}.lower{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:min(400px,65%);border:1px solid #676454}.nav,.navbutton{min-height:39px;height:39px}.inspector{bottom:58px}.sheet{height:97dvh;max-height:97dvh}.cataloggrid{grid-template-columns:repeat(3,1fr)}}
+.subbrand{white-space:nowrap;letter-spacing:.07em;font-size:7px}

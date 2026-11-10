@@ -1,0 +1,4 @@
+<pre id="out">Running</pre><iframe width="390" height="667"></iframe><script src="visual-rebirth.js"></script><script>
+let f=document.querySelector('iframe');let key='farwake_founders_alpha03_v1';if(localStorage.getItem(key))throw Error('Use a fresh test origin.');
+f.onload=()=>{f.contentWindow.FARWAKE_TEST.save();f.onload=async()=>{f.onload=null;try{out.textContent=(await verifyCandidate(f)).join('\n')}catch(e){out.textContent=e.stack}};f.src='index.html'};f.src='before.html';
+</script>
