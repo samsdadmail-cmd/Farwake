@@ -184,7 +184,27 @@ window.FarwakeBuildings = (() => {
     cache.set(key,image);
     return image;
   }
+  const shadows = new Map();
   return {
+    shadow(ctx,type,x,y,w,h,minute) {
+      if(!sizes[type] || type==='path')return;
+      if(!shadows.has(type)){
+        const sprite=plate(type,false);
+        const mask=document.createElement('canvas');
+        mask.width=sprite.width;mask.height=sprite.height;
+        const brush=mask.getContext('2d');
+        brush.drawImage(sprite,0,0);
+        brush.globalCompositeOperation='source-in';
+        brush.fillStyle='#182626';brush.fillRect(0,0,mask.width,mask.height);
+        shadows.set(type,mask);
+      }
+      const sun=Math.cos((minute-360)*Math.PI/720);
+      ctx.save();ctx.translate(x,y+h);
+      ctx.transform(1,0,-sun*.33,.73,0,2);
+      ctx.globalAlpha=.27;
+      ctx.drawImage(shadows.get(type),0,-h,w,h);
+      ctx.restore();
+    },
     draw(ctx,type,x,y,w,h,night=false) {
       if(!sizes[type]) return;
       const sprite=plate(type,night);
