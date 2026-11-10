@@ -158,12 +158,36 @@ function storageFor(p){return storageBuildings().sort((a,b)=>Math.abs(a.x-p.x)+M
 function looseTotal(kind){return (S.piles||[]).filter(q=>!kind||q.kind===kind).reduce((sum,q)=>sum+q.amount,0)}
 function transitTotal(kind){return S.colonists.reduce((sum,p)=>sum+(p.carry&&(!kind||p.carry.kind===kind)?p.carry.amount:0),0)}
 function makePile(f,resource,amount){const pile={id:'p'+f.id+'-'+S.day+'-'+Math.round(S.minute),x:f.x,y:f.y,kind:resource,amount};S.piles.push(pile);return pile}
+function reserveOutside(kind,requested=10){
+ if(!MATERIALS[kind])return false;
+ const amount=Math.min(Math.max(0,Math.floor(S.resources[kind]||0)),requested);
+ if(!amount){notice('There is no '+MATERIALS[kind].name.toLowerCase()+' in storage.');return false;}
+ const store=storageBuildings()[0];if(!store){notice('No storage building available.');return false;}
+ let spot=null;
+ for(let radius=1;radius<=20&&!spot;radius++){
+  for(let dy=-radius;dy<=radius&&!spot;dy++)for(let dx=-radius;dx<=radius&&!spot;dx++){
+   if(Math.max(Math.abs(dx),Math.abs(dy))!==radius)continue;
+   const x=store.x+dx,y=store.y+dy;
+   if(!inMap(x,y)||terrain[index(x,y)].kind==='water'||buildingAt(x,y)||featureAt(x,y)||pileAt(x,y))continue;
+   spot={x,y};
+  }
+ }
+ if(!spot){notice('No clear outdoor tile for a reserve pile.');return false;}
+ S.resources[kind]-=amount;
+ S.piles.push({id:'reserve-'+(uid++),x:spot.x,y:spot.y,kind,amount,hold:true});
+ log('','Moved '+amount+' '+MATERIALS[kind].name.toLowerCase()+' to an outdoor reserve. It will stay outside until released.');
+ save();paintHUD();openSection('resources');return true;
+}
+function releaseReserve(id){
+ const pile=pileById(id);if(!pile||!pile.hold)return;
+ pile.hold=false;save();openSection('resources');notice('Released outdoor pile for hauling when storage is available.');
+}
 function pileById(id){return (S.piles||[]).find(q=>q.id===id)}
 function pileAt(x,y){return (S.piles||[]).find(q=>q.x===x&&q.y===y)}
-function claimHaul(p,pile){if(!pile||!storageBuildings().length||!hasHaulRoom(pile.amount))return false;return setTask(p,{type:'haul_pickup',pileId:pile.id,x:pile.x,y:pile.y})}
+function claimHaul(p,pile){if(!pile||pile.hold||!storageBuildings().length||!hasHaulRoom(pile.amount))return false;return setTask(p,{type:'haul_pickup',pileId:pile.id,x:pile.x,y:pile.y})}
 function haulTaskFor(p){if(p.carry){const storage=storageFor(p);return storage?{type:'haul_dropoff',id:storage.id,x:storage.x,y:storage.y,w:storage.w,h:storage.h}:null}
  if(!['auto','gather','build'].includes(p.work))return null;
- const piles=(S.piles||[]).filter(q=>hasHaulRoom(q.amount)&&!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id));
+ const piles=(S.piles||[]).filter(q=>!q.hold&&hasHaulRoom(q.amount)&&!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id));
  piles.sort((a,b)=>Math.abs(p.x-a.x)+Math.abs(p.y-a.y)-Math.abs(p.x-b.x)-Math.abs(p.y-b.y));
  for(const pile of piles){if(claimHaul(p,pile))return p.task}return null;
 }
@@ -340,11 +364,11 @@ function openSection(kind){sheetSection=kind;
  if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
  if(kind==='resources'){const r=S.resources,p=power(),cap=storageCapacity(),used=storedTotal();
  const rows=Object.entries(MATERIALS).map(([id,m])=>
-   '<tr><th>'+uiIcon(id,16)+' '+m.name+'</th><td>'+Math.floor(r[id]||0)+'</td><td>'+looseTotal(id)+'</td><td>'+transitTotal(id)+'</td></tr>').join('');
+   '<tr><th>'+uiIcon(id,16)+' '+m.name+'</th><td>'+Math.floor(r[id]||0)+'</td><td>'+looseTotal(id)+'</td><td>'+transitTotal(id)+'</td><td><button class="secondary" style="padding:6px;font-size:11px" data-unstore="'+id+'" '+(!(r[id]>0)?'disabled':'')+' aria-label="Move up to ten '+m.name+' outside">Move 10 out</button></td></tr>').join('');
  showSheet(sectionHeader('Stores & supplies','LOGISTICS')+
    '<div class="capacityline"><b>Warehouse occupancy</b><strong>'+Math.floor(used)+' / '+cap+'</strong></div><div class="capacitytrack"><i style="width:'+Math.min(100,used/cap*100)+'%"></i></div>'+
-   '<table class="ledger"><thead><tr><th>Material</th><th>Stored</th><th>Ground</th><th>Carried</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-   '<p>Haulers take loose materials to the cache or nearest supply shed. Each finished shed adds 180 storage.</p>'+
+   '<table class="ledger"><thead><tr><th>Material</th><th>Stored</th><th>Ground</th><th>Carried</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<p>Haulers take loose materials to storage. Each finished shed adds 180 storage. Use Move 10 out to free space; reserved piles stay outside until released.</p>'+ '<div class="sectioncap">Outdoor reserves</div>' + ((S.piles||[]).filter(p=>p.hold).map(p=>'<div class="service"><span>'+MATERIALS[p.kind].name+': '+p.amount+' outside</span><button class="secondary" data-release="'+p.id+'">Allow hauling</button></div>').join('')||'<p class="tiny">No held outdoor reserves.</p>')+
    '<div class="service"><span>Power</span><b>'+p.used+' used / '+p.supply+' produced</b></div><div class="service"><span>Research</span><b>'+Math.floor(r.knowledge)+' knowledge</b></div>');
  renderNavState();return;
  }
@@ -361,7 +385,7 @@ $('sheet').addEventListener('input',e=>{if(e.target.id==='catalogsearch'){catalo
 $('sheet').addEventListener('click',e=>{
  const filter=e.target.closest('[data-filter]');if(filter){catalogGroup=filter.dataset.filter;catalogResults();return}
  const blueprint=e.target.closest('[data-build]');if(blueprint){chooseBlueprint(blueprint.dataset.build);return}
- const next=e.target.closest('[data-open]');if(next){openSection(next.dataset.open);return}
+ const move=e.target.closest('[data-unstore]');if(move){reserveOutside(move.dataset.unstore);return} const release=e.target.closest('[data-release]');if(release){releaseReserve(release.dataset.release);return} const next=e.target.closest('[data-open]');if(next){openSection(next.dataset.open);return}
  const row=e.target.closest('[data-action]');if(!row)return;
  if(row.dataset.action==='crew'){const id=Number(row.dataset.id),p=S.colonists.find(z=>z.id===id);if(p){selectedColonist=id;selectedBuilding=null;camera.x=p.x*TS;camera.y=p.y*TS;profile(id);paintHUD()}}
  else if(row.dataset.action==='research'){research(row.dataset.id);openSection('research')}
