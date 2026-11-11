@@ -251,12 +251,22 @@ function frontierMealTarget(p){
  if((S.resources.food||0)+(S.resources.meals||0)<=0){
    const piles=S.piles.filter(q=>['food','meals'].includes(q.kind)&&q.site==null&&q.amount>0).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
    for(const pile of piles){const t={type:'eat',pileId:pile.id,x:pile.x,y:pile.y};if(setTask(p,t))return t}
+   return frontierFoodRecoveryTarget(p);
  }
  const halls=S.buildings.filter(b=>b.finished&&!b.editOrder&&['dining','kitchen'].includes(b.type)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  for(const b of [...halls,...storageBuildings()]){
    const t={type:'eat',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};if(setTask(p,t))return t;
  }
  return {type:'eat',outdoors:true,x:Math.floor(p.x),y:Math.floor(p.y)};
+}
+function frontierFoodRecoveryTarget(p){
+ // Gather an actual, discovered food source; do not manufacture a rescue ration.
+ for(const f of nearFeature('bush',p)){
+   if(S.colonists.some(q=>q!==p&&q.task?.feature===f.id))continue;
+   const t={type:'forage',feature:f.id,x:f.x,y:f.y};
+   if(setTask(p,t))return t;
+ }
+ return productionCandidate(p,'garden');
 }
 function frontierEat(p){
  p.action=0;const pile=pileById(p.task.pileId);

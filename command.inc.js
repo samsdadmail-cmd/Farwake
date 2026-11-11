@@ -14,6 +14,7 @@ function commandStats(){
   if(powerNow.used>powerNow.supply)need.push('Power demand exceeds supply');
   if(storedTotal()>=storageCapacity())need.push('Stores at capacity');
   if((S.resources.food||0)+(S.resources.meals||0)<people.length)need.push('Less than one stored meal per colonist');
+  if(industryFoodEmergency())need.push('Emergency food recovery: foraging and unpaused grow beds take priority; food target temporarily lifted');
   const cards=[
     ['Population',people.length,homes+' permanently housed'],
     ['Wellbeing',mean('mood')+'%',mean('energy')+'% average energy'],

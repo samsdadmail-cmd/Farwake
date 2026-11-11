@@ -23,6 +23,12 @@ function foundingProductionRecord(b){
     : {recipe:'smelt',elapsed:0,cycles:0,output:0});
 }
 function industryOwned(kind){return (S.resources[kind]||0)+looseTotal(kind)+transitTotal(kind)}
+function industryFoodEmergency(){return industryOwned('food')+industryOwned('meals')<1&&S.colonists.some(p=>p.hunger>67)}
+function industryTarget(kind){
+  const target=industryPolicy().targets[kind]||0;
+  // A temporary survival floor never overwrites the player's saved stock target.
+  return kind==='food'&&industryFoodEmergency()?Math.max(target,S.colonists.length*2):target;
+}
 function foundingIndustryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
 function chosenRecipe(r){return INDUSTRY_RECIPES[r.recipe]||INDUSTRY_RECIPES.smelt}
 function cropYield(){return S.research.includes('growth')?11:7}
@@ -35,7 +41,7 @@ function foundingProductionBlock(b){
   if(!b.finished||b.editOrder)return 'Unavailable during construction or dismantling';
   const r=productionRecord(b),kind=b.type==='garden'?'food':'alloy';
   if(r.paused)return 'Paused by colony order';
-  if(industryOwned(kind)>=industryPolicy().targets[kind])return 'Colony stock target reached';
+  if(industryOwned(kind)>=industryTarget(kind))return 'Colony stock target reached';
   if(b.type==='garden')return '';
   const recipe=chosenRecipe(r);
   if(industryOwned('alloy')+recipe.yield>industryPolicy().targets.alloy)return 'Next batch would exceed target';
@@ -49,6 +55,7 @@ function foundingIndustrySummary(b){
   if(!['garden','workshop'].includes(b.type)&&!frontierProducer(b))return '';
   const blocked=productionBlock(b);if(blocked)return blocked;
   const r=productionRecord(b),worker=productionWorkers(b)[0];
+  if(b.type==='garden'&&industryFoodEmergency())return 'Emergency food recovery · '+INDUSTRY_STAGES[r.stage].label;
   if(b.type==='garden'&&!cropNeedsWorker(r.stage))return INDUSTRY_STAGES[r.stage].label;
   if(!worker)return 'Waiting for '+(r.worker?S.colonists.find(p=>p.id===r.worker)?.name||'assigned worker':'an available worker');
   return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
@@ -57,6 +64,7 @@ function productionWeight(p,b){
   const isFarm=b.type==='garden'||b.type==='greenhouse',group=isFarm?'field':'factory',r=productionRecord(b);
   if(r.worker&&r.worker!==p.id)return 0;
   if(r.worker===p.id)return 100;
+  if(b.type==='garden'&&industryFoodEmergency())return 3;
   if(p.work==='survey')return 0;
   const personal=p.workWeights?.[group]??1,colony=industryPolicy().weights[group]??1;
   if(!personal||!colony)return 0;
@@ -104,7 +112,7 @@ function foundingProduction(p,t,work){
     else{
       // Ripe food waits on the bed if there is less demand than a full harvest.
       r.ripe??=cropYield();
-      const n=Math.min(r.ripe,Math.max(0,industryPolicy().targets.food-industryOwned('food')));
+      const n=Math.min(r.ripe,Math.max(0,industryTarget('food')-industryOwned('food')));
       if(n){freightOutput('food',n,b);r.output+=n;r.ripe-=n}
       if(!r.ripe){delete r.ripe;nextCrop(r,'plant');r.cycles++;industryPolicy().harvests++}
     }

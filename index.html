@@ -235,7 +235,7 @@ if(end<0)return[];const result=[];for(let i=end;i!==start;i=prev[i])result.push(
 function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'||t.outdoors?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
- if(p.hunger>67)return frontierMealTarget(p);
+ if(p.hunger>67){const meal=frontierMealTarget(p);if(meal)return meal;}
  if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
   ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
@@ -1055,6 +1055,12 @@ function foundingProductionRecord(b){
     : {recipe:'smelt',elapsed:0,cycles:0,output:0});
 }
 function industryOwned(kind){return (S.resources[kind]||0)+looseTotal(kind)+transitTotal(kind)}
+function industryFoodEmergency(){return industryOwned('food')+industryOwned('meals')<1&&S.colonists.some(p=>p.hunger>67)}
+function industryTarget(kind){
+  const target=industryPolicy().targets[kind]||0;
+  // A temporary survival floor never overwrites the player's saved stock target.
+  return kind==='food'&&industryFoodEmergency()?Math.max(target,S.colonists.length*2):target;
+}
 function foundingIndustryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
 function chosenRecipe(r){return INDUSTRY_RECIPES[r.recipe]||INDUSTRY_RECIPES.smelt}
 function cropYield(){return S.research.includes('growth')?11:7}
@@ -1067,7 +1073,7 @@ function foundingProductionBlock(b){
   if(!b.finished||b.editOrder)return 'Unavailable during construction or dismantling';
   const r=productionRecord(b),kind=b.type==='garden'?'food':'alloy';
   if(r.paused)return 'Paused by colony order';
-  if(industryOwned(kind)>=industryPolicy().targets[kind])return 'Colony stock target reached';
+  if(industryOwned(kind)>=industryTarget(kind))return 'Colony stock target reached';
   if(b.type==='garden')return '';
   const recipe=chosenRecipe(r);
   if(industryOwned('alloy')+recipe.yield>industryPolicy().targets.alloy)return 'Next batch would exceed target';
@@ -1081,6 +1087,7 @@ function foundingIndustrySummary(b){
   if(!['garden','workshop'].includes(b.type)&&!frontierProducer(b))return '';
   const blocked=productionBlock(b);if(blocked)return blocked;
   const r=productionRecord(b),worker=productionWorkers(b)[0];
+  if(b.type==='garden'&&industryFoodEmergency())return 'Emergency food recovery · '+INDUSTRY_STAGES[r.stage].label;
   if(b.type==='garden'&&!cropNeedsWorker(r.stage))return INDUSTRY_STAGES[r.stage].label;
   if(!worker)return 'Waiting for '+(r.worker?S.colonists.find(p=>p.id===r.worker)?.name||'assigned worker':'an available worker');
   return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
@@ -1089,6 +1096,7 @@ function productionWeight(p,b){
   const isFarm=b.type==='garden'||b.type==='greenhouse',group=isFarm?'field':'factory',r=productionRecord(b);
   if(r.worker&&r.worker!==p.id)return 0;
   if(r.worker===p.id)return 100;
+  if(b.type==='garden'&&industryFoodEmergency())return 3;
   if(p.work==='survey')return 0;
   const personal=p.workWeights?.[group]??1,colony=industryPolicy().weights[group]??1;
   if(!personal||!colony)return 0;
@@ -1136,7 +1144,7 @@ function foundingProduction(p,t,work){
     else{
       // Ripe food waits on the bed if there is less demand than a full harvest.
       r.ripe??=cropYield();
-      const n=Math.min(r.ripe,Math.max(0,industryPolicy().targets.food-industryOwned('food')));
+      const n=Math.min(r.ripe,Math.max(0,industryTarget('food')-industryOwned('food')));
       if(n){freightOutput('food',n,b);r.output+=n;r.ripe-=n}
       if(!r.ripe){delete r.ripe;nextCrop(r,'plant');r.cycles++;industryPolicy().harvests++}
     }
@@ -1259,6 +1267,7 @@ function commandStats(){
   if(powerNow.used>powerNow.supply)need.push('Power demand exceeds supply');
   if(storedTotal()>=storageCapacity())need.push('Stores at capacity');
   if((S.resources.food||0)+(S.resources.meals||0)<people.length)need.push('Less than one stored meal per colonist');
+  if(industryFoodEmergency())need.push('Emergency food recovery: foraging and unpaused grow beds take priority; food target temporarily lifted');
   const cards=[
     ['Population',people.length,homes+' permanently housed'],
     ['Wellbeing',mean('mood')+'%',mean('energy')+'% average energy'],
@@ -1784,12 +1793,22 @@ function frontierMealTarget(p){
  if((S.resources.food||0)+(S.resources.meals||0)<=0){
    const piles=S.piles.filter(q=>['food','meals'].includes(q.kind)&&q.site==null&&q.amount>0).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
    for(const pile of piles){const t={type:'eat',pileId:pile.id,x:pile.x,y:pile.y};if(setTask(p,t))return t}
+   return frontierFoodRecoveryTarget(p);
  }
  const halls=S.buildings.filter(b=>b.finished&&!b.editOrder&&['dining','kitchen'].includes(b.type)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  for(const b of [...halls,...storageBuildings()]){
    const t={type:'eat',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};if(setTask(p,t))return t;
  }
  return {type:'eat',outdoors:true,x:Math.floor(p.x),y:Math.floor(p.y)};
+}
+function frontierFoodRecoveryTarget(p){
+ // Gather an actual, discovered food source; do not manufacture a rescue ration.
+ for(const f of nearFeature('bush',p)){
+   if(S.colonists.some(q=>q!==p&&q.task?.feature===f.id))continue;
+   const t={type:'forage',feature:f.id,x:f.x,y:f.y};
+   if(setTask(p,t))return t;
+ }
+ return productionCandidate(p,'garden');
 }
 function frontierEat(p){
  p.action=0;const pile=pileById(p.task.pileId);

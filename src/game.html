@@ -235,7 +235,7 @@ if(end<0)return[];const result=[];for(let i=end;i!==start;i=prev[i])result.push(
 function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'||t.outdoors?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
- if(p.hunger>67)return frontierMealTarget(p);
+ if(p.hunger>67){const meal=frontierMealTarget(p);if(meal)return meal;}
  if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
   ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
