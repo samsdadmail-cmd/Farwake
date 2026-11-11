@@ -161,7 +161,7 @@ function industrySelect(name,value,options,attributes=''){
 function industryDetails(b){
  if(!['garden','workshop'].includes(b.type))return '';
  const r=productionRecord(b),recipe=chosenRecipe(r),duration=b.type==='garden'?cropDuration(r.stage):recipe.seconds;
- return '<section class="infocard"><b>'+esc(industrySummary(b))+'</b><div class="progress"><i style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
+ return '<section class="infocard"><b id="production-status">'+esc(industrySummary(b))+'</b><div class="progress"><i id="production-progress" style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
  '<p>'+(b.type==='garden'?'Plant → germinate → tend → grow → harvest · '+cropYield()+' food per full crop':recipe.name+' · '+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+recipe.yield+' alloy · 3 power demand')+'</p>'+
  '<p>'+r.cycles+' cycles completed · '+r.output+' units produced</p>'+
  '<button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+' production</button>'+

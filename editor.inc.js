@@ -132,6 +132,7 @@ function editorOrder(b,kind,dest=null){
   if(!b?.finished||!TYPES[b.type]||b.editOrder)return;
   b.editOrder={kind,progress:0,...(dest?{dest:{...dest}}:{})};
   editorEvacuate(b);
+  if(b.type==='shed')freightRemoveStore(b);
   if(b.type==='shelter'){housingRelease(b);housingAllocate()}
   // Free the dispatch queue so an indefinitely researching builder can respond.
   for(const p of S.colonists)if(['Commander','Engineer'].includes(p.role)&&p.task?.type==='research'){p.task=null;p.path=[]}

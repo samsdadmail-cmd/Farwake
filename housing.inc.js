@@ -57,7 +57,8 @@ function housingRestTarget(p){
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
   const permanent=b?.type==='shelter', temporary=b?.type==='camp';
-  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1),0,100);
+  const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
+  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1)*(clinic?1.2:1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){

@@ -30,6 +30,7 @@ function freightOutside(kind,amount,origin,flags={}){
  const q={id:'lot-'+(uid++),...(tile||{x:ox,y:oy}),kind,amount,...flags};S.piles.push(q);return q;
 }
 function freightInit(){
+ for(const b of S.buildings)if(b.editOrder&&b.stock)freightRemoveStore(b);
  const stores=storageBuildings();
  // A legacy save already paid for unfinished buildings when their blueprints were placed.
  for(const b of S.buildings)if(!b.finished&&!b.reservedMaterials){b.reservedMaterials={...TYPES[b.type]?.cost};b.siteStock={...b.reservedMaterials}}
@@ -70,6 +71,7 @@ function freightReserve(cost,b){
    const n=Math.min(left,q.amount);
    if(n===q.amount){q.site=b.id;}else{q.amount-=n;freightOutside(k,n,q,{site:b.id})}
    left-=n;
+   for(const p of S.colonists)if(p.task?.type==='haul_pickup'&&p.task.pileId===q.id){p.task=null;p.path=[]}
   }
  }
  return true;

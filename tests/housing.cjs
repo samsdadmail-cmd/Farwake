@@ -1,6 +1,6 @@
 // node tests/housing.cjs
 const vm=require('node:vm'), fs=require('node:fs'), assert=require('node:assert/strict');
-const context=vm.createContext({window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
+const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
 const read=file=>fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8');
 for(const file of ['buildings.js','doors.js']){vm.runInContext(read(file),context);Object.assign(context,context.window)}
 vm.runInContext(read('housing.inc.js'),context);

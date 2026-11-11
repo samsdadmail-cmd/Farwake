@@ -87,7 +87,7 @@ const ROLE={Commander:'Leadership',Engineer:'Construction',Biologist:'Agricultur
 const PROFILES=[{name:'Aya Mercer',role:'Commander',hue:'#ffc79e',hair:'#302c37',coat:'#ecb872',trait:'Steadfast',ambition:'Build a lasting home'},{name:'Tomas Venn',role:'Engineer',hue:'#ffd2af',hair:'#544031',coat:'#8db8d0',trait:'Inventive',ambition:'Power the first town'},{name:'Mira Solis',role:'Biologist',hue:'#e3a983',hair:'#252b29',coat:'#abcb88',trait:'Patient',ambition:'Grow a thriving garden'},{name:'Ivo Chen',role:'Medic',hue:'#f1c5a3',hair:'#463e44',coat:'#d6a8c5',trait:'Compassionate',ambition:'Keep the expedition safe'},{name:'Nell Ardent',role:'Surveyor',hue:'#d1a282',hair:'#c2a474',coat:'#e5bb83',trait:'Curious',ambition:'Chart the unknown'}];
 const TYPES={shelter:{name:'Prefab Home',icon:'⌂',cost:{wood:14,scrap:12,alloy:2},w:3,h:2,time:22,power:-1,description:'Warm beds for three colonists. Your first permanent home.',unlock:true},garden:{name:'Grow Beds',icon:'❀',cost:{wood:8,scrap:5},w:3,h:2,time:17,power:0,description:'A staffed garden that produces food each day.',unlock:true},solar:{name:'Solar Array',icon:'☼',cost:{scrap:18,alloy:2},w:2,h:2,time:17,power:8,description:'Reliable daytime power. Reduced output at night.',unlock:true},workshop:{name:'Workshop',icon:'⚒',cost:{wood:10,scrap:16,alloy:4},w:3,h:2,time:26,power:-3,description:'Refines 2 raw ore and 1 salvage metal into alloy when staffed.',unlock:true},shed:{name:'Supply Shed',icon:'▥',cost:{wood:16,scrap:12},w:3,h:2,time:22,power:0,description:'Stores recovered timber, ore, food and components. Adds 180 storage capacity.',unlock:true},path:{name:'Stone Path',icon:'▦',cost:{scrap:1},w:1,h:1,time:3,power:0,description:'An easy route for your colonists.',unlock:true},clinic:{name:'Field Clinic',icon:'✚',cost:{scrap:26,alloy:5},w:3,h:2,time:24,power:-2,description:'A safer place to treat injuries and illness.',unlock:false,tech:'medicine'},comms:{name:'Signal Beacon',icon:'⌁',cost:{scrap:36,alloy:10},w:2,h:2,time:30,power:-4,description:'Establish long-range contact beyond the colony.',unlock:false,tech:'signal'},battery:{name:'Power Bank',icon:'▤',cost:{scrap:20,alloy:4},w:2,h:2,time:17,power:0,description:'Additional electrical reserve. Foundation for later grids.',unlock:false,tech:'energy'}};
 const TECHS={growth:{name:'Frontier Cultivation',icon:'🌱',cost:14,description:'Better crop yields and reliable starter agriculture.',requires:null},energy:{name:'Grid Storage',icon:'⚡',cost:18,description:'Unlocks battery construction.',requires:null},medicine:{name:'Emergency Medicine',icon:'✚',cost:18,description:'Unlocks the Field Clinic.',requires:null},signal:{name:'Long-range Comms',icon:'⌁',cost:27,description:'Unlocks the Signal Beacon.',requires:'energy'}};
-const NAV=[['build','build','Build'],['crew','crew','People'],['colony','colony','Colony'],['more','more','More']];
+const NAV=[['build','build','Build'],['crew','crew','People'],['colony','colony','Command'],['more','more','More']];
 
 const ICON_PATHS={
  play:'<path d="m7 4 13 8-13 8z"/>',pause:'<path d="M8 5v14M16 5v14"/>',
@@ -442,7 +442,7 @@ async function importExpeditionFile(file){
  }catch(e){console.warn('Import failed',e);notice(e.message||'Could not import this file.');}
 }
 
-function openMenu(){showSheet('<div class="row"><div class="smallcaps">FARWAKE · LIVING WORLD</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>Expedition Operations</h2><p>Manage the current expedition or start a new world.</p><div class="sectioncap">Current world</div><div class="infocard"><b>Seed: '+S.seed+'</b><p>Day '+S.day+' · '+S.colonists.length+' expedition members · Saved locally on this device.</p></div><div class="buttongroup" style="margin-top:12px"><button class="primary" data-sheet="save">Save Expedition</button><button class="secondary" data-sheet="center">Return to Landing</button></div><div class="sectioncap" style="margin-top:15px">Transfer your expedition</div><p>Export a backup to Files, then import it at another FARWAKE preview. Import asks before replacing the current colony.</p><div class="buttongroup"><button class="primary" data-sheet="export-save">Export Save</button><label class="secondary" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;cursor:pointer">Import Save<input type="file" id="import-expedition-file" accept=".json,application/json" style="display:none"></label></div><div class="sectioncap" style="margin-top:17px">Start a different expedition</div><input class="field" id="seedfield" maxlength="24" value="FW-'+Math.floor(10000+Math.random()*80000)+'" aria-label="World seed"><button class="secondary danger" style="width:100%;margin-top:8px" data-sheet="newconfirm">Generate New World</button><p class="tiny">Starting a new world overwrites only this Alpha 0.3 save. The older FARWAKE game and its saves remain separate.</p>')}
+function openMenu(){showSheet('<div class="row"><div class="smallcaps">FARWAKE · FOUNDATIONS</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>Expedition Operations</h2><p>Manage the current expedition or start a new world.</p><div class="sectioncap">Current world</div><div class="infocard"><b>Seed: '+S.seed+'</b><p>Day '+S.day+' · '+S.colonists.length+' expedition members · Saved locally on this device.</p></div><div class="buttongroup" style="margin-top:12px"><button class="primary" data-sheet="save">Save Expedition</button><button class="secondary" data-sheet="center">Return to Landing</button></div><div class="sectioncap" style="margin-top:15px">Transfer your expedition</div><p>Export a backup to Files, then import it at another FARWAKE preview. Import asks before replacing the current colony.</p><div class="buttongroup"><button class="primary" data-sheet="export-save">Export Save</button><label class="secondary" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;cursor:pointer">Import Save<input type="file" id="import-expedition-file" accept=".json,application/json" style="display:none"></label></div><div class="sectioncap" style="margin-top:17px">Start a different expedition</div><input class="field" id="seedfield" maxlength="24" value="FW-'+Math.floor(10000+Math.random()*80000)+'" aria-label="World seed"><button class="secondary danger" style="width:100%;margin-top:8px" data-sheet="newconfirm">Generate New World</button><p class="tiny">Starting a new world overwrites only this Alpha 0.3 save. The older FARWAKE game and its saves remain separate.</p>')}
 function selectTap(clientX,clientY){if(editor&&!editor.pan)return;const r=canvas.getBoundingClientRect(),pos=screenToWorld(clientX-r.left,clientY-r.top),x=Math.floor(pos.x),y=Math.floor(pos.y);if(!inMap(x,y))return;
  if(selectedType){const t=TYPES[selectedType];selectedFeature=null;selectedTerrain=null;selectedPile=null;preview={x:clamp(x-Math.floor((t.w-1)/2),0,VW-t.w),y:clamp(y-Math.floor((t.h-1)/2),0,VH-t.h)};selectedBuilding=null;selectedColonist=null;paintHUD();return}
  let person=S.colonists.find(p=>FarwakeDoors.visible(p)>.4&&Math.hypot(pos.x-FarwakePeople.pose(p).x,pos.y-FarwakePeople.pose(p).y)<.58);if(person){selectedColonist=person.id;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}let b=buildingAt(x,y);if(b){selectedBuilding=b.id;selectedColonist=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}const pile=pileAt(x,y);if(pile){selectedPile=pile.id;selectedFeature=null;selectedTerrain=null;selectedColonist=null;selectedBuilding=null;paintHUD();return}selectedPile=null;const f=featureFromPoint(pos);selectedFeature=f?.id||null;selectedTerrain=f?null:{x,y};selectedColonist=null;selectedBuilding=null;paintHUD();}
@@ -466,10 +466,12 @@ function catalogResults(){const list=$('catalogresults');if(!list)return;const q
 }
 function showCatalog(){sheetSection='build';showSheet(sectionHeader('Blueprint library','CONSTRUCTION')+editorToolbar()+'<p class="screenlede">Select a structure, then place its blueprint directly on the world.</p><label class="searchwrap">'+uiIcon('inspect',17)+'<input id="catalogsearch" type="search" placeholder="Search buildings" autocomplete="off" aria-label="Search blueprints"></label><div class="catalogfilters">'+CATALOG_GROUPS.map(g=>'<button type="button" class="filterchip" data-filter="'+g+'">'+g+'</button>').join('')+'</div><div class="cataloggrid" id="catalogresults"></div><div class="drawerfoot">Colonists construct buildings after you confirm their location.</div>');$('catalogsearch').value=catalogQuery;catalogResults();renderNavState()}
 function openSection(kind){sheetSection=kind;
+ if(kind==='guide'){showGuide();return}
+ if(kind==='colony'){showCommand();return}
  if(kind==='preferences'){showSheet(sectionHeader('World settings','EXPEDITION')+FieldPreferences.panel());return}
  if(kind==='industry'){showIndustry();return}
  if(kind==='build'){showCatalog();return}
- if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['industry','workshop','Work & production','Targets and priorities'],['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['preferences','energy','World settings','Sound, visual detail and dialogue'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
+ if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['guide','inspect','Field guide','Colony reference and help'],['industry','workshop','Work & production','Targets and priorities'],['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['preferences','energy','World settings','Sound, visual detail and dialogue'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
  if(kind==='resources'){const r=S.resources,p=power(),cap=storageCapacity(),used=storedTotal();
  const rows=Object.entries(MATERIALS).map(([id,m])=>
    '<tr><th>'+uiIcon(id,16)+' '+m.name+'</th><td>'+Math.floor(r[id]||0)+'</td><td>'+looseTotal(id)+'</td><td>'+transitTotal(id)+'</td><td><button class="secondary" style="padding:6px;font-size:11px" data-unstore="'+id+'" '+(!(r[id]>0)?'disabled':'')+' aria-label="Move up to ten '+m.name+' outside">Move 10 out</button></td></tr>').join('');
@@ -502,7 +504,7 @@ $('missionline').parentElement.addEventListener('click',()=>openSection('colony'
 
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-nav]');if(!b)return;const next=b.dataset.nav;if(sheetSection===next&&$('sheetbg').classList.contains('open')){closeSheet();return}openSection(next);});
 $('panelbody').addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='type'){const t=b.dataset.type;selectedType=selectedType===t?null:t;preview=null;selectedColonist=null;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;if(selectedType){collapsed=true;$('panel').classList.add('collapsed');}renderUI(true);}else if(a==='crew'){selectedColonist=Number(b.dataset.id);selectedBuilding=null;const p=S.colonists.find(z=>z.id===selectedColonist);if(p){camera.x=p.x*TS;camera.y=p.y*TS;profile(p.id)}paintHUD();}else if(a==='research')research(b.dataset.id)});
-$('inspector').addEventListener('click',e=>{const b=e.target.closest('[data-inspect]');if(!b)return;switch(b.dataset.inspect){case 'manage':{const b=S.buildings.find(b=>b.id===selectedBuilding);if(b)showSheet(sectionHeader(TYPES[b.type]?.name||'Expedition structure','SETTLEMENT EDITOR')+editorControls(b));break}case 'place':if(selectedType&&preview)buildAt(selectedType,preview.x,preview.y);break;case 'nudge':if(preview&&selectedType){let [dx,dy]=b.dataset.dir.split(',').map(Number);preview.x=clamp(preview.x+dx,0,VW-TYPES[selectedType].w);preview.y=clamp(preview.y+dy,0,VH-TYPES[selectedType].h);paintHUD();}break;case 'profile':if(selectedColonist)profile(selectedColonist);break;case 'designate':if(designateFeature(b.dataset.id)){paintHUD();notice('Work order added.')}break;case 'cancelwork':if(cancelDesignation(b.dataset.id)){paintHUD();notice('Work order cancelled.')}break;case 'cancel':preview=null;selectedType=null;selectedColonist=null;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;selectedPile=null;renderUI(true);break;}});
+$('inspector').addEventListener('click',e=>{const b=e.target.closest('[data-inspect]');if(!b)return;switch(b.dataset.inspect){case 'manage':showBuilding(selectedBuilding);break;case 'place':if(selectedType&&preview)buildAt(selectedType,preview.x,preview.y);break;case 'nudge':if(preview&&selectedType){let [dx,dy]=b.dataset.dir.split(',').map(Number);preview.x=clamp(preview.x+dx,0,VW-TYPES[selectedType].w);preview.y=clamp(preview.y+dy,0,VH-TYPES[selectedType].h);paintHUD();}break;case 'profile':if(selectedColonist)profile(selectedColonist);break;case 'designate':if(designateFeature(b.dataset.id)){paintHUD();notice('Work order added.')}break;case 'cancelwork':if(cancelDesignation(b.dataset.id)){paintHUD();notice('Work order cancelled.')}break;case 'cancel':preview=null;selectedType=null;selectedColonist=null;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;selectedPile=null;renderUI(true);break;}});
 $('sheet').addEventListener('change',e=>{if(e.target?.id==='import-expedition-file'){const f=e.target.files?.[0];e.target.value='';importExpeditionFile(f);}});$('sheetbg').addEventListener('click',e=>{if(e.target===$('sheetbg'))closeSheet()});
 $('sheet').addEventListener('click',e=>{const b=e.target.closest('[data-sheet]');if(!b)return;const action=b.dataset.sheet;if(action==='export-save'){exportExpedition();return}if(action==='close'){closeSheet()}else if(action==='save'){save();closeSheet();notice('Expedition saved.')}else if(action==='center'){centerCamera();closeSheet()}else if(action==='work'){const p=S.colonists.find(z=>z.id===+b.dataset.id);if(p){p.work=b.dataset.work;p.task=null;p.path=[];profile(p.id);save();}}else if(action==='follow'){const p=S.colonists.find(z=>z.id===+b.dataset.id);if(p){camera.x=p.x*TS;camera.y=p.y*TS;selectedColonist=p.id;}closeSheet()}else if(action==='newconfirm'){const field=$('seedfield');const seed=(field?.value?.trim()||'FW-10402').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,24)||'FW-10402';showSheet('<div class="smallcaps">NEW EXPEDITION</div><h2>Leave the current world?</h2><p>Generating a new planet replaces your Alpha 0.3 save on this device. Your original FARWAKE legacy save is unaffected.</p><div class="buttongroup"><button class="secondary" data-sheet="close">Keep current colony</button><button class="primary" data-sheet="new" data-seed="'+seed.replace(/["<>]/g,'')+'">Begin New World</button></div>')}else if(action==='new'){const seed=b.dataset.seed;closeSheet();initial(seed);notice('New frontier generated: '+seed)}});
 $('pause').addEventListener('click',()=>{paused=!paused;paintHUD();notice(paused?'Simulation paused':'Simulation resumed')});
@@ -542,7 +544,7 @@ document.addEventListener('click',e=>{
  FieldPreferences.change(b.dataset.pref,b.dataset.pref==='muted'?!prefs.muted:b.value);if(b.dataset.pref==='muted'&&!prefs.muted)FarwakeAudio.unlock();openSection('preferences');resize();
 });
 $('sheet').addEventListener('input',e=>{if(e.target.dataset.volume)FieldPreferences.change(e.target.dataset.volume,+e.target.value/100)});
-function frame(now){const dt=Math.min(.07,(now-last)/1000||0);last=now;renderAccum+=dt;uiAccum+=dt;saveAccum+=dt;if(zoomRequest){const q=zoomRequest;setZoom(camera.z+(q.z-camera.z)*(FieldPreferences.reduced?1:1-Math.exp(-dt*17)),q.x,q.y);if(Math.abs(camera.z-q.z)<.002)zoomRequest=null}tick(dt);advanceWorld(dt);if(prefs.preset!=='performance'||renderAccum>=1/30){draw(now);renderAccum=0}if(uiAccum>.8){paintHUD();if(tab!=='build'&&!$('sheetbg').classList.contains('open'))renderUI();uiAccum=0}if(saveAccum>12){save();saveAccum=0}requestAnimationFrame(frame)}
+function frame(now){if(!S){requestAnimationFrame(frame);return}const dt=Math.min(.07,(now-last)/1000||0);last=now;renderAccum+=dt;uiAccum+=dt;saveAccum+=dt;if(zoomRequest){const q=zoomRequest;setZoom(camera.z+(q.z-camera.z)*(FieldPreferences.reduced?1:1-Math.exp(-dt*17)),q.x,q.y);if(Math.abs(camera.z-q.z)<.002)zoomRequest=null}tick(dt);advanceWorld(dt);if(prefs.preset!=='performance'||renderAccum>=1/30){draw(now);renderAccum=0}if(uiAccum>.8){refreshCommandReadouts();paintHUD();if(tab!=='build'&&!$('sheetbg').classList.contains('open'))renderUI();uiAccum=0}if(saveAccum>12){save();saveAccum=0}requestAnimationFrame(frame)}
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();last=performance.now()});
 // Bed allocation is persistent (p.home). Current occupancy is driven by a visit.
 function housingBeds(b) {
@@ -603,7 +605,8 @@ function housingRestTarget(p){
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
   const permanent=b?.type==='shelter', temporary=b?.type==='camp';
-  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1),0,100);
+  const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
+  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1)*(clinic?1.2:1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){
@@ -673,6 +676,7 @@ function freightOutside(kind,amount,origin,flags={}){
  const q={id:'lot-'+(uid++),...(tile||{x:ox,y:oy}),kind,amount,...flags};S.piles.push(q);return q;
 }
 function freightInit(){
+ for(const b of S.buildings)if(b.editOrder&&b.stock)freightRemoveStore(b);
  const stores=storageBuildings();
  // A legacy save already paid for unfinished buildings when their blueprints were placed.
  for(const b of S.buildings)if(!b.finished&&!b.reservedMaterials){b.reservedMaterials={...TYPES[b.type]?.cost};b.siteStock={...b.reservedMaterials}}
@@ -713,6 +717,7 @@ function freightReserve(cost,b){
    const n=Math.min(left,q.amount);
    if(n===q.amount){q.site=b.id;}else{q.amount-=n;freightOutside(k,n,q,{site:b.id})}
    left-=n;
+   for(const p of S.colonists)if(p.task?.type==='haul_pickup'&&p.task.pileId===q.id){p.task=null;p.path=[]}
   }
  }
  return true;
@@ -944,6 +949,7 @@ function editorOrder(b,kind,dest=null){
   if(!b?.finished||!TYPES[b.type]||b.editOrder)return;
   b.editOrder={kind,progress:0,...(dest?{dest:{...dest}}:{})};
   editorEvacuate(b);
+  if(b.type==='shed')freightRemoveStore(b);
   if(b.type==='shelter'){housingRelease(b);housingAllocate()}
   // Free the dispatch queue so an indefinitely researching builder can respond.
   for(const p of S.colonists)if(['Commander','Engineer'].includes(p.role)&&p.task?.type==='research'){p.task=null;p.path=[]}
@@ -1195,7 +1201,7 @@ function industrySelect(name,value,options,attributes=''){
 function industryDetails(b){
  if(!['garden','workshop'].includes(b.type))return '';
  const r=productionRecord(b),recipe=chosenRecipe(r),duration=b.type==='garden'?cropDuration(r.stage):recipe.seconds;
- return '<section class="infocard"><b>'+esc(industrySummary(b))+'</b><div class="progress"><i style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
+ return '<section class="infocard"><b id="production-status">'+esc(industrySummary(b))+'</b><div class="progress"><i id="production-progress" style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
  '<p>'+(b.type==='garden'?'Plant → germinate → tend → grow → harvest · '+cropYield()+' food per full crop':recipe.name+' · '+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+recipe.yield+' alloy · 3 power demand')+'</p>'+
  '<p>'+r.cycles+' cycles completed · '+r.output+' units produced</p>'+
  '<button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+' production</button>'+
@@ -1242,8 +1248,116 @@ document.addEventListener('click',e=>{
  const r=productionRecord(b);r.paused=!r.paused;interruptAvailable();save();showBuilding(b.id);
 });
 
+// The command journal is a view of the running simulation. Keep controls separate
+// from the live readouts so an update never steals a touch or keyboard focus.
+function facilityName(b) {
+  return TYPES[b.type]?.name || ({lander:'Expedition Lander',supplies:'Supply Cache',camp:'Expedition Camp'})[b.type] || b.type;
+}
+function commandLink(section,icon,title,detail) {
+  return '<button class="command-link" data-open="'+section+'"><span>'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+detail+'</small></span></button>';
+}
+function commandStats(){
+  const powerNow=power(), people=S.colonists, homes=people.filter(p=>S.buildings.some(b=>b.id===p.home&&b.type==='shelter'&&b.finished&&!b.editOrder)).length;
+  const mean=key=>Math.round(people.reduce((v,p)=>v+p[key],0)/Math.max(people.length,1));
+  const need=[];
+  if(homes<people.length)need.push((people.length-homes)+' without a permanent bed');
+  if(powerNow.used>powerNow.supply)need.push('Power demand exceeds supply');
+  if(storedTotal()>=storageCapacity())need.push('Stores at capacity');
+  if(S.resources.food<people.length)need.push('Less than one stored meal per colonist');
+  const cards=[
+    ['Population',people.length,homes+' permanently housed'],
+    ['Wellbeing',mean('mood')+'%',mean('energy')+'% average energy'],
+    ['Provisions',Math.floor(S.resources.food),finished('garden').length+' grow beds'],
+    ['Power',powerNow.supply-powerNow.used,powerNow.supply+' supply / '+powerNow.used+' demand'],
+    ['Construction',jobs().length,'unfinished blueprints'],
+    ['Survey',Math.round(100*fog.filter(Boolean).length/fog.length)+'%',S.explore+' expeditions']
+  ];
+  return '<div class="command-stats">'+cards.map(([label,value,sub])=>'<div><small>'+label+'</small><strong>'+value+'</strong><span>'+sub+'</span></div>').join('')+'</div>'+
+    (need.length?'<div class="command-alert">'+need.join(' · ')+'</div>':'');
+}
+function showCommand(){
+  sheetSection='colony';
+  showSheet(sectionHeader('Command Center','SETTLEMENT • DAY '+S.day)+
+    '<div id="command-stats">'+commandStats()+'</div><div class="command-links">'+
+    commandLink('resources','storage','Logistics','Stores, reserves & hauling')+
+    commandLink('industry','workshop','Work & production','Assignments and targets')+
+    commandLink('crew','crew','Personnel','Homes, needs & activity')+
+    commandLink('research','research','Research','Technologies & requirements')+
+    commandLink('world','world','Survey','Resources & expeditions')+
+    commandLink('guide','inspect','Field guide','Search colony mechanics')+
+    '</div><h3 class="sectioncap">Settlement facilities</h3><div class="facility-list">'+
+    S.buildings.filter(b=>b.type!=='path').map(b=>'<button data-facility="'+b.id+'">'+uiIcon(TYPES[b.type]?b.type:'storage',17)+'<span>'+facilityName(b)+'</span><small>'+b.x+', '+b.y+'</small></button>').join('')+
+    '</div><h3 class="sectioncap">Field log</h3>'+S.events.slice(0,6).map(e=>'<div class="event"><b>Day '+e.day+'</b> '+esc(e.message)+'</div>').join(''));
+  renderNavState();
+}
+let inspectedFacility=null;
+function facilityReadout(b){
+ const occupants=FarwakeDoors.occupants(S,b),workers=S.colonists.filter(p=>p.task&&(p.task.id===b.id||(p.task.x===b.x&&p.task.y===b.y)));
+ const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':'Operational')+'</b>'];
+ if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
+ if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
+ if(b.type==='clinic')lines.push('Nearby resting colonists within 8 tiles recover 20% faster.');
+ if(b.type==='solar')lines.push('Generating '+(isNight()?'reduced nighttime':'daytime')+' power.');
+ return lines.join('<br>');
+}
+function showBuilding(id){
+ const b=S.buildings.find(item=>item.id===+id);if(!b){showCommand();return}
+ inspectedFacility=b.id;sheetSection='facility';selectedBuilding=b.id;
+ const housing=['shelter','camp'].includes(b.type)?housingPanel(b):'';
+ const storage=['supplies','shed'].includes(b.type)?freightStorePanel(b):'';
+ showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
+ '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
+ housing+storage+industryDetails(b)+editorControls(b)+
+ '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
+ renderNavState();
+}
+function refreshCommandReadouts(){
+ const stats=$('command-stats');if(stats&&sheetSection==='colony')stats.innerHTML=commandStats();
+ const el=$('facility-readout');if(el&&sheetSection==='facility'){
+   const b=S.buildings.find(item=>item.id===inspectedFacility);
+   if(b){el.innerHTML=facilityReadout(b);
+   const production=$('production-status');if(production)production.textContent=industrySummary(b);
+   const progress=$('production-progress');if(progress){const r=productionRecord(b);progress.style.width=Math.min(100,r.elapsed/(b.type==='garden'?cropDuration(r.stage):chosenRecipe(r).seconds)*100)+'%'}
+   }else showCommand();
+ }
+}
+const guideEntries=[
+ ['Construction','Building a facility','Choose a blueprint, find clear ground and confirm. The site reserves its materials. Check the site and the crew when construction stalls.'],
+ ['Construction','Editing streets and structures','Open Build for settlement editing tools. Preview a route or work area before confirming. Select an existing facility to inspect its edit orders.'],
+ ['Housing','Permanent beds and current occupants','Assigned residents own beds. The people listed as inside are physically using that building now. Open a home to manage its residents.'],
+ ['Exploration','Finding ore','Open Survey and locate a mapped deposit. If you cannot see any, prioritize exploration. Select a revealed outcrop and mark it for mining. Exhausted ore stays exhausted.'],
+ ['Logistics','Stored, outside and carried','Timber from a felled tree starts as a loose pile. A hauler collects it and brings it to a store. Stored materials, outside piles and loads in transit are separate quantities.'],
+ ['Logistics','When the warehouse is full','Open Logistics and move material outside to free room. A held reserve stays outside until you allow hauling. Check the filters and capacity at each store.'],
+ ['Agriculture','Growing food','Inspect a grow bed for its crop stage. Workers plant and tend crops and harvest mature food. Check work assignments, output targets and the stage before expecting a harvest.'],
+ ['Manufacturing','Making alloy','The basic workshop recipe uses two ore and one salvage metal per alloy. The building needs inputs, a worker and power. Inspect the workshop for progress and its limiting condition.'],
+ ['Automation','Giving orders','Use Work & production for colony priorities and targets. Open a colonist profile for personal work choices. Hunger and rest still interrupt work.'],
+ ['Personnel','Daily life','Tap a person to see their job and needs. Doors and occupancy reflect indoor jobs. Outdoor supplies are handled beside the pallet. A nearby operating clinic improves rest recovery.'],
+ ['Research','Technology requirements','The research screen shows costs, prerequisites and benefits. Earn knowledge through real research and survey work. A locked technology lists what the colony still needs.'],
+ ['Power','Generation and demand','Compare power supply and demand in Command Center. Solar output falls at night. Check power when a staffed workshop stops producing.'],
+ ['Weather','Reading the world','Rain, wind and changing daylight affect the appearance and sound of the map. World settings controls effects, sound levels and dialogue.'],
+ ['Saving','Moving an expedition between previews','Open More → Game & Save, then Export Save. On another preview, Import Save and select the exported JSON. Browser storage is separate for each preview address.'],
+ ['Touch controls','Inspect, pan and zoom','Tap a tile, colonist or facility to inspect it. Drag the map to pan and pinch to zoom. In a drawing tool, use the preview and confirmation controls before issuing the order.']
+];
+function guideResults(query){
+ const words=query.toLowerCase().trim().split(/\s+/);
+ const matches=guideEntries.filter(entry=>words.every(word=>entry.join(' ').toLowerCase().includes(word)));
+ return matches.length?matches.map(([category,title,body])=>'<article class="guide-entry"><small>'+category+'</small><h3>'+title+'</h3><p>'+body+'</p></article>').join(''):'<p>No entries match this search.</p>';
+}
+function showGuide(term=''){
+ sheetSection='guide';showSheet(sectionHeader('Field guide','EXPEDITION HANDBOOK')+
+ '<label class="searchwrap">'+uiIcon('inspect',18)+'<input id="guide-query" type="search" placeholder="Search entries or categories" aria-label="Search field guide"></label>'+
+ '<div class="catalogfilters">'+['','Construction','Logistics','Housing','Automation','Exploration'].map(q=>'<button class="filterchip" data-guide="'+q+'">'+(q||'All')+'</button>').join('')+'</div>'+
+ '<div id="guide-entries">'+guideResults(term)+'</div>');$('guide-query').value=term;renderNavState();
+}
+$('sheet').addEventListener('click',e=>{
+ const facility=e.target.closest('[data-facility]'),guide=e.target.closest('[data-guide]');
+ if(facility)showBuilding(facility.dataset.facility);
+ if(guide)showGuide(guide.dataset.guide);
+});
+$('sheet').addEventListener('input',e=>{if(e.target.id==='guide-query')$('guide-entries').innerHTML=guideResults(e.target.value)});
+
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;
