@@ -16,7 +16,7 @@ async function verifyFrontierIndustry(frame,out){
  }
  const pump=place('pump'),kitchen=place('kitchen'),mill=place('sawmill'),smelter=place('smelter'),fabricator=place('fabricator');
  ok(run(()=>[pump,kitchen,mill,smelter,fabricator].every(b=>b.finished)),'crew constructs five distinct industrial facilities');
- ok(run(()=>g.frontierState().produced.water>=6),'Rainwater Works collects real filtered water');
+ ok(run(()=>g.frontierState().produced.water>=6),'Water Works collects real filtered water');
  ok(run(()=>g.frontierState().produced.meals>=6),'kitchen receives food and water and cooks physical meals');
  ok(run(()=>g.frontierState().produced.boards>=6),'sawmill processes timber into structural boards');
  ok(run(()=>g.frontierState().produced.metal>=5),'smelter processes raw ore into refined metal');

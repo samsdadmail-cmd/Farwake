@@ -43,10 +43,11 @@ function showCommand(){
 let inspectedFacility=null;
 function facilityReadout(b){
  const occupants=FarwakeDoors.occupants(S,b),workers=S.colonists.filter(p=>p.task&&(p.task.id===b.id||(p.task.x===b.x&&p.task.y===b.y)));
- const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':'Operational')+'</b>'];
+ const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':b.autoPowerHold?'Grid standby':b.production?.paused?'Production paused':((frontierProducer(b)||['garden','workshop'].includes(b.type))&&productionBlock(b)?'Idle':'Operational'))+'</b>'];
  if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
  if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
  if(!b.finished){
+   const access=frontierPlacementReason(b.type,b.x,b.y,b.id);if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint.');
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
    lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
@@ -68,7 +69,14 @@ function showBuilding(id){
  renderNavState();
 }
 function refreshCommandReadouts(){
- const stats=$('command-stats');if(stats&&sheetSection==='colony')stats.innerHTML=commandStats();
+ const stats=$('command-stats');if(stats&&sheetSection==='colony'){
+  stats.innerHTML=commandStats();
+  const overview=$('sheet').querySelector('.civilization-hero p');if(overview)overview.textContent=S.buildings.filter(b=>b.finished).length+' established structures · '+frontierState().sites.filter(s=>s.resolved).length+' planetary investigations';
+  for(const button of $('sheet').querySelectorAll('.facility-list [data-facility]')){
+   const b=S.buildings.find(b=>b.id===+button.dataset.facility);if(!b){button.remove();continue}
+   const line=button.querySelector('small');if(line)line.textContent=!b.finished?'Under construction':b.upgradeOrder?'Expanding':frontierProducer(b)||['garden','workshop'].includes(b.type)?industrySummary(b):housingBeds(b)?housingResidents(b).length+' / '+housingBeds(b)+' residents':S.colonists.filter(p=>p.task?.id===b.id).length+' active workers';
+  }
+ }
  const el=$('facility-readout');if(el&&sheetSection==='facility'){
    const b=S.buildings.find(item=>item.id===inspectedFacility);
    if(b){el.innerHTML=facilityReadout(b);

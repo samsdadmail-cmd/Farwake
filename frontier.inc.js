@@ -8,7 +8,7 @@ const FRONTIER_BUILDINGS={
  sawmill:{name:'Sawmill',w:3,h:2,power:-2,time:28,cost:{wood:18,scrap:16,alloy:3},tech:'timbercraft',group:'Industry',description:'Workers saw timber into structural boards. Boards unlock cabins and larger facilities.',recipe:'boards'},
  cabin:{name:'Frontier Cabin',w:3,h:2,power:-1,time:30,cost:{boards:16,wood:8,alloy:3},tech:'cabins',group:'Living',description:'Four permanent beds, a hearth and higher comfort.',beds:4,comfort:1.2},
  dormitory:{name:'Settler Lodge',w:4,h:3,power:-3,time:45,cost:{boards:30,metal:12,components:4},tech:'lodging',group:'Living',description:'Eight permanent beds for a growing township.',beds:8,comfort:1.1},
- pump:{name:'Rainwater Works',w:2,h:2,power:-1,time:22,cost:{wood:10,scrap:15,alloy:2},tech:'waterworks',group:'Food',description:'An operator collects and filters water for greenhouses and meals.',recipe:'water'},
+ pump:{name:'Water Works',w:2,h:2,power:-1,time:22,cost:{wood:10,scrap:15,alloy:2},tech:'waterworks',group:'Food',description:'An operator draws and filters groundwater for greenhouses and meals.',recipe:'water'},
  greenhouse:{name:'Glasshouse',w:3,h:2,power:-3,time:35,cost:{boards:20,metal:6,alloy:4},tech:'glasshouse',group:'Food',description:'Workers cultivate vegetables using filtered water. Produces food in repeatable batches.',recipe:'cultivate'},
  kitchen:{name:'Community Kitchen',w:3,h:2,power:-2,time:32,cost:{boards:16,metal:5,scrap:12},tech:'cooking',group:'Food',description:'Cooks turn raw food and water into nourishing meals consumed by colonists.',recipe:'meals'},
  smelter:{name:'Ore Smelter',w:3,h:2,power:-4,time:34,cost:{boards:12,scrap:24,alloy:5},tech:'refining',group:'Industry',description:'Refines finite ore into metal used by power plants, homes and manufacturing.',recipe:'metal'},
@@ -44,7 +44,7 @@ const FRONTIER_TECH={
  refining:{description:'Unlock the Ore Smelter and the workshop recipe for casting refined metal into alloy.',name:'Dedicated smelting',branch:'industry',era:2,cost:30,requires:['timbercraft','energy'],unlocks:['smelter'],effort:14,requirement:'Complete three workshop batches',gate:()=>industryPolicy().batches>=3},
  windpower:{name:'Wind engineering',branch:'power',era:2,cost:30,requires:['refining'],unlocks:['wind'],effort:12,requirement:'Refine twelve metal',gate:()=>frontierProduced('metal')>=12},
  glasshouse:{name:'Protected cultivation',branch:'food',era:2,cost:30,requires:['waterworks','refining'],unlocks:['greenhouse'],effort:14,requirement:'Complete three crop harvests',gate:()=>industryPolicy().harvests>=3},
- fabrication:{name:'Machine fabrication',branch:'industry',era:3,cost:42,requires:['refining'],unlocks:['fabricator'],effort:18,requirement:'Refine twenty-four metal and discover a planetary site',gate:()=>frontierProduced('metal')>=24&&frontierState().sites.some(s=>s.seen)},
+ fabrication:{name:'Machine fabrication',branch:'industry',era:2,cost:42,requires:['refining'],unlocks:['fabricator'],effort:18,requirement:'Refine twenty-four metal and discover a planetary site',gate:()=>frontierProduced('metal')>=24&&frontierState().sites.some(s=>s.seen)},
  lodging:{name:'Township residences',branch:'homes',era:2,cost:32,requires:['cabins','fabrication'],unlocks:['dormitory'],effort:14,requirement:'Operate two permanent residences',gate:()=>S.buildings.filter(b=>housingBeds(b)&&!FRONTIER_BUILDINGS[b.type]?.temporary&&b.type!=='camp').length>=2},
  civiclife:{name:'Civic assembly',branch:'community',era:2,cost:34,requires:['commons','fabrication'],unlocks:['recreation'],effort:16,requirement:'Record four visits to communal facilities',gate:()=>frontierState().socialVisits>=4},
  freightnetwork:{name:'Freight administration',branch:'freight',era:3,cost:36,requires:['fabrication'],unlocks:['warehouse'],effort:14,requirement:'Complete two supply sheds',gate:()=>finished('shed').length>=2},
@@ -101,19 +101,21 @@ function frontierEra(){
  ];
  let era=0;while(era<4&&capability[era+1])era++;return era;
 }
-let techZoom=1;
+let techZoom=1,techBranchTops=[];
 function frontierTree(){
  const legacy={
  growth:['food',0],energy:['power',0],medicine:['community',0],signal:['science',1],
- optics:['science',0],irrigation:['food',3],metallurgy:['industry',4],heliostat:['power',4],traverse:['science',3]
+ optics:['science',0],irrigation:['food',1],metallurgy:['industry',2],heliostat:['power',2],traverse:['science',3]
  };
  const nodes=Object.entries({...TECHS,...fieldResearch,...FRONTIER_TECH}).map(([id,t])=>({id,t,branch:t.branch||legacy[id]?.[0]||'freight',era:t.era??legacy[id]?.[1]??0}));
- const slots={},positions={};const branches=Object.keys(FRONTIER_BRANCHES),rowHeight=345,colWidth=230;
- for(const n of nodes){const cell=n.branch+'-'+n.era,slot=slots[cell]||0;slots[cell]=slot+1;positions[n.id]={x:136+n.era*colWidth,y:70+branches.indexOf(n.branch)*rowHeight+slot*156}}
- const width=1295,height=branches.length*rowHeight+70;
+ const slots={},positions={},branchY={};const branches=Object.keys(FRONTIER_BRANCHES),colWidth=230;let nextY=70;
+ for(const branch of branches){branchY[branch]=nextY;const rows=Math.max(...FRONTIER_ERAS.map((_,era)=>nodes.filter(n=>n.branch===branch&&n.era===era).length));nextY+=Math.max(300,rows*156+34)}
+ techBranchTops=branches.map(id=>branchY[id]);
+ for(const n of nodes){const cell=n.branch+'-'+n.era,slot=slots[cell]||0;slots[cell]=slot+1;positions[n.id]={x:136+n.era*colWidth,y:branchY[n.branch]+slot*156}}
+ const width=1295,height=nextY+40;
  const lines=nodes.flatMap(({id,t})=>(Array.isArray(t.requires)?t.requires:t.requires?[t.requires]:[]).filter(k=>positions[k]).map(k=>{
   const a=positions[k],b=positions[id];
-  return '<path d="M'+(a.x+188)+' '+(a.y+68)+' C'+(a.x+210)+' '+(a.y+68)+','+(b.x-24)+' '+(b.y+68)+','+b.x+' '+(b.y+68)+'" class="'+(S.research.includes(k)?'connected':'')+'"/>';
+  return '<path d="M'+(a.x+188)+' '+(a.y+68)+' C'+(a.x+210)+' '+(a.y+68)+','+(b.x-24)+' '+(b.y+68)+','+b.x+' '+(b.y+68)+'" data-prerequisite="'+k+'" class="'+(S.research.includes(k)?'connected':'')+'"/>';
  })).join('');
  const active=frontierState().research;
  return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<button class="'+(i===frontierEra()?'current':'')+'" data-tech-era="'+i+'">'+n+'</button>').join('')+'</div>'+
@@ -121,7 +123,7 @@ function frontierTree(){
  '<div class="tree-branches">'+branches.map((id,i)=>'<button class="secondary" data-tech-branch="'+i+'">'+FRONTIER_BRANCHES[id][0]+'</button>').join('')+'</div><div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
  '<svg class="tech-links" width="'+width+'" height="'+height+'" aria-hidden="true">'+lines+'</svg>'+
  FRONTIER_ERAS.map((n,i)=>'<h3 class="tech-era" style="left:'+(136+i*colWidth)+'px">'+n+'</h3>').join('')+
- branches.map((id,i)=>'<div class="tech-branch" style="top:'+(70+i*rowHeight)+'px">'+uiIcon(FRONTIER_BRANCHES[id][1],22)+'<b>'+FRONTIER_BRANCHES[id][0]+'</b></div>').join('')+
+ branches.map((id,i)=>'<div class="tech-branch" style="top:'+branchY[id]+'px">'+uiIcon(FRONTIER_BRANCHES[id][1],22)+'<b>'+FRONTIER_BRANCHES[id][0]+'</b></div>').join('')+
  nodes.map(({id,t})=>{const p=positions[id],done=S.research.includes(id),studying=active?.id===id,available=!researchReason(id),state=done?'complete':studying?'studying':available?'available':'locked',building=t.unlocks?.[0];
  return '<button class="tech-node '+state+'" style="left:'+p.x+'px;top:'+p.y+'px" data-tech-detail="'+id+'">'+
  (building?'<img alt="" src="'+FarwakeBuildings.thumbnail(building)+'">':uiIcon(FRONTIER_BRANCHES[t.branch||legacy[id]?.[0]||'science'][1],22))+
@@ -139,7 +141,7 @@ function frontierTechDetail(id){
 }
 document.addEventListener('click',e=>{
  const era=e.target.closest('[data-tech-era]');if(era){$('sheet').querySelector('.tech-viewport').scrollLeft=(110+Number(era.dataset.techEra)*230)*techZoom;return}
- const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=(70+Number(branch.dataset.techBranch)*345)*techZoom-10;return}
+ const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=techBranchTops[Number(branch.dataset.techBranch)]*techZoom-10;return}
  const detail=e.target.closest('[data-tech-detail]');if(detail){frontierTechDetail(detail.dataset.techDetail);return}
  const start=e.target.closest('[data-tech-start]');if(start){frontierBeginResearch(start.dataset.techStart);return}
  const zoom=e.target.closest('[data-tech-zoom]');if(zoom){const view=$('sheet').querySelector('.tech-viewport'),old=techZoom,x=view.scrollLeft+view.clientWidth/2,y=view.scrollTop+view.clientHeight/2;techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research');const next=$('sheet').querySelector('.tech-viewport');next.scrollLeft=x*techZoom/old-next.clientWidth/2;next.scrollTop=y*techZoom/old-next.clientHeight/2;}
@@ -237,6 +239,7 @@ function frontierTick(step){
 }
 function frontierRefreshTree(){
  if(sheetSection!=='research')return;
+ for(const edge of $('sheet').querySelectorAll('[data-prerequisite]'))edge.classList.toggle('connected',S.research.includes(edge.dataset.prerequisite));
  for(const node of $('sheet').querySelectorAll('[data-tech-detail]')){
   const id=node.dataset.techDetail,active=frontierState().research,done=S.research.includes(id),studying=active?.id===id;
   node.className='tech-node '+(done?'complete':studying?'studying':!researchReason(id)?'available':'locked');
@@ -431,7 +434,7 @@ function frontierOrderSite(id,choice){
 function frontierInvestigateTarget(p){
  if(p.role!=='Surveyor'&&p.work!=='survey')return null;
  for(const s of frontierState().sites)if(s.order&&!s.resolved&&!frontierSiteReason(s)&&!S.colonists.some(q=>q!==p&&q.task?.site===s.id))return {type:'investigate',site:s.id,x:s.x,y:s.y};
- return null;
+ return frontierFieldExtractionTarget(p);
 }
 function frontierInvestigate(p,work){
  const s=frontierState().sites.find(s=>s.id===p.task?.site);if(!s?.order||s.resolved||!frontierSiteReach(s)){p.task=null;return}
@@ -443,12 +446,14 @@ function frontierInvestigate(p,work){
  log('',FRONTIER_SITE_TYPES[s.kind].name+': '+(s.kind==='seam'?'180 ore mapped underground. ':'')+'A recovered core carries the same unfinished sequence.');
  p.task=null;save();notice('Investigation complete · core recovered');
 }
+let inspectedDiscovery=null;
 function frontierSitePanel(id){
+ inspectedDiscovery=id;
  const s=frontierState().sites.find(s=>s.id===id);if(!s||!s.seen)return;
  sheetSection='discovery';const type=FRONTIER_SITE_TYPES[s.kind],reason=frontierSiteReason(s);
  showSheet(sectionHeader(type.name,'PLANETARY FIELD RECORD')+'<div class="discovery-art '+s.kind+'">'+uiIcon('world',50)+'</div><p>'+type.description+'</p><p>'+s.x+', '+s.y+' · '+(s.resolved?'Investigated on this expedition':Math.floor(s.progress/18*100)+'% field study')+'</p>'+
- (s.resolved?'<p>'+(s.kind==='seam'?s.remaining+' finite ore remain. Build an Extraction Rig within six tiles.':'Recovered core sent into the physical hauling network.')+'</p>':
- '<p>'+(reason||'Choose the focus of the investigation. Both preserve a core for the listening array.')+'</p><button class="primary" data-investigate="'+s.id+'" data-choice="study" '+(reason?'disabled':'')+'>Study · 18 knowledge + core</button><button class="secondary" data-investigate="'+s.id+'" data-choice="recover" '+(reason?'disabled':'')+'>Recover · 4 components + 6 knowledge + core</button>'+(s.order?'<p>Surveyor ordered to '+s.order+'.</p><button class="secondary" data-site-cancel="'+s.id+'">Cancel investigation</button>':''))+'<button class="secondary" data-site-focus="'+s.id+'">Locate on map</button>');
+ (s.resolved?'<p>'+(s.kind==='seam'?s.remaining+' finite ore remain. An Extraction Rig within six tiles provides faster powered extraction.':'Recovered core sent into the physical hauling network.')+'</p>':
+ '<p>'+(reason||'Choose the focus of the investigation. Both preserve a core for the listening array.')+'</p><button class="primary" data-investigate="'+s.id+'" data-choice="study" '+(reason?'disabled':'')+'>Study · 18 knowledge + core</button><button class="secondary" data-investigate="'+s.id+'" data-choice="recover" '+(reason?'disabled':'')+'>Recover · 4 components + 6 knowledge + core</button>'+(s.order?'<p>Surveyor ordered to '+s.order+'.</p><button class="secondary" data-site-cancel="'+s.id+'">Cancel investigation</button>':''))+(s.resolved&&s.kind==='seam'?'<p>Field extraction: a Surveyor recovers five ore per 32 work seconds, respecting the colony ore target. No rig materials needed.</p><p id="field-extraction-status">'+frontierFieldExtractionStatus(s)+'</p><button class="primary" data-field-extraction="'+s.id+'" '+(s.remaining<5||!frontierSiteReach(s)?'disabled':'')+'>'+(s.handMining?'Stop field extraction':'Order field extraction')+'</button><button class="secondary" data-open="industry">Ore target &amp; work priorities</button>':'')+'<button class="secondary" data-site-focus="'+s.id+'">Locate on map</button>');
 }
 function frontierPlanetPanel(){
  const sites=frontierState().sites.filter(s=>s.seen);
@@ -540,14 +545,14 @@ function frontierObjective(){
  return frontierState().signalComplete?'A second horizon awaits':'Align the planetary listening array';
 }
 function frontierFacilityHero(b){
- const src=TYPES[b.type]?FarwakeBuildings.thumbnail(b.type):null;
+ const src=TYPES[b.type]||['lander','camp','supplies'].includes(b.type)?FarwakeBuildings.thumbnail(b.type):null;
  return '<div class="facility-hero">'+(src?'<img alt="'+esc(facilityName(b))+'" class="plate" src="'+src+'">':uiIcon('colony',64))+'<span><b>'+ (b.finished?'Established':'Under construction')+'</b><small>Level '+(b.level||1)+' · '+frontierDistrict(b)+'</small></span></div>';
 }
 function frontierFacilityRows(){
  return S.buildings.filter(b=>!['path','road'].includes(b.type)).map(b=>{
   const active=S.colonists.filter(p=>p.task?.id===b.id).length;
   const status=!b.finished?'Under construction':b.upgradeOrder?'Expanding':frontierProducer(b)||['garden','workshop'].includes(b.type)?industrySummary(b):housingBeds(b)?housingResidents(b).length+' / '+housingBeds(b)+' residents':active+' active workers';
-  return '<button data-facility="'+b.id+'"><img class="plate" alt="" src="'+(TYPES[b.type]?FarwakeBuildings.thumbnail(b.type):FarwakeBuildings.thumbnail('shed'))+'"><span><b>'+facilityName(b)+'</b><small>'+esc(status)+'</small></span><span>›</span></button>';
+  return '<button data-facility="'+b.id+'"><img class="plate" alt="" src="'+FarwakeBuildings.thumbnail(b.type)+'"><span><b>'+facilityName(b)+'</b><small>'+esc(status)+'</small></span><span>›</span></button>';
  }).join('');
 }
 document.addEventListener('click',e=>{
@@ -646,5 +651,78 @@ function frontierPlacementReason(type,x,y,ignoreId=null){
  if(door){const xx=x+Math.floor((door.x+door.w/2)/32),yy=y+t.h;
   if(!inMap(xx,yy)||terrain[index(xx,yy)].kind==='water'||S.buildings.some(b=>b.id!==ignoreId&&b.type!=='path'&&b.type!=='road'&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h))return 'The entrance needs a clear approach';
  }
- return '';
+ return frontierAccessReason(type,x,y,ignoreId);
+}
+
+function frontierObjectivePanel(){
+ if(S.goal<3)return 'build';
+ if(S.goal===3)return S.research.includes('signal')?'build':'research';
+ if(S.goal===4)return 'world';
+ if(S.goal===5)return 'research';
+ const next=[['sawmill','timbercraft'],['cabin','cabins'],['smelter','refining'],['fabricator','fabrication'],['outpost','fieldstations'],['observatory','resonance']].find(([type])=>!finished(type).length);
+ return next?(S.research.includes(next[1])?'build':'research'):frontierState().sites.filter(s=>s.resolved).length<3?'world':'colony';
+}
+
+// A surveyed seam can be worked by hand before the colony can afford a rig.
+// Both methods draw from the same finite deposit; powered extraction is faster
+// and frees the Surveyor for expeditions.
+function frontierOrderExtraction(id,enabled){
+ const s=frontierState().sites.find(s=>s.id===id);
+ if(!s?.resolved||s.kind!=='seam'||s.remaining<5||!frontierSiteReach(s))return false;
+ s.handMining=!!enabled;
+ for(const p of S.colonists)if(p.task?.seam===id||enabled&&['survey','research'].includes(p.task?.type)&&p.role==='Surveyor'){p.task=null;p.path=[]}
+ save();return true;
+}
+function frontierFieldExtractionTarget(p){
+ if(p.role!=='Surveyor'&&p.work!=='survey')return null;
+ if(industryOwned('ore')+5>industryPolicy().targets.ore)return null;
+ const s=frontierState().sites.find(s=>s.handMining&&s.resolved&&s.remaining>=5&&frontierSiteReach(s)&&!S.colonists.some(q=>q!==p&&q.task?.seam===s.id));
+ return s?{type:'harvest',seam:s.id,x:s.x,y:s.y}:null;
+}
+function frontierFieldExtract(p,work){
+ const s=frontierState().sites.find(s=>s.id===p.task?.seam);
+ if(!s?.handMining||s.remaining<5||!frontierSiteReach(s)){p.task=null;return}
+ s.handProgress=(s.handProgress||0)+work;if(s.handProgress<32)return;
+ s.handProgress=0;s.remaining-=5;freightOutput('ore',5,{x:s.x,y:s.y,w:1,h:1});
+ frontierState().produced.ore=(frontierState().produced.ore||0)+5;
+ if(s.remaining<5)s.handMining=false;p.task=null;p.action=0;save();
+}
+document.addEventListener('click',e=>{const button=e.target.closest('[data-field-extraction]');if(!button)return;const s=frontierState().sites.find(s=>s.id===button.dataset.fieldExtraction);if(s){frontierOrderExtraction(s.id,!s.handMining);frontierSitePanel(s.id)}});
+
+function frontierFieldExtractionStatus(s){
+ if(s.remaining<5)return 'This finite seam is exhausted.';
+ if(!frontierSiteReach(s))return 'Needs an expedition outpost within thirteen tiles.';
+ if(!s.handMining)return 'No field extraction order.';
+ if(industryOwned('ore')+5>industryPolicy().targets.ore)return 'Ore target met · maintaining '+industryPolicy().targets.ore+'. Raise the target to continue.';
+ const worker=S.colonists.find(p=>p.task?.seam===s.id);
+ return worker?worker.name+' · '+Math.floor((s.handProgress||0)/32*100)+'% of the next load recovered.':'Waiting for an available Surveyor · food, rest and current orders come first.';
+}
+function frontierRefreshDiscovery(){
+ if(sheetSection!=='discovery')return;
+ const s=frontierState().sites.find(s=>s.id===inspectedDiscovery),el=$('field-extraction-status');
+ if(s&&el)el.textContent=frontierFieldExtractionStatus(s);
+}
+
+let frontierAccessCache=null;
+function frontierAccessReason(type,x,y,ignoreId){
+ const key=[type,x,y,ignoreId,S.buildings.length,uid].join(':');
+ if(frontierAccessCache?.state===S&&frontierAccessCache.key===key)return frontierAccessCache.reason;
+ const t=TYPES[type],anchor=S.buildings.find(b=>b.type==='lander');
+ if(!anchor)return '';
+ const port=b=>{const d=FarwakeBuildings.entrance(b);return d?{x:b.x+Math.floor((d.x+d.w/2)/32),y:b.y+b.h}:null};
+ const start=port(anchor),blocked=(xx,yy)=>xx>=x&&xx<x+t.w&&yy>=y&&yy<y+t.h;
+ const pass=(xx,yy)=>inMap(xx,yy)&&terrain[index(xx,yy)].kind!=='water'&&!S.buildings.some(b=>b.id!==ignoreId&&!['path','road'].includes(b.type)&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h);
+ const before=surveyDistances(start.x,start.y,pass),after=surveyDistances(start.x,start.y,(xx,yy)=>!blocked(xx,yy)&&pass(xx,yy));
+ let reason='';const next=port({type,x,y,w:t.w,h:t.h});
+ if(next&&after[index(next.x,next.y)]<0)reason='The entrance needs a connected route to the settlement';
+ if(!next&&!neighborGoals(x,y,t.w,t.h).some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='Construction crews need a connected approach to this site';
+ for(const b of S.buildings){
+  if(reason||b.id===ignoreId)continue;const d=port(b);
+  if(d&&before[index(d.x,d.y)]>=0&&after[index(d.x,d.y)]<0)reason='This would cut off '+facilityName(b)+'. Leave a connected route.';
+  if(b.type==='supplies'){
+   const around=neighborGoals(b.x,b.y,b.w,b.h);
+   if(around.some(q=>before[index(q.x,q.y)]>=0)&&!around.some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='This would cut off the supply pallet. Leave a hauling route.';
+  }
+ }
+ frontierAccessCache={state:S,key,reason};return reason;
 }

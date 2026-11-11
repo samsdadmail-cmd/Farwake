@@ -153,6 +153,7 @@ function editorCandidate(p) {
   return b?{type:'dismantle',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h}:null;
 }
 function editorWork(p,work){
+  frontierAccessCache=null;
   const b=S.buildings.find(q=>q.id===p.task?.id);
   if(!b?.editOrder){p.task=null;return}
   const o=b.editOrder;

@@ -1,11 +1,11 @@
 {
-  "name": "FARWAKE: Signal One — Founders",
+  "name": "FARWAKE: Founders",
   "short_name": "FARWAKE",
-  "description": "Found your first colony on an unknown frontier.",
+  "description": "Beyond the Frontier. Grow an expedition into a living civilization.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#102122",
-  "theme_color": "#102122",
+  "background_color": "#1b211e",
+  "theme_color": "#1b211e",
   "orientation": "any",
   "icons": [
     {

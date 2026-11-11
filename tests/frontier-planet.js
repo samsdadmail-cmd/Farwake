@@ -24,6 +24,9 @@ async function verifyFrontierPlanet(frame,out){
  const seam=sites.find(q=>q.kind==='seam');seam.seen=true;
  if(!g.frontierSiteReach(seam))s.buildings.push({id:880,type:'outpost',x:seam.x+3,y:seam.y,w:3,h:2,finished:true});
  ok(g.frontierOrderSite(seam.id,'study')&&run(()=>seam.resolved),'geological investigation maps a finite underground seam');
+ g.industryPolicy().targets.ore=1000;const fieldBefore=seam.remaining;
+ ok(g.frontierOrderExtraction(seam.id,true)&&run(()=>seam.remaining<fieldBefore),'surveyor hand-extracts the first load without needing rig construction materials');
+ ok(seam.remaining===fieldBefore-5,'field extraction removes exactly five finite ore');g.frontierOrderExtraction(seam.id,false);
  let rig;for(let y=Math.max(1,seam.y-4);y<Math.min(52,seam.y+4)&&!rig;y++)for(let x=Math.max(1,seam.x-4);x<Math.min(52,seam.x+4)&&!rig;x++)if(Math.hypot(x-seam.x,y-seam.y)<=6&&g.clearFootprint(x,y,3,3)&&g.buildAt('drill',x,y))rig=s.buildings.at(-1);
  ok(rig&&run(()=>rig.finished),'crew builds extraction rig beside the investigated seam');
  s.buildings.push({id:881,type:'wind',x:18,y:20,w:2,h:2,finished:true},{id:882,type:'wind',x:15,y:20,w:2,h:2,finished:true},{id:883,type:'wind',x:12,y:20,w:2,h:2,finished:true});
@@ -34,6 +37,11 @@ async function verifyFrontierPlanet(frame,out){
  ok(obs&&run(()=>obs.finished),'advanced materials fund and build the listening observatory');
  ok(run(()=>g.frontierState().signalComplete,30000),'scientific staff align the real powered late-game project');
  g.save();g.load();ok(g.frontierState().signalComplete&&g.frontierState().sites.find(q=>q.id===seam.id).remaining<before,'discoveries, finite extraction and project progress persist');
+ const currentSeam=g.frontierState().sites.find(q=>q.id===seam.id),currentRig=g.state.buildings.find(b=>b.id===rig.id);g.productionRecord(currentRig).paused=true;g.industryPolicy().targets.ore=1000;
+ g.frontierOrderExtraction(currentSeam.id,true);
+ for(let n=0;n<12000&&!(currentSeam.handProgress>0);n++)g.tick(.1);
+ ok(currentSeam.handProgress>0,'field team begins a real partial load');const partial=currentSeam.handProgress;g.save();g.load();
+ const resumed=g.frontierState().sites.find(q=>q.id===seam.id);ok(resumed.handMining&&resumed.handProgress===partial,'partial field-extraction work and its standing order survive reload');
  out.textContent=lines.concat('COMPLETE').join('\n');
  }catch(e){out.textContent=lines.concat('FAILED '+e.stack).join('\n')}
 }
