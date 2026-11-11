@@ -2,14 +2,35 @@ async function verifyResearch(frame,out){
  frame.src='candidate/index.html?slot=research-'+Date.now();await new Promise(r=>frame.onload=r);
  const w=frame.contentWindow,g=w.FARWAKE_TEST,s=g.state,lines=[];
  const ok=(v,label)=>{if(!v)throw Error(label);lines.push('PASS '+label);out.textContent=lines.join('\n')};
- const study=id=>{g.research(id);for(let n=0;n<15000&&!s.research.includes(id);n++)g.tick(.1)};
+ const beginStudy=id=>{
+  g.research(id);
+  const active=g.frontierState().research;
+  if(!active||active.id!==id)throw Error(id+' did not enter study'+(g.researchReason(id)?': '+g.researchReason(id):''));
+  if(s.research.includes(id))throw Error(id+' unlocked instantly');
+  return active;
+ };
+ // Direct effort application. Survey and daytime-power checks below read the
+ // clock, so those studies must not run thousands of colony ticks.
+ const study=id=>{
+  const active=beginStudy(id);
+  g.frontierStudy(active.effort);
+  if(!s.research.includes(id))throw Error(id+' study did not complete');
+ };
  try{
  s.resources.knowledge=500;
  ok(g.researchReason('metallurgy').includes('Requires'),'advanced manufacturing has technology prerequisite');
- study('energy');ok(s.research.includes('energy'),'existing energy research still unlocks');
+ g.research('energy');
+ ok(g.frontierState().research&&g.frontierState().research.id==='energy'&&!s.research.includes('energy'),'energy research enters a study and does not unlock instantly');
+ // Frontier coverage: a researcher assigned by colony ticks is what finishes this
+ // study. frontierStudy is what that researcher calls; the later technologies
+ // also complete through an explicit frontierStudy so both paths stay tested.
+ for(let n=0;n<15000&&!s.research.includes('energy');n++)g.tick(.1);
+ ok(s.research.includes('energy'),'existing energy research still unlocks');
+ ok(s.research.includes('energy'),'completed energy study unlocks grid storage');
  ok(g.researchReason('metallurgy').includes('batches'),'production accomplishment gates advanced metallurgy');
  s.buildings.push({id:999,type:'workshop',x:24,y:23,w:3,h:2,finished:true,progress:100},{id:998,type:'solar',x:30,y:30,w:2,h:2,finished:true,progress:100});
- g.industryPolicy().batches=3;study('metallurgy');
+ g.industryPolicy().batches=3;
+ study('metallurgy');
  ok(s.research.includes('metallurgy'),'manufacturing accomplishment unlocks precision recipe');
  ok(g.researchDefinition('metallurgy').description.includes('two alloy'),'research communicates actual efficient recipe');
  s.explore=4;study('optics');ok(g.surveyRadius()===7,'optics expands survey reveal radius');
