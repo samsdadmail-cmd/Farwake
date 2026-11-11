@@ -1,5 +1,7 @@
 # Foundations & Command Center release candidate
 
+![Command Center in the deployed candidate](foundations/command-center.jpg)
+
 This candidate builds on Living World at c479104. The static game now assembles from src/game.html and six focused simulation and interface modules. Run python build.py after editing source. The committed index.html remains directly deployable.
 
 ## Construction and settlement editing
