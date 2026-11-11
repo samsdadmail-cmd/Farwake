@@ -158,30 +158,58 @@ test.describe('v3 save fixtures', () => {
     await expect(recoveryVisible(page)).toHaveCount(0);
   });
 
+  // Fields load() is allowed to change before save() writes the fixture back.
+  // Anything else, including frontier.sites, resources, buildings, and cargo,
+  // must deep-equal the original file. The only current entry is the log:
+  // a successful load calls log('✦', 'Expedition resumed. Welcome back, Commander.'),
+  // which unshifts S.events and drops the oldest line once the log is 50 long.
+  const LOAD_MAY_CHANGE = ['events'];
+
+  function changedPaths(actual, expected, path = '') {
+    const found = [];
+    const bothObjects = actual && expected && typeof actual === 'object' && typeof expected === 'object';
+    if (!bothObjects || Array.isArray(actual) !== Array.isArray(expected)) {
+      if (!Object.is(actual, expected)) found.push(path || '(root)');
+      return found;
+    }
+    if (Array.isArray(expected)) {
+      if (actual.length !== expected.length) {
+        found.push(`${path}.length`);
+        return found;
+      }
+      expected.forEach((item, index) => found.push(...changedPaths(actual[index], item, `${path}[${index}]`)));
+      return found;
+    }
+    for (const key of new Set([...Object.keys(expected), ...Object.keys(actual)])) {
+      found.push(...changedPaths(actual[key], expected[key], path ? `${path}.${key}` : key));
+    }
+    return found;
+  }
+
   for (const name of ['fresh', 'mid', 'late']) {
-    test(`${name} round-trips through save()`, async ({page}) => {
-      const raw = readFixture(name);
-      await installSave(page, raw);
+    test(`${name} save matches the fixture except the load log`, async ({page}) => {
+      const fixture = JSON.parse(readFixture(name));
+      await installSave(page, readFixture(name));
       await openGame(page);
       await loadedState(page);
-      const first = await page.evaluate(key => {
+      const saved = await page.evaluate(key => {
+        if (typeof window.FARWAKE_TEST.save !== 'function') throw new Error('FARWAKE_TEST.save is missing');
         window.FARWAKE_TEST.save();
         return JSON.parse(localStorage.getItem(key));
       }, SAVE_KEY);
-      const next = await page.context().newPage();
-      await next.goto('/index.html');
-      await loadedState(next);
-      const second = await next.evaluate(key => {
-        window.FARWAKE_TEST.save();
-        return JSON.parse(localStorage.getItem(key));
-      }, SAVE_KEY);
-      // load() prepends "Expedition resumed" and keeps at most 50 log lines.
-      // Every other field must survive the second load unchanged.
-      const {events: firstEvents, ...firstRest} = first;
-      const {events: secondEvents, ...secondRest} = second;
-      expect(secondRest).toEqual(firstRest);
-      expect(secondEvents[0]).toMatchObject({icon: '✦', message: 'Expedition resumed. Welcome back, Commander.'});
-      expect(secondEvents.slice(1)).toEqual(firstEvents.slice(0, secondEvents.length - 1));
+      const roots = changedPaths(saved, fixture).map(path => path.split(/[.[]/)[0]);
+      const unexpected = [...new Set(roots)].filter(root => !LOAD_MAY_CHANGE.includes(root));
+      expect(unexpected, unexpected.join(', ')).toEqual([]);
+      expect(saved.events[0]).toMatchObject({
+        icon: '✦',
+        message: 'Expedition resumed. Welcome back, Commander.',
+        day: fixture.day
+      });
+      expect(saved.events.slice(1)).toEqual(fixture.events.slice(0, saved.events.length - 1));
+      expect(saved.frontier.sites).toEqual(fixture.frontier.sites);
+      expect(saved.resources).toEqual(fixture.resources);
+      expect(saved.buildings).toEqual(fixture.buildings);
+      expect(saved.colonists.map(person => person.carry ?? null)).toEqual(fixture.colonists.map(person => person.carry ?? null));
     });
   }
 
@@ -302,8 +330,15 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, newer);
     await openGame(page);
     await expect(recoveryVisible(page)).toBeVisible();
+    expect(await page.evaluate(() => typeof window.FARWAKE_TEST.save)).toBe('function');
+    expect(await page.evaluate(() => window.FARWAKE_TEST.state)).toBeNull();
+    await page.evaluate(() => {
+      window.FARWAKE_TEST.save();
+      window.dispatchEvent(new Event('pagehide'));
+      Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
     const stored = await page.evaluate(key => localStorage.getItem(key), SAVE_KEY);
     expect(stored).toBe(newer);
-    expect(await page.evaluate(() => window.FARWAKE_TEST.state)).toBeNull();
   });
 });

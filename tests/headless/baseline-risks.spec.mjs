@@ -65,20 +65,38 @@ test('records frontier door admission and technology-tree overflow', async ({pag
   console.log(`TREE_SCROLL ${info.project.name} ${JSON.stringify(tree)}`);
 });
 
-// Expected to fail on this build. save() does not read the key, so a running
-// v3 page replaces a v:4 blob. Remove test.fail when a newer expedition is preserved.
-test.fail('a running v3 page overwrites a newer expedition blob', async ({page}) => {
+test('FARWAKE_TEST.save is a function on a loaded expedition', async ({page}) => {
   await page.goto('/index.html');
   await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
-  const downgrade = await page.evaluate(key => {
+  expect(await page.evaluate(() => typeof window.FARWAKE_TEST.save)).toBe('function');
+});
+
+// The new key, the read-before-write guard, and the Newer expedition lock are
+// design-only (docs/qa/SAVE_VERSIONING.md). This test flips to a normal pass
+// when an already-open v3 page stops replacing a newer blob. A missing save
+// hook fails the assertion above test.fail(), so that is a real failure.
+test('read-before-write guard keeps a newer save on an already-open page', async ({page}) => {
+  await page.clock.install();
+  await page.goto('/index.html');
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+  const result = await page.evaluate(async key => {
+    const save = window.FARWAKE_TEST && window.FARWAKE_TEST.save;
+    if (typeof save !== 'function') return {hook: typeof save};
     const newer = JSON.stringify({v: 4, marker: 'newer-than-this-build'});
     localStorage.setItem(key, newer);
-    window.FARWAKE_TEST.save();
-    const after = localStorage.getItem(key);
-    let storedVersion = null;
-    try { storedVersion = JSON.parse(after).v; } catch { storedVersion = null; }
-    return {preservedNewer: after === newer, storedVersion};
+    save();
+    window.dispatchEvent(new Event('pagehide'));
+    Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    return {hook: 'function', planted: newer};
   }, SAVE_KEY);
-  expect(downgrade.preservedNewer).toBe(true);
-  expect(downgrade.storedVersion).toBe(4);
+  expect(result.hook).toBe('function');
+  await page.clock.runFor(15000);
+  const after = await page.evaluate(key => localStorage.getItem(key), SAVE_KEY);
+  let storedVersion = null;
+  try { storedVersion = JSON.parse(after).v; } catch { storedVersion = null; }
+  const implemented = after === result.planted && storedVersion === 4;
+  test.fail(!implemented, 'not implemented: running v3 save, pagehide, hidden visibility, and the 12s autosave still overwrite farwake_founders_alpha03_v1');
+  expect(after).toBe(result.planted);
+  expect(storedVersion).toBe(4);
 });

@@ -217,6 +217,19 @@ Entering the lock:
 
 The same listener is how a v4 tab notices a second v4 tab. It is not how a v3 tab is stopped. A v3 tab has no listener and no new-key writer. Its saves can still replace `farwake_founders_alpha03_v1`. They cannot replace `farwake_expedition_v4` or the `migrated_<stamp>` copy.
 
+### Rolling a v4 deploy back to v3
+
+A v3 build only reads `farwake_founders_alpha03_v1`. It does not look at `farwake_expedition_v4`. After a rollback, the player therefore sees the frozen pre-migration colony, while everything they did on v4 stays on the new key, unread and unwritten.
+
+Play during the rollback writes the v3 key. That can replace the frozen backup with a colony from the rolled-back build. It still cannot touch `farwake_expedition_v4` or `farwake_founders_alpha03_v1_migrated_<stamp>`, because those names are not in the v3 code.
+
+Recovery when v4 is deployed again:
+
+1. Startup reads `farwake_expedition_v4` first. If that blob is present and valid, load it. Do not prefer the v3 key over it. The player continues from the v4 progress, not from the colony the rollback was showing.
+2. If the live key is missing or corrupt, do not start a new world over it. Offer the `migrated_<stamp>` copy, then a file the player exported, then the current v3 key. Say which colony each one is: pre-migration snapshot, exported file, or whatever the rolled-back build last saved.
+3. Loading one of those does not delete the others. A bad choice can be undone by importing another copy.
+4. Leave the v3 key alone unless the player confirms that the rolled-back colony should replace the v4 expedition.
+
 ### What this design does not do
 
 It does not change builds that are already installed. Those builds keep writing the v3 key only. A v3 tab that is open during migration can still overwrite that one key. The live expedition and the `migrated_<stamp>` copy are the records it cannot reach.

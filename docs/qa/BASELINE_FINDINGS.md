@@ -60,12 +60,12 @@ The late fixture is an unseeded crew session: day 3, goal 3, finished shelter, g
 | `frontier-industry.html` | pass | Depot, meals, accumulator, reload |
 | `frontier-planet.html` | pass | Seeded sites, rig, observatory alignment |
 | `research.html` | pass | Study completion, not an instant unlock |
-| `candidate.html` | pass | 27 catalog cards, 12 ledger rows, energy study |
+| `candidate.html` | pass | Catalog and ledger counts come from the live building and resource lists |
 | `frontier-town.html` | fail | Upgraded cabin resident never goes inside. `QA-PLACEHOLDER-1` |
 | `living.html` | fail | Engineer enters the workshop; alloy does not rise. `QA-PLACEHOLDER-2` |
 | `check.html` | fail | Visual checks pass, then the same alloy failure. `QA-PLACEHOLDER-3` |
 
-`tests/visual-rebirth.js` now expects 27 catalog cards (9 founding blueprints plus 18 frontier buildings) and 12 ledger rows (5 founding materials plus 7 frontier materials). Energy research is started from the technology tree and finished with `frontierStudy`. The headless baseline probe only checks that the catalog and the branch list are non-empty, so a UI change on those screens does not fail the required Playwright job.
+`tests/visual-rebirth.js` checks that every founding blueprint and every `FRONTIER_BUILDINGS` id is in the catalog, and that the ledger has one row per resource key other than knowledge. Extra cards from a new founding blueprint do not fail that check. Energy research is started from the technology tree and finished with `frontierStudy`. The headless baseline probe only checks that the catalog and the branch list are non-empty, so a UI change on those screens does not fail the required Playwright job.
 
 `production.html` passing is the stronger signal for workshop output. `living.html` is an older setup that writes `resources` directly and then waits 16 simulated seconds.
 

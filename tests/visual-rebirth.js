@@ -10,10 +10,16 @@ async function verifyCandidate(frame) {
    frame.width=width;frame.height=height;
    await new Promise(resolve=>setTimeout(resolve,120));
    click('[data-nav="build"]');
-   check(d.querySelectorAll('[data-build]').length===27&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalog lists 27 blueprints (9 founding + 18 frontier) and fits '+width+'×'+height);
+   const frontierIds=Object.keys(game.FRONTIER_BUILDINGS);
+   const foundingIds=['shelter','garden','solar','workshop','shed','path','clinic','comms','battery'];
+   const shown=[...d.querySelectorAll('[data-build]')].map(el=>el.getAttribute('data-build'));
+   const sheet=d.querySelector('#sheet');
+   check(new Set(shown).size===shown.length && [...foundingIds,...frontierIds].every(id=>shown.includes(id)) && sheet.scrollWidth<=sheet.clientWidth+1,'catalog lists every founding and frontier blueprint ('+shown.length+') and fits '+width+'×'+height);
    click('[data-sheet="close"]');
    click('[data-resource-open]');
-   check(d.querySelectorAll('.ledger tbody tr').length===12&&d.querySelector('table').getBoundingClientRect().right<=width,'inventory lists 12 materials (5 founding + 7 frontier) and fits '+width+'×'+height);
+   const materialIds=Object.keys(s.resources).filter(id=>id!=='knowledge');
+   const table=d.querySelector('table');
+   check(d.querySelectorAll('.ledger tbody tr').length===materialIds.length && table.getBoundingClientRect().right<=width,'inventory lists each stored material ('+materialIds.length+') and fits '+width+'×'+height);
    click('[data-sheet="close"]');
  }
  click('[data-nav="build"]');click('[data-build="shed"]');
