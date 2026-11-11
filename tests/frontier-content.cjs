@@ -16,5 +16,5 @@ for(const k of Object.keys(data.materials))assert.ok(reachable.has(k),'reachable
 for(const [id,r] of Object.entries(data.recipes)){assert.ok(data.types[r.facility],id+' real facility');for(const k of [...Object.keys(r.cost),...Object.keys(r.output)])assert.ok(data.materials[k],id+' known material '+k)}
 JSON.parse(read('manifest.webmanifest'));const policy=JSON.parse(read('vercel.json'));assert.equal(policy.git.deploymentEnabled['beyond-the-frontier-rc'],false);
 for(const [,path] of source.matchAll(/<script src="([^"]+)"/g))assert.ok(fs.existsSync(root+'/'+path),'script asset '+path);
-cp.execFileSync('python',['build.py','--check'],{cwd:root,stdio:'inherit'});
+cp.execFileSync('python3',['build.py','--check'],{cwd:root,stdio:'inherit'});
 console.log(Object.keys(data.techs).length+' technologies: no prerequisite cycles or missing unlocks; all physical materials reachable; assets, manifest and deployment hold valid.');
