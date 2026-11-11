@@ -221,7 +221,7 @@ function featureFromPoint(pos){const x=Math.floor(pos.x),y=Math.floor(pos.y);let
  let best=null,score=Infinity;for(const fy of [y,y+1])for(const fx of [x-1,x,x+1]){const f=featureAt(fx,fy);if(!f||f.type!=='tree'||!fog[index(f.x,f.y)])continue;const dx=pos.x-(f.x+.5),dy=pos.y-(f.y+.10);if(Math.abs(dx)<.48&&dy>-.65&&dy<.47){const s=dx*dx+dy*dy;if(s<score){score=s;best=f}}}return best;
 }
 
-function walkable(x,y){if(!inMap(x,y)||terrain[index(x,y)].kind==='water')return false;const b=buildingAt(x,y);if(b&&b.type!=='path')return false;return true}
+function walkable(x,y){if(!inMap(x,y)||terrain[index(x,y)].kind==='water')return false;const b=buildingAt(x,y);if(b&&!['path','road'].includes(b.type))return false;return true}
 function clearFootprint(x,y,w,h){if(editorTarget(x,y,w,h))return false;if(!inMap(x,y)||!inMap(x+w-1,y+h-1))return false;for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++){let xx=x+dx,yy=y+dy;if(terrain[index(xx,yy)].kind==='water'||terrain[index(xx,yy)].kind==='stone'||buildingAt(xx,yy)||featureAt(xx,yy)||pileAt(xx,yy))return false;}return true}
 function canAfford(type){const t=TYPES[type];return Object.entries(t.cost).every(([r,n])=>freightAvailable(r)>=n)}
 function accessible(type){const t=TYPES[type];return t.unlock||S.research.includes(t.tech)}
@@ -260,7 +260,7 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  return null;
 }
 
-function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
+function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(buildingAt(Math.floor(p.x),Math.floor(p.y))?.type==='road'?1.25:1)*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
@@ -343,7 +343,7 @@ function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,
  for(const f of features)if(f.x>=left&&f.x<right&&f.y>=top&&f.y<bottom&&fog[index(f.x,f.y)]){FarwakeWorkFX.feature(ctx,f,time,S.minute);if(S.designations?.[f.id])renderWorkMarker(f)}
  for(const b of S.buildings)if(b.finished&&b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)FarwakeBuildings.shadow(ctx,b.type,b.x*TS,b.y*TS,b.w*TS,b.h*TS,S.minute,b);
  if(S.ruin&&fog[index(S.ruin.x,S.ruin.y)])FarwakeLandscape.ruin(ctx,S.ruin,time);
- for(const b of S.buildings.filter(b=>b.type!=='path').sort((a,b)=>a.y-b.y))if(b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)renderBuilding(b,time);
+ for(const b of S.buildings.filter(b=>!['path','road'].includes(b.type)).sort((a,b)=>a.y-b.y))if(b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)renderBuilding(b,time);
  for(const pile of (S.piles||[]))if(pile.x>=left&&pile.x<right&&pile.y>=top&&pile.y<bottom&&fog[index(pile.x,pile.y)])FarwakePeople.pile(ctx,pile,TS,selectedPile===pile.id,camera.z);
  for(const p of [...S.colonists].sort((a,b)=>a.y-b.y))if(p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom){
    const opacity=FarwakeDoors.visible(p);
@@ -529,7 +529,8 @@ function housingPermanent(b){return b.type!=='camp'&&!FRONTIER_BUILDINGS[b.type]
 // Bed allocation is persistent (p.home). Current occupancy is driven by a visit.
 function housingBeds(b) {
   if(!b?.finished||b.editOrder)return 0;
-  return (b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0)+(b.level>1?b.level-1:0);
+  const base=b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0;
+  return base?base+(b.level>1?b.level-1:0):0;
 }
 function housingName(b){
   return b?(TYPES[b.type]?.name||'Expedition camp')+' · '+b.x+', '+b.y:'No bed assigned';
@@ -585,8 +586,8 @@ function housingRestTarget(p){
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
   const permanent=b&&housingPermanent(b), temporary=b&&!permanent;
-  const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
-  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic?1.2:1),0,100);
+  const clinic=finished('clinic').find(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8+2*((c.level||1)-1));
+  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic&&power().supply>=power().used?1.2+.1*((clinic.level||1)-1):1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){
@@ -797,13 +798,13 @@ function freightControl(e){
 
 // Settlement editor state is a local preview; only confirmed orders are saved.
 let editor = null;
-const EDIT_NAMES = {path:'Lay stone path', remove:'Remove paths', mark:'Mark field work', clear:'Cancel field orders', move:'Relocate structure'};
+const EDIT_NAMES = {path:'Lay stone path', road:'Lay constructed road', remove:'Remove paths', mark:'Mark field work', clear:'Cancel field orders', move:'Relocate structure'};
 function editorButton(action,label,id='',primary=false) {
   return '<button type="button" class="'+(primary?'primary':'secondary')+'" data-editor="'+action+'" data-building="'+id+'">'+label+'</button>';
 }
 function editorToolbar() {
   return '<div class="sectioncap">Map tools</div><div class="buttongroup">'+
-    ['path','remove','mark','clear'].map(k=>editorButton(k,EDIT_NAMES[k])).join('')+'</div>';
+    ['path',...(S.research.includes('civilworks')?['road']:[]),'remove','mark','clear'].map(k=>editorButton(k,EDIT_NAMES[k])).join('')+'</div>';
 }
 function editorControls(b) {
   if(!b||!TYPES[b.type])return '<p class="tiny">Permanent expedition infrastructure.</p>';
@@ -845,7 +846,7 @@ function editorPoint(e) {
   return {x:clamp(Math.floor(p.x),0,VW-1),y:clamp(Math.floor(p.y),0,VH-1)};
 }
 function editorMarkPoint(point,first) {
-  if(editor.mode==='path'||editor.mode==='remove')editorConnect(editor.cells,point);
+  if(['path','road','remove'].includes(editor.mode))editorConnect(editor.cells,point);
   else if(editor.mode==='move'){editor.end=point}
   else{if(first)editor.start=point;editor.end=point}
 }
@@ -871,13 +872,13 @@ function editorEnd(e) {
 function editorPlan() {
   if(!editor)return {valid:false};
   const mode=editor.mode;
-  if(mode==='path'||mode==='remove'){
+  if(['path','road','remove'].includes(mode)){
     const add=editor.cells.filter(q=>!buildingAt(q.x,q.y));
-    const paths=editor.cells.map(q=>buildingAt(q.x,q.y)).filter(b=>b?.type==='path'&&!b.editOrder);
+    const paths=editor.cells.map(q=>buildingAt(q.x,q.y)).filter(b=>b&&['path','road'].includes(b.type)&&!b.editOrder);
     if(mode==='remove')return {paths,valid:paths.length>0,description:paths.length+' path tiles to lift'};
-    const blocked=editor.cells.some(q=>!fog[index(q.x,q.y)]||(buildingAt(q.x,q.y)?.type!=='path'&&!clearFootprint(q.x,q.y,1,1)));
-    const cost=add.length*TYPES.path.cost.scrap;
-    return {add,valid:!blocked&&cost>0&&freightAvailable('scrap')>=cost,description:add.length+' new tiles · '+cost+' salvage'+(blocked?' · blocked route':freightAvailable('scrap')<cost?' · insufficient salvage':'')};
+    const blocked=editor.cells.some(q=>!fog[index(q.x,q.y)]||(!['path','road'].includes(buildingAt(q.x,q.y)?.type)&&!clearFootprint(q.x,q.y,1,1)));
+    const kind=mode==='road'?'composite':'scrap',cost=add.length*TYPES[mode].cost[kind];
+    return {add,valid:!blocked&&cost>0&&freightAvailable(kind)>=cost,description:add.length+' new tiles · '+cost+' '+MATERIALS[kind].name.toLowerCase()+(blocked?' · blocked route':freightAvailable(kind)<cost?' · insufficient salvage':'')};
   }
   if(mode==='move'){
     const b=S.buildings.find(b=>b.id===editor.bid),d=editor.end;
@@ -901,10 +902,10 @@ function editorPanel(){
 }
 function editorConfirm(){
   const plan=editorPlan();if(!plan.valid)return;
-  if(editor.mode==='path'){
+  if(['path','road'].includes(editor.mode)){
     for(const q of plan.add){
-      const b={id:uid++,type:'path',x:q.x,y:q.y,w:1,h:1,progress:0,finished:false};
-      if(!freightReserve(TYPES.path.cost,b))break;
+      const b={id:uid++,type:editor.mode,x:q.x,y:q.y,w:1,h:1,progress:0,finished:false};
+      if(!freightReserve(TYPES[editor.mode].cost,b))break;
       S.buildings.push(b);
     }
   }else if(editor.mode==='remove'){
@@ -919,7 +920,7 @@ function editorConfirm(){
   }
   notice(plan.description);editor=null;renderUI(true);save();
 }
-function editorWorkTime(b){return b.type==='path'?1.6:Math.max(5,TYPES[b.type].time*.42)}
+function editorWorkTime(b){return ['path','road'].includes(b.type)?1.6:Math.max(5,TYPES[b.type].time*.42)}
 function editorEvacuate(b) {
   for(const p of S.colonists){
     const related=p.visit?.building===b.id||p.task?.id===b.id||(p.task?.x===b.x&&p.task?.y===b.y);
@@ -963,7 +964,7 @@ function editorWork(p,work){
     Object.assign(b,{x:dest.x,y:dest.y,finished:false,progress:0,reservedMaterials:{},siteStock:{},reconstructing:true,buildPaused:false});
     log('',TYPES[b.type].name+' dismantled. The crew will rebuild it at the marked site.');
   }else{
-    const refund=Object.fromEntries(Object.entries(TYPES[b.type].cost).map(([k,n])=>[k,b.type==='path'?n:Math.floor(n*.5)]));
+    const refund=Object.fromEntries(Object.entries(TYPES[b.type].cost).map(([k,n])=>[k,['path','road'].includes(b.type)?n:Math.floor(n*.5)]));
     S.buildings=S.buildings.filter(q=>q!==b);
     delete b.editOrder;freightRefund(refund,b);if(selectedBuilding===b.id)selectedBuilding=null;
     log('',TYPES[b.type].name+' dismantled. Salvage left on site.');
@@ -979,21 +980,22 @@ function editorOverlay() {
   for(const b of S.buildings)if(b.editOrder?.dest)tile(b.editOrder.dest.x,b.editOrder.dest.y,b.w,b.h);
   if(editor){
     if(editor.mode==='move'&&editor.end){const b=S.buildings.find(v=>v.id===editor.bid);if(b)tile(editor.end.x,editor.end.y,b.w,b.h,!editorPlan().valid)}
-    else if(editor.cells.length){for(const q of editor.cells)tile(q.x,q.y,1,1,editor.mode==='remove'||(!clearFootprint(q.x,q.y,1,1)&&buildingAt(q.x,q.y)?.type!=='path'))}
+    else if(editor.cells.length){for(const q of editor.cells)tile(q.x,q.y,1,1,editor.mode==='remove'||(!clearFootprint(q.x,q.y,1,1)&&!['path','road'].includes(buildingAt(q.x,q.y)?.type)))}
     else if(editor.start&&editor.end){const a=editor.start,z=editor.end;tile(Math.min(a.x,z.x),Math.min(a.y,z.y),Math.abs(a.x-z.x)+1,Math.abs(a.y-z.y)+1)}
   }
   ctx.restore();
 }
 function editorPaths(time,left,top,right,bottom){
-  const paths=S.buildings.filter(b=>b.type==='path'), laid=new Set(paths.filter(b=>b.finished).map(b=>index(b.x,b.y)));
+  const paths=S.buildings.filter(b=>['path','road'].includes(b.type)), laid=new Set(paths.filter(b=>b.finished).map(b=>index(b.x,b.y)));
   for(const b of paths){
     if(b.x<left||b.x>=right||b.y<top||b.y>=bottom)continue;
     if(!b.finished){renderBuilding(b,time);continue}
     const x=b.x*TS,y=b.y*TS;
-    ctx.fillStyle='#897d66';ctx.fillRect(x+6,y+6,20,20);ctx.fillStyle='#b0a087';ctx.fillRect(x+7,y+7,17,17);
+    ctx.fillStyle=b.type==='road'?'#535d5b':'#897d66';ctx.fillRect(x+6,y+6,20,20);ctx.fillStyle=b.type==='road'?'#87918b':'#b0a087';ctx.fillRect(x+7,y+7,17,17);
     for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])if(inMap(b.x+dx,b.y+dy)&&laid.has(index(b.x+dx,b.y+dy))){
       ctx.fillRect(x+(dx<0?0:dx>0?20:7),y+(dy<0?0:dy>0?20:7),dx?12:17,dy?12:17);
     }
+    if(b.type==='road'){ctx.fillStyle='#bbab79';ctx.fillRect(x+14,y+12,2,7)}
     for(let i=0;i<3;i++){ctx.fillStyle=i%2?'#897e69':'#c4b9a0';ctx.fillRect(x+7+Math.floor(hash(b.x,b.y,i)*12),y+9+i*5,4,1);}
   }
 }

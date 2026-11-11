@@ -2,7 +2,8 @@ function housingPermanent(b){return b.type!=='camp'&&!FRONTIER_BUILDINGS[b.type]
 // Bed allocation is persistent (p.home). Current occupancy is driven by a visit.
 function housingBeds(b) {
   if(!b?.finished||b.editOrder)return 0;
-  return (b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0)+(b.level>1?b.level-1:0);
+  const base=b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0;
+  return base?base+(b.level>1?b.level-1:0):0;
 }
 function housingName(b){
   return b?(TYPES[b.type]?.name||'Expedition camp')+' · '+b.x+', '+b.y:'No bed assigned';
@@ -58,8 +59,8 @@ function housingRestTarget(p){
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
   const permanent=b&&housingPermanent(b), temporary=b&&!permanent;
-  const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
-  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic?1.2:1),0,100);
+  const clinic=finished('clinic').find(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8+2*((c.level||1)-1));
+  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic&&power().supply>=power().used?1.2+.1*((clinic.level||1)-1):1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){
