@@ -1,0 +1,17 @@
+{
+  "name": "farwake-perf-harness",
+  "private": true,
+  "version": "1.0.0",
+  "description": "External performance harness for FARWAKE. Loads the built game and does not modify it.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "bench": "node run-headless.mjs",
+    "check": "node run-headless.mjs --check-only"
+  },
+  "dependencies": {
+    "playwright-core": "1.65.0"
+  }
+}
