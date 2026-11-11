@@ -1,6 +1,12 @@
 // node tests/housing.cjs
 const vm=require('node:vm'), fs=require('node:fs'), assert=require('node:assert/strict');
-const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
+// housing.inc.js reads FRONTIER_BUILDINGS, which frontier.inc.js installs on the
+// real page. This harness only evaluates buildings.js, doors.js and housing.inc.js.
+// On foundations-command-center, housingBeds still used a shelter/camp ternary and
+// this file passed. On integration, housingPermanent throws
+// ReferenceError: FRONTIER_BUILDINGS is not defined before any assertion runs.
+// An empty table keeps those founding-structure assertions on shelter and camp.
+const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),FRONTIER_BUILDINGS:{}});
 const read=file=>fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8');
 for(const file of ['buildings.js','doors.js']){vm.runInContext(read(file),context);Object.assign(context,context.window)}
 vm.runInContext(read('housing.inc.js'),context);

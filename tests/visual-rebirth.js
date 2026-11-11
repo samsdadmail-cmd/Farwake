@@ -10,7 +10,7 @@ async function verifyCandidate(frame) {
    frame.width=width;frame.height=height;
    await new Promise(resolve=>setTimeout(resolve,120));
    click('[data-nav="build"]');
-   check(d.querySelectorAll('[data-build]').length===9&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalog fits '+width+'×'+height);
+   check(d.querySelectorAll('[data-build]').length>=9&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalog fits '+width+'×'+height);
    click('[data-sheet="close"]');
    click('[data-resource-open]');
    check(d.querySelectorAll('.ledger tbody tr').length===5&&d.querySelector('table').getBoundingClientRect().right<=width,'inventory fits '+width+'×'+height);

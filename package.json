@@ -1,0 +1,13 @@
+{
+  "name": "farwake",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test --config=tests/playwright.config.js",
+    "test:suites": "node tests/run-browser-suites.mjs",
+    "generate:saves": "node tests/generate-save-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [farwake/integration, main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Assemble index.html and fail if it drifts
+        run: |
+          python3 build.py
+          git diff --exit-code -- index.html
+      - name: Housing regression
+        run: node tests/housing.cjs
+      - name: Save fixture sanity
+        run: node tests/fixture-sanity.cjs
+      - name: Install Playwright browsers
+        run: npm ci && npx playwright install --with-deps chromium webkit
+      - name: Headless smoke, save loads, and baseline probes
+        run: npm test
+
+  legacy-browser-suites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Playwright Chromium
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Run existing verify suites
+        run: npm run test:suites
