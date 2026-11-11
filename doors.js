@@ -2,11 +2,14 @@
 // to the actual opening in the sprite. A portal is never a collision obstacle.
 window.FarwakeDoors = (() => {
   const assignments = new WeakMap(), doors = new WeakMap();
-  const indoorJobs = new Set(['rest','eat','research','craft','haul_dropoff']);
+  // Only a finished, authored interior can host its listed activities.
+  const activities = {shelter:['rest'], camp:['rest'], shed:['haul_dropoff','eat'],
+    workshop:['craft'], lander:['research'], clinic:['treat']};
+  function admits(b,job){return !!(b?.finished && FarwakeBuildings.entrance(b) && activities[b.type]?.includes(job));}
 
   function buildingFor(task, buildings) {
-    if(!task || !indoorJobs.has(task.type)) return null;
-    return buildings.find(b=>b.finished && (task.id!=null ? b.id===task.id : b.x===task.x && b.y===task.y)) || null;
+    if(!task||task.outdoors) return null;
+    return buildings.find(b=>admits(b,task.type) && (task.id!=null ? b.id===task.id : b.x===task.x && b.y===task.y)) || null;
   }
   function atTile(p,g) { return Math.floor(p.x)===g.x && Math.floor(p.y)===g.y; }
   function destination(from, tile, findPath) {
@@ -118,19 +121,33 @@ window.FarwakeDoors = (() => {
   function resume(p,buildings) {
     const saved=p.indoorStay;
     delete p.indoorStay;
-    if(!saved||!indoorJobs.has(saved.job))return false;
+    if(!saved)return false;
     const b=buildings.find(b=>b.finished&&b.id===saved.building),port=b&&portalFor(b);
-    if(!port || (saved.job==='haul_dropoff'&&!p.carry))return false;
+    if(!admits(b,saved.job) || !port || (saved.job==='haul_dropoff'&&!p.carry))return false;
     p.x=port.x;p.y=port.y-.18;p.path=[];
     p.task={type:saved.job,id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
     p.action=Number.isFinite(saved.action)?Math.max(0,saved.action):0;
     p.visit={...port,job:saved.job,stage:'inside'};
     return true;
   }
-  function restore(p,buildings) {
+  function restore(p,buildings,walkable) {
     const v=p.visit;if(!v)return;
     const b=buildings.find(b=>b.id===v.building),port=b&&portalFor(b);
-    if(port&&v.stage!=='approach'){p.x=port.streetX;p.y=port.streetY;}
+    if(b && v.stage!=='approach'){
+      // Old Living World saves can place a person inside an outdoor pallet.
+      // Return them to an available exterior tile before resuming the job.
+      let street=port && {x:port.streetX,y:port.streetY};
+      if(!street || (walkable && !walkable(Math.floor(street.x),Math.floor(street.y)))){
+        const options=[];
+        for(let y=b.y-1;y<=b.y+b.h;y++)for(let x=b.x-1;x<=b.x+b.w;x++){
+          if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)continue;
+          if(!walkable || walkable(x,y))options.push({x:x+.5,y:y+.5});
+        }
+        options.sort((a,z)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-z.x,p.y-z.y));
+        street=options[0];
+      }
+      if(street){p.x=street.x;p.y=street.y;}
+    }
     delete p.visit;
   }
   return {route,assigned,sync,update,visible,state,occupants,restore,saveVisit,resume,portalFor};

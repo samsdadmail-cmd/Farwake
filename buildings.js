@@ -14,7 +14,7 @@ window.FarwakeBuildings = (() => {
     const home=homeDoors[variant(b)];
     const dims=({shelter:[...home,10,14,'hinge'],workshop:[14,38,30,13,'roller'],
       shed:[21,37,31,15,'roller'],clinic:[42,40,10,14,'slide'],lander:[43,60,10,15,'split'],
-      camp:[77,36,10,14,'flap'],supplies:[24,42,16,12,'gate']})[b.type];
+      camp:[77,36,10,14,'flap']})[b.type];
     return dims&&{x:dims[0],y:dims[1],w:dims[2],h:dims[3],kind:dims[4]};
   }
   function plate(type, night,style=0) {
@@ -253,7 +253,7 @@ window.FarwakeBuildings = (() => {
         ctx.translate(x,y);ctx.scale(w/sprite.width,h/sprite.height);
         if(port){
           const {x:px,y:py,w:pw,h:ph,kind}=port,open=door.openness;
-          if(open>.01||kind==='gate'){
+          if(open>.01){
             ctx.fillStyle=night&&door.occupied?'#755831':'#302e28';ctx.fillRect(px,py,pw,ph);
             const fraction=1-open;
             ctx.fillStyle=kind==='hinge'?'#877350':kind==='flap'?'#9d845c':'#89918a';
