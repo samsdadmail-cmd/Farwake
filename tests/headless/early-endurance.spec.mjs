@@ -10,6 +10,10 @@ test('unattended early colony keeps rendering, simulating and saving through two
  const errors=[];page.on('pageerror',e=>errors.push(e.stack||e.message));
  await page.clock.install();
  await page.addInitScript(()=>{
+   // 30 Hz driver for software-rendered CI; unchanged game frame(), six-minute
+   // duration, simulation/UI/save paths and assertions. Native-RAF short tests
+   // separately cover the physical freeze's terrain and camera interactions.
+   window.requestAnimationFrame=callback=>setTimeout(()=>callback(performance.now()),1000/30);
    window.__freezeProbe={frames:0,ticks:0,phase:'boot',writes:0,canvases:0};
    const create=document.createElement.bind(document);
    document.createElement=function(tag,...args){if(String(tag).toLowerCase()==='canvas')__freezeProbe.canvases++;return create(tag,...args)};
