@@ -4,6 +4,17 @@ window.FarwakeLandscape = (() => {
   'use strict';
   const TILE = 32, CHUNK = 8;
   let currentMap, seedNumber;
+  // Animated patches are small, deterministic samples attached to terrain chunks.
+  const budgets={
+    performance:{patches:8,rain:22,mist:0},balanced:{patches:20,rain:48,mist:1},
+    cinematic:{patches:34,rain:78,mist:2}
+  };
+  let budget=budgets.balanced,reduced=false,weather='clear',thunderCallback,lastThunder;
+  const fields=new Map();
+  function configure(preset,reduceMotion){
+    budget=budgets[String(preset).toLowerCase()]||budgets.balanced;
+    reduced=Boolean(reduceMotion);
+  }
   const chunks = new Map(), plants = new Map();
   function hash(x, y, salt = 0) {
     let n = Math.imul(x ^ salt, 1597334677) ^ Math.imul(y, 3812015801);
@@ -86,26 +97,100 @@ window.FarwakeLandscape = (() => {
     }
     return out;
   }
-  function ground(c,map,width,height,seed,left,top,right,bottom,time){
+  function samples(cx,cy,map,width,height){
+    const anchors=[];
+    for(let i=0;i<34;i++){
+      const x=(cx*8+hash(i,cx,seedNumber^cy)*8)*TILE;
+      const y=(cy*8+hash(i,cy,seedNumber^cx^958)*8)*TILE;
+      const tx=Math.floor(x/TILE),ty=Math.floor(y/TILE);
+      if(tx>=width||ty>=height)continue;
+      const index=ty*width+tx;
+      anchors.push({x,y,index,kind:map[index].kind,moisture:map[index].moisture,
+        phase:hash(i,index,361)*Math.PI*2,frequency:.5+hash(i,index,114)});
+    }
+    return anchors;
+  }
+  function breeze(x,y,seconds){
+    return (Math.sin(seconds*1.2+x*.018+y*.011)*.66+
+      Math.sin(seconds*.73-x*.006+y*.031)*.34)*(weather==='wind'?1.7:weather==='rain'?1.24:.63);
+  }
+  const sprites=new Map();
+  function halo(kind){
+    if(sprites.has(kind))return sprites.get(kind);
+    const fire=kind==='firefly',size=fire?20:96,out=canvas(size,size),ctx=out.getContext('2d');
+    const radius=size/2,g=ctx.createRadialGradient(radius,radius,0,radius,radius,radius);
+    g.addColorStop(0,fire?'#fff6ae':'#c3d9ce');
+    g.addColorStop(.15,fire?'#dfed98cf':'#c3d9cebd');
+    g.addColorStop(.55,fire?'#acc97136':'#c3d9ce62');
+    g.addColorStop(1,fire?'#b5db7000':'#c3d9ce00');
+    ctx.fillStyle=g;ctx.fillRect(0,0,size,size);sprites.set(kind,out);return out;
+  }
+  function animatePatch(c,anchors,seconds,solar,fog){
+    const count=Math.min(anchors.length,budget.patches);
+    const night=Math.max(0,Math.min(1,(.18-solar)*3));
+    const morning=Math.max(0,1-Math.abs(solar-.1)*4);
+    for(let i=0;i<count;i++){
+      const a=anchors[i];if(fog&&!fog[a.index])continue;
+      const local=seconds*a.frequency+a.phase;
+      if(a.kind==='water'){
+        if(reduced&&i%2)continue;
+        const phase=local*.7,offset=Math.sin(phase)*3;
+        const length=Math.max(1,Math.round(4+Math.cos(phase)*3));
+        box(c,a.x+offset,a.y,length,1,'#b1d9c78c');
+        box(c,a.x+offset+length,a.y-1,3,1,'#9acab646');
+        if(i<budget.mist&&(morning>.1||weather==='rain')){
+          c.globalAlpha=.13*(weather==='rain'?1:morning);
+          c.drawImage(halo('mist'),a.x-55+offset*2,a.y-14,110,27);c.globalAlpha=1;
+        }
+        continue;
+      }
+      if(a.kind!=='grass')continue;
+      if(!reduced){
+        const lean=breeze(a.x,a.y,seconds)*2;
+        c.strokeStyle=a.moisture>.5?'#92a771ad':'#b0ae768a';c.lineWidth=1;c.beginPath();
+        for(let j=0;j<4;j++){
+          const base=a.x+j*1.6;
+          c.moveTo(base,a.y);c.quadraticCurveTo(base+1,a.y-3,base+lean+(j-1)*.9,a.y-4-j%3);
+        }
+        c.stroke();
+      }
+      if(i%7===0&&night&&weather!=='rain'&&Math.hypot(a.x/TILE-28,a.y/TILE-28)>3){
+        const glow=night*(.18+.82*Math.max(0,Math.sin(local*.82+Math.sin(local*.24)))**2);
+        if(glow>.025){
+          const x=a.x+Math.sin(local*.37)*7+Math.sin(local*.92)*2;
+          const y=a.y-5+Math.cos(local*.41)*4+Math.sin(local*.6)*2;
+          c.globalAlpha=glow;c.drawImage(halo('firefly'),x-5,y-5,10,10);c.globalAlpha=1;
+        }
+      }else if(!reduced&&i%9===2&&!night&&weather!=='rain'){
+        const progress=(local*.08)%1,leaf=weather==='wind';
+        c.globalAlpha=Math.sin(progress*Math.PI)*.64;
+        box(c,a.x+progress*(leaf?40:13),a.y-progress*9+Math.sin(local)*2,leaf?3:1,1,leaf?'#d9a062':'#f1e4a8');
+        c.globalAlpha=1;
+      }
+    }
+  }
+  function ground(c,map,width,height,seed,left,top,right,bottom,time,environment={}){
     if(map!==currentMap){
-      currentMap=map; chunks.clear(); seedNumber=0;
+      currentMap=map; chunks.clear(); fields.clear();lastThunder=null;seedNumber=0;
       for(const ch of String(seed))seedNumber=(Math.imul(seedNumber,31)+ch.charCodeAt(0))|0;
     }
-    c.imageSmoothingEnabled=false;
+    const state=environment.state;
+    weather=state?.weather||'clear';thunderCallback=environment.onThunder;
+    const solar=Math.sin(((state?.minute??720)-360)*Math.PI/720);
+    const seconds=reduced?0:time*.001;
+    c.save();c.imageSmoothingEnabled=false;
     for(let cy=top>>3;cy<Math.ceil(bottom/CHUNK);cy++)for(let cx=left>>3;cx<Math.ceil(right/CHUNK);cx++){
-      const key=cx+':'+cy;
-      if(!chunks.has(key))chunks.set(key,bake(map,width,height,cx,cy));
+      const key=cy*1000+cx;
+      if(!chunks.has(key)){
+        chunks.set(key,bake(map,width,height,cx,cy));fields.set(key,samples(cx,cy,map,width,height));
+      }
       const w=Math.min(CHUNK,width-cx*CHUNK)*TILE,h=Math.min(CHUNK,height-cy*CHUNK)*TILE;
       c.drawImage(chunks.get(key),0,0,w,h,cx*256,cy*256,w,h);
     }
-    for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
-      const tile=map[y*width+x];
-      if(tile.kind!=='water'||tile.variation<.45)continue;
-      const phase=time*.0014+tile.variation*24;
-      const px=x*TILE+6+Math.round(5*Math.sin(phase)),py=y*TILE+6+Math.floor(tile.variation*19);
-      box(c,px,py,Math.round(5+3*Math.cos(phase)),1,'#a9d6c579');
-      box(c,px+6,py-1,3,1,'#7bb7af88');
-    }
+    // Draw animation after all adjacent cached surfaces so drifting detail crosses edges.
+    for(let cy=top>>3;cy<Math.ceil(bottom/CHUNK);cy++)for(let cx=left>>3;cx<Math.ceil(right/CHUNK);cx++)
+      animatePatch(c,fields.get(cy*1000+cx),seconds,solar,environment.fog);
+    c.restore();
   }
   function pine(c,variant){
     const cx=28, base=55, height=39+variant*2;
@@ -160,8 +245,11 @@ window.FarwakeLandscape = (() => {
     const sun=Math.cos((minute-360)*Math.PI/720);
     c.fillStyle='#192d3544';c.beginPath();
     c.ellipse(x+sun*(f.type==='tree'?10:4),y+2,f.type==='tree'?11+Math.abs(sun)*8:11,4,-sun*.24,0,2*Math.PI);c.fill();
-    const sway=f.type==='tree'?Math.round(Math.sin(time*.0012+variant)*.75):0;
-    c.drawImage(plants.get(key),x-28+sway,y-55);
+    if(f.type==='tree'&&!reduced){
+      const bend=breeze(x,y,time*.001)*.045;
+      c.save();c.translate(x,y);c.transform(1,0,bend,1,0,0);
+      c.drawImage(plants.get(key),-28,-55);c.restore();
+    }else c.drawImage(plants.get(key),x-28,y-55);
   }
   function ruin(c,r,time){
     const x=r.x*32+16,y=r.y*32+19;
@@ -190,7 +278,7 @@ window.FarwakeLandscape = (() => {
       box(c,0,0,w,h,'rgba(17,31,58,'+dark*.59+')');
       c.globalCompositeOperation='screen';
       for(const b of state.buildings){
-        if(!b.finished||!['shelter','camp','lander','shed','clinic','workshop','supplies'].includes(b.type))continue;
+        if(!b.finished||!['lander','supplies','comms'].includes(b.type))continue;
         const x=sx((b.x+b.w*.51)*32),y=sy((b.y+b.h*.78)*32),radius=44*camera.z;
         if(x+radius<0||x-radius>w||y+radius<0||y-radius>h)continue;
         const glow=c.createRadialGradient(x,y,1,x,y,radius);
@@ -201,18 +289,33 @@ window.FarwakeLandscape = (() => {
     }
     if(state.weather==='rain'){
       box(c,0,0,w,h,'#34475632');c.strokeStyle='#d9ede83d';c.lineWidth=1;c.beginPath();
-      for(let i=0;i<65;i++){
+      for(let i=0;i<(reduced?0:budget.rain);i++){
         const x=(i*157+time*.09)%(w+32)-16,y=(i*103+time*.28)%(h+36)-18;
         c.moveTo(x,y);c.lineTo(x-4,y+12);
       }
       c.stroke();
-    }else if(state.weather==='wind'){
-      for(let i=0;i<18;i++){
+      // Storm cells pass only during rain. Seeded timing survives a reload without
+      // replaying a backlog of thunder or generating rapid consecutive flashes.
+      const slot=Math.floor(state.minute/180);
+      const stormKey=state.day+':'+slot;
+      const offset=20+hash(state.day,slot,seedNumber)*130;
+      const age=state.minute-slot*180-offset;
+      if(hash(slot,state.day,seedNumber^661)>.5 && age>=0&&age<5){
+        if(!reduced){
+          c.globalAlpha=.10*Math.sin(Math.PI*age/5);
+          box(c,0,0,w,h,'#c8d4de');c.globalAlpha=1;
+        }
+        if(age>=2&&lastThunder!==stormKey){
+          lastThunder=stormKey;thunderCallback?.();
+        }
+      }
+    }else if(state.weather==='wind'&&!reduced){
+      for(let i=0;i<Math.ceil(budget.patches/3);i++){
         const x=(i*137+time*.055)%(w+14)-7,y=(i*97+Math.sin(time*.002+i)*8+h)%h;
         box(c,x,y,3,1,'#eed49791');
       }
     }
     c.restore();
   }
-  return {ground,feature,ruin,light};
+  return {configure,ground,feature,ruin,light};
 })();
