@@ -3,7 +3,7 @@
 // directory; nothing in the checkout is rewritten.
 import {chromium} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
-import {mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
+import {mkdtemp, readFile, writeFile, rm, mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -29,6 +29,7 @@ const REQUIRED = new Set([
   'frontier-ui.html',
   'frontier-geology.html',
   'frontier-fresh.html',
+  'journey.html',
   'regression.html',
   'research.html',
   'candidate.html',
@@ -152,6 +153,16 @@ try {
     page.on('pageerror', error => console.log(`PAGEERROR ${file} ${error.message}`));
     const result = await runSuite(page, servers[group].url, file, timeout);
     results.push(result);
+    if (file === 'journey.html') {
+      const artifacts=path.join(root,'test-results');await mkdir(artifacts,{recursive:true});
+      await writeFile(path.join(artifacts,'journey.log'),result.text);
+      const checkpoint=await page.evaluate(() => {
+        const frame=document.querySelector('iframe'),w=frame.contentWindow,g=w.FARWAKE_TEST;
+        g.save();const slot=new URL(frame.src).searchParams.get('slot');
+        return {save:JSON.parse(w.localStorage.getItem('farwake_qa_'+slot)),live:{colonists:g.state.colonists,buildings:g.state.buildings,piles:g.state.piles}};
+      });
+      await writeFile(path.join(artifacts,'journey-checkpoint.json'),JSON.stringify(checkpoint,null,2));
+    }
     const tail = result.text.trim().split('\n').slice(-8).join('\n');
     console.log(`\n== ${result.status.toUpperCase()} ${file} (${(result.ms / 1000).toFixed(1)}s) ==\n${tail}\n`);
     await context.close();

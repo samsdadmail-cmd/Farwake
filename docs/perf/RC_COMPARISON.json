@@ -1,0 +1,357 @@
+{
+  "context": "Sequential, same host/browser; one 15-second late-colony sample per revision, 4x CPU throttle. Not an iPhone measurement or a statistical performance guarantee.",
+  "baseline": {
+    "harness": "farwake-perf",
+    "commit": "9eab5f4f76ad8438be581f6eec71bb484e623237",
+    "generatedAt": "2026-11-11T21:13:52.242Z",
+    "browser": "153.0.8010.0",
+    "proxy": {
+      "note": "Headless Chromium emulation is only a proxy for iPhone Safari.",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "deviceScaleFactor": 3,
+      "cpuThrottle": 4,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
+    },
+    "options": {
+      "suite": "default",
+      "scene": "late",
+      "repeat": 1,
+      "seconds": null,
+      "warmup": 1500,
+      "ops": false,
+      "fixture": null
+    },
+    "checks": [
+      {
+        "name": "without ?perf=1 writes nothing and does not load the game",
+        "ok": true,
+        "detail": "inert"
+      },
+      {
+        "name": "wrong port is refused before the game loads",
+        "ok": true,
+        "detail": "refused 47322"
+      },
+      {
+        "name": "a non-harness save is left untouched",
+        "ok": true,
+        "detail": "foreign save preserved"
+      },
+      {
+        "name": "marker plus a save with no fingerprint is preserved",
+        "ok": true,
+        "detail": "player save preserved"
+      },
+      {
+        "name": "marker plus a player-modified save is preserved",
+        "ok": true,
+        "detail": "player save preserved"
+      }
+    ],
+    "runs": [
+      {
+        "scene": "late",
+        "ok": true,
+        "error": null,
+        "pageErrors": [],
+        "wallMs": 20728,
+        "report": {
+          "harness": "farwake-perf",
+          "commit": "9eab5f4f76ad8438be581f6eec71bb484e623237",
+          "scene": "late",
+          "meta": {
+            "id": "late",
+            "label": "Late colony (synthetic)",
+            "description": "Synthetic late colony on seed FW-10402: finished buildings of 14 types (including dormitory, warehouse, lamppost and garden), path and road tiles, history counters, and cloned colonists. Day 80 10:00, clear weather, simulation running, zoom 0.6, balanced preset. Default window is 15 s. This is a stress layout, not a played save.",
+            "synthetic": true,
+            "seed": "FW-10402",
+            "day": 80,
+            "minute": 620,
+            "weather": "clear",
+            "buildings": 124,
+            "buildingTypes": {
+              "lander": 1,
+              "supplies": 1,
+              "camp": 1,
+              "dormitory": 2,
+              "warehouse": 2,
+              "shelter": 5,
+              "cabin": 3,
+              "garden": 7,
+              "greenhouse": 2,
+              "workshop": 2,
+              "smelter": 2,
+              "kitchen": 2,
+              "shed": 2,
+              "clinic": 2,
+              "solar": 6,
+              "wind": 4,
+              "lamppost": 8,
+              "path": 36,
+              "road": 36
+            },
+            "colonists": 25,
+            "paused": false,
+            "zoom": 0.6,
+            "preset": "balanced",
+            "devicePixelRatio": 3,
+            "canvas": {
+              "cssWidth": 390,
+              "cssHeight": 768,
+              "backingWidth": 780,
+              "backingHeight": 1536
+            },
+            "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
+          },
+          "recording": {
+            "frame": {
+              "count": 67,
+              "min": 7.900000000372529,
+              "mean": 180.57611940293782,
+              "median": 21.5,
+              "p95": 918.1799999994225,
+              "p99": 1091.544000000005,
+              "max": 1343.4000000003725
+            },
+            "interval": {
+              "count": 66,
+              "min": 62.299999999813735,
+              "mean": 232.22727272727272,
+              "median": 73.84999999962747,
+              "p95": 978.2999999993481,
+              "p99": 1157.7550000003052,
+              "max": 1401.7000000001863
+            },
+            "longFrames": {
+              "over16ms": 46,
+              "over33ms": 23
+            },
+            "thresholdsMs": {
+              "over16": 16.666666666666668,
+              "over33": 33.333333333333336
+            },
+            "callbackErrors": 0,
+            "heap": {
+              "supported": true,
+              "usedJSHeapSize": 5579185,
+              "totalJSHeapSize": 16883209,
+              "jsHeapSizeLimit": 4395630592
+            },
+            "ops": {
+              "enabled": false,
+              "error": null
+            },
+            "definition": "frame is the JS duration of the requestAnimationFrame callback; interval is the time between callback starts"
+          },
+          "heapBefore": {
+            "supported": true,
+            "usedJSHeapSize": 20828676,
+            "totalJSHeapSize": 29875944,
+            "jsHeapSizeLimit": 4395630592
+          },
+          "windowMs": 15769.5,
+          "recordedAt": "2026-11-11T21:13:52.113Z",
+          "note": "Frame time is JavaScript in the animation callback. Headless Chromium emulation is only a proxy for iPhone Safari. Frames over 33 ms scale with the length of the window."
+        },
+        "allocation": {
+          "supported": true,
+          "method": "CDP HeapProfiler sampling",
+          "samplingInterval": 32768,
+          "sampleCount": 7684,
+          "sampledBytes": 252597840,
+          "selfSizeBytes": 252410916,
+          "estimatedBytes": 251789312,
+          "note": "estimatedBytes is sampleCount \u00d7 sampling interval, the usual scaling when each sample represents one interval of allocated bytes. Chromium only. Includes allocator overhead from the sampler itself.",
+          "parameters": {
+            "samplingInterval": 32768,
+            "includeObjectsCollectedByMajorGC": true,
+            "includeObjectsCollectedByMinorGC": true
+          },
+          "windowMs": 15769.5,
+          "kbPerSecond": 15592.631345318494
+        },
+        "repeat": 1
+      }
+    ]
+  },
+  "candidate": {
+    "harness": "farwake-perf",
+    "commit": "c201aa6a683bafa9500f8b8da52c7b34d4162a49",
+    "generatedAt": "2026-11-11T21:13:08.192Z",
+    "browser": "153.0.8010.0",
+    "proxy": {
+      "note": "Headless Chromium emulation is only a proxy for iPhone Safari.",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "deviceScaleFactor": 3,
+      "cpuThrottle": 4,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
+    },
+    "options": {
+      "suite": "default",
+      "scene": "late",
+      "repeat": 1,
+      "seconds": null,
+      "warmup": 1500,
+      "ops": false,
+      "fixture": null
+    },
+    "checks": [
+      {
+        "name": "without ?perf=1 writes nothing and does not load the game",
+        "ok": true,
+        "detail": "inert"
+      },
+      {
+        "name": "wrong port is refused before the game loads",
+        "ok": true,
+        "detail": "refused 47322"
+      },
+      {
+        "name": "a non-harness save is left untouched",
+        "ok": true,
+        "detail": "foreign save preserved"
+      },
+      {
+        "name": "marker plus a save with no fingerprint is preserved",
+        "ok": true,
+        "detail": "player save preserved"
+      },
+      {
+        "name": "marker plus a player-modified save is preserved",
+        "ok": true,
+        "detail": "player save preserved"
+      }
+    ],
+    "runs": [
+      {
+        "scene": "late",
+        "ok": true,
+        "error": null,
+        "pageErrors": [],
+        "wallMs": 20686,
+        "report": {
+          "harness": "farwake-perf",
+          "commit": "c201aa6a683bafa9500f8b8da52c7b34d4162a49",
+          "scene": "late",
+          "meta": {
+            "id": "late",
+            "label": "Late colony (synthetic)",
+            "description": "Synthetic late colony on seed FW-10402: finished buildings of 14 types (including dormitory, warehouse, lamppost and garden), path and road tiles, history counters, and cloned colonists. Day 80 10:00, clear weather, simulation running, zoom 0.6, balanced preset. Default window is 15 s. This is a stress layout, not a played save.",
+            "synthetic": true,
+            "seed": "FW-10402",
+            "day": 80,
+            "minute": 620,
+            "weather": "clear",
+            "buildings": 124,
+            "buildingTypes": {
+              "lander": 1,
+              "supplies": 1,
+              "camp": 1,
+              "dormitory": 2,
+              "warehouse": 2,
+              "shelter": 5,
+              "cabin": 3,
+              "garden": 7,
+              "greenhouse": 2,
+              "workshop": 2,
+              "smelter": 2,
+              "kitchen": 2,
+              "shed": 2,
+              "clinic": 2,
+              "solar": 6,
+              "wind": 4,
+              "lamppost": 8,
+              "path": 36,
+              "road": 36
+            },
+            "colonists": 25,
+            "paused": false,
+            "zoom": 0.6,
+            "preset": "balanced",
+            "devicePixelRatio": 3,
+            "canvas": {
+              "cssWidth": 390,
+              "cssHeight": 768,
+              "backingWidth": 780,
+              "backingHeight": 1536
+            },
+            "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
+          },
+          "recording": {
+            "frame": {
+              "count": 66,
+              "min": 12.799999999813735,
+              "mean": 182.83030303032842,
+              "median": 22.949999999720603,
+              "p95": 926.3000000002794,
+              "p99": 1085.8149999997563,
+              "max": 1258
+            },
+            "interval": {
+              "count": 65,
+              "min": 61,
+              "mean": 234.70307692307978,
+              "median": 76.79999999981374,
+              "p95": 989.2400000004097,
+              "p99": 1149.9119999996944,
+              "max": 1315.7999999998137
+            },
+            "longFrames": {
+              "over16ms": 52,
+              "over33ms": 23
+            },
+            "thresholdsMs": {
+              "over16": 16.666666666666668,
+              "over33": 33.333333333333336
+            },
+            "callbackErrors": 0,
+            "heap": {
+              "supported": true,
+              "usedJSHeapSize": 8743223,
+              "totalJSHeapSize": 16394967,
+              "jsHeapSizeLimit": 4395630592
+            },
+            "ops": {
+              "enabled": false,
+              "error": null
+            },
+            "definition": "frame is the JS duration of the requestAnimationFrame callback; interval is the time between callback starts"
+          },
+          "heapBefore": {
+            "supported": true,
+            "usedJSHeapSize": 22682598,
+            "totalJSHeapSize": 29412738,
+            "jsHeapSizeLimit": 4395630592
+          },
+          "windowMs": 15700,
+          "recordedAt": "2026-11-11T21:13:08.047Z",
+          "note": "Frame time is JavaScript in the animation callback. Headless Chromium emulation is only a proxy for iPhone Safari. Frames over 33 ms scale with the length of the window."
+        },
+        "allocation": {
+          "supported": true,
+          "method": "CDP HeapProfiler sampling",
+          "samplingInterval": 32768,
+          "sampleCount": 8065,
+          "sampledBytes": 265109448,
+          "selfSizeBytes": 264915844,
+          "estimatedBytes": 264273920,
+          "note": "estimatedBytes is sampleCount \u00d7 sampling interval, the usual scaling when each sample represents one interval of allocated bytes. Chromium only. Includes allocator overhead from the sampler itself.",
+          "parameters": {
+            "samplingInterval": 32768,
+            "includeObjectsCollectedByMajorGC": true,
+            "includeObjectsCollectedByMinorGC": true
+          },
+          "windowMs": 15700,
+          "kbPerSecond": 16438.216560509554
+        },
+        "repeat": 1
+      }
+    ]
+  }
+}
