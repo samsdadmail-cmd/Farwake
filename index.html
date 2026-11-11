@@ -246,8 +246,8 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
   ['gather',()=>harvestTaskFor(p)],
   ['field',()=>productionCandidate(p,'garden')],
   ['factory',()=>productionCandidate(p,'workshop')],
-  ['survey',()=>p.role==='Surveyor'||p.work==='survey'?surveyFrontierGoal(p):null],
-  ['research',()=>({type:'research',x:26,y:26,w:3,h:3})]
+  ['survey',()=>p.role==='Surveyor'||p.work==='survey'?(frontierInvestigateTarget(p)||surveyFrontierGoal(p)):null],
+  ['research',()=>frontierResearchTarget(p)]
  ];
  const buildFirst=jobs().some(b=>b.buildPriority&&!b.buildPaused)||S.buildings.some(b=>b.editOrder);
  const ranks={build:6,haul:5,gather:4,field:3,factory:3,survey:2,research:1};
@@ -264,6 +264,8 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
+ if(t.type==='investigate'){frontierInvestigate(p,work);return}
+ if(t.type==='align'){frontierAlign(p,work);return}
  if(t.type==='upgrade'){frontierUpgradeWork(p,work);return}
  if(t.type==='social'){frontierSocial(p,work);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
@@ -339,7 +341,7 @@ function renderWorldSelection(time){
 function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,0,0);rect(0,0,cw,ch,'#1a4241');ctx.save();ctx.translate(cw/2,ch/2);ctx.scale(camera.z,camera.z);ctx.translate(-camera.x,-camera.y);
  const left=Math.max(0,Math.floor((camera.x-cw/(2*camera.z))/TS)-2),right=Math.min(VW,Math.ceil((camera.x+cw/(2*camera.z))/TS)+2),top=Math.max(0,Math.floor((camera.y-ch/(2*camera.z))/TS)-2),bottom=Math.min(VH,Math.ceil((camera.y+ch/(2*camera.z))/TS)+2);
  FarwakeLandscape.ground(ctx,terrain,VW,VH,S.seed,left,top,right,bottom,time,{state:S,fog,onThunder:()=>FarwakeAudio.play("thunder")});
- editorPaths(time,left,top,right,bottom);
+ editorPaths(time,left,top,right,bottom);frontierSitesDraw(left,top,right,bottom,time);
  for(const f of features)if(f.x>=left&&f.x<right&&f.y>=top&&f.y<bottom&&fog[index(f.x,f.y)]){FarwakeWorkFX.feature(ctx,f,time,S.minute);if(S.designations?.[f.id])renderWorkMarker(f)}
  for(const b of S.buildings)if(b.finished&&b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)FarwakeBuildings.shadow(ctx,b.type,b.x*TS,b.y*TS,b.w*TS,b.h*TS,S.minute,b);
  if(S.ruin&&fog[index(S.ruin.x,S.ruin.y)])FarwakeLandscape.ruin(ctx,S.ruin,time);
@@ -424,6 +426,7 @@ async function importExpeditionFile(file){
 function openMenu(){showSheet('<div class="row"><div class="smallcaps">FARWAKE · FOUNDATIONS</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>Expedition Operations</h2><p>Manage the current expedition or start a new world.</p><div class="sectioncap">Current world</div><div class="infocard"><b>Seed: '+S.seed+'</b><p>Day '+S.day+' · '+S.colonists.length+' expedition members · Saved locally on this device.</p></div><div class="buttongroup" style="margin-top:12px"><button class="primary" data-sheet="save">Save Expedition</button><button class="secondary" data-sheet="center">Return to Landing</button></div><div class="sectioncap" style="margin-top:15px">Transfer your expedition</div><p>Export a backup to Files, then import it at another FARWAKE preview. Import asks before replacing the current colony.</p><div class="buttongroup"><button class="primary" data-sheet="export-save">Export Save</button><label class="secondary" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;cursor:pointer">Import Save<input type="file" id="import-expedition-file" accept=".json,application/json" style="display:none"></label></div><div class="sectioncap" style="margin-top:17px">Start a different expedition</div><input class="field" id="seedfield" maxlength="24" value="FW-'+Math.floor(10000+Math.random()*80000)+'" aria-label="World seed"><button class="secondary danger" style="width:100%;margin-top:8px" data-sheet="newconfirm">Generate New World</button><p class="tiny">Starting a new world overwrites only this Alpha 0.3 save. The older FARWAKE game and its saves remain separate.</p>')}
 function selectTap(clientX,clientY){if(editor&&!editor.pan)return;const r=canvas.getBoundingClientRect(),pos=screenToWorld(clientX-r.left,clientY-r.top),x=Math.floor(pos.x),y=Math.floor(pos.y);if(!inMap(x,y))return;
  if(selectedType){const t=TYPES[selectedType];selectedFeature=null;selectedTerrain=null;selectedPile=null;preview={x:clamp(x-Math.floor((t.w-1)/2),0,VW-t.w),y:clamp(y-Math.floor((t.h-1)/2),0,VH-t.h)};selectedBuilding=null;selectedColonist=null;paintHUD();return}
+ const site=frontierState().sites.find(s=>s.seen&&s.x===x&&s.y===y);if(site&&!buildingAt(x,y)){frontierSitePanel(site.id);return}
  let person=S.colonists.find(p=>FarwakeDoors.visible(p)>.4&&Math.hypot(pos.x-FarwakePeople.pose(p).x,pos.y-FarwakePeople.pose(p).y)<.58);if(person){selectedColonist=person.id;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}let b=buildingAt(x,y);if(b){selectedBuilding=b.id;selectedColonist=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}const pile=pileAt(x,y);if(pile){selectedPile=pile.id;selectedFeature=null;selectedTerrain=null;selectedColonist=null;selectedBuilding=null;paintHUD();return}selectedPile=null;const f=featureFromPoint(pos);selectedFeature=f?.id||null;selectedTerrain=f?null:{x,y};selectedColonist=null;selectedBuilding=null;paintHUD();}
 function centerCamera(){camera.x=28*TS;camera.y=28*TS;camera.z=1;}
 function research(id){frontierBeginResearch(id)}
@@ -1301,7 +1304,7 @@ function showBuilding(id){
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
  '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
- frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
+ frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
 }
@@ -1446,7 +1449,7 @@ function surveyWorldHTML(){
  '<p>'+esc(surveyDiagnostics())+'</p><div class="buttongroup"><button class="primary" data-survey-command>Prioritize exploring</button><button class="secondary" data-survey-ui="overlay">'+(surveyOverlay?'Hide':'Show')+' map markers</button></div>'+
  '<h3>Survey sector</h3><p>Tap a region to direct the surveyor. Each cell shows how much has been mapped.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">'+surveyNames.map((n,i)=>'<button class="'+(i===sector?'primary':'secondary')+'" data-sector="'+i+'">'+n+'<br>'+Math.round(counts[i]*100/totals[i])+'%</button>').join('')+'</div><button class="secondary" data-sector="auto">Survey any frontier</button>'+
  '<h3>Mapped resources</h3>'+Object.entries(surveyTypes).map(([id,label])=>'<div class="service"><span>'+label+' · '+surveyMapped(id).length+'</span><button class="secondary" data-survey-focus="'+id+'">Locate '+label.toLowerCase()+'</button></div>').join('')+
- '<h3>Field record</h3><p>'+S.explore+' surveys · '+(S.ruin?.seen?esc(S.ruin.name):'Landmark undiscovered')+'. Deposits are finite. A depleted outcrop stays depleted.</p>';
+ frontierPlanetPanel()+'<h3>Field record</h3><p>'+S.explore+' surveys · '+(S.ruin?.seen?esc(S.ruin.name):'Landmark undiscovered')+'. Deposits are finite. A depleted outcrop stays depleted.</p>';
 }
 function surveyMapDraw(left,top,right,bottom){
  if(!surveyOverlay)return;
@@ -1579,7 +1582,7 @@ function frontierState(){
 function frontierMigrate(){
  const f=frontierState();
  for(const k of Object.keys(FRONTIER_MATERIALS)){S.resources[k]??=0;industryPolicy().targets[k]??=({water:60,meals:40,boards:80,metal:80,components:50,composite:60,relic:10})[k]}
- f.version=1;
+ f.version=1;frontierSeedSites();
 }
 function frontierProduced(kind){return frontierState().produced[kind]||0}
 function researchDefinition(id){return FRONTIER_TECH[id]||foundingResearchDefinition(id)}
@@ -1742,7 +1745,7 @@ function industryDetails(b){
 let frontierInterval=0;
 function frontierTick(step){
  frontierInterval+=step;if(frontierInterval<1)return;frontierInterval%=1;
- const grid=surveyGrid();
+ frontierDiscover();const grid=surveyGrid();
  for(const b of S.buildings){
   if(b.type==='lamppost')b.powered=grid.supply>=grid.used;
   const h=frontierHistory(b);h.ageDays=Math.max(0,S.day-h.createdDay);
@@ -1899,8 +1902,117 @@ function frontierHistoryPanel(b){
  return '<section class="settlement-history"><span class="smallcaps">'+frontierDistrict(b)+'</span><p>Established Day '+h.createdDay+' · '+h.ageDays+' days in service</p><small>'+Math.floor(h.work)+' work seconds · '+h.residentHours.toFixed(1)+' indoor hours · '+h.harvests+' harvests · '+h.visits+' social visits</small></section>';
 }
 
+const FRONTIER_SITE_TYPES={
+ wreck:{name:'Silent expedition wreck',description:'A torn expedition pod. Its recorder contains a fragment of the old signal.',color:'#c79c71'},
+ seam:{name:'Resonant mineral formation',description:'Metallic strata continue beneath the valley. A field study can locate a finite underground seam.',color:'#9cb4ac'},
+ ruin:{name:'Buried listening stones',description:'The stones repeat the interval heard at planetfall. Their purpose remains uncertain.',color:'#acadc8'},
+ anomaly:{name:'The still-water anomaly',description:'A pale mineral lens holds a pattern that ordinary weather cannot explain.',color:'#98c6b4'}
+};
+function frontierSeedSites(){
+ const f=frontierState();if(f.worldVersion)return;
+ const reach=surveyDistances(28,29,(x,y)=>terrain[index(x,y)].kind!=='water');
+ const used=f.sites.filter(s=>Number.isFinite(s.x));
+ for(let i=0;i<8;i++){
+  const candidates=[];
+  for(let y=3;y<VH-3;y++)for(let x=3;x<VW-3;x++){
+   const d=Math.hypot(x-28,y-28);
+   if(reach[index(x,y)]<0||buildingAt(x,y)||d<(i<2?10:17)||d>(i<2?16:32)||used.some(s=>Math.hypot(s.x-x,s.y-y)<7))continue;
+   candidates.push({x,y,rank:hash(x,y,hashStr(S.seed)+2301+i*313)});
+  }
+  candidates.sort((a,b)=>b.rank-a.rank);const q=candidates[0];if(!q)continue;
+  const site={id:'frontier-site-'+i,kind:['wreck','seam','ruin','anomaly'][i%4],x:q.x,y:q.y,seen:false,resolved:false,progress:0};
+  f.sites.push(site);used.push(site);
+ }
+ f.worldVersion=1;
+}
+function frontierDiscover(){
+ for(const s of frontierState().sites){
+  if(s.seen||!Number.isFinite(s.x)||!fog[index(s.x,s.y)])continue;
+  s.seen=true;log('',FRONTIER_SITE_TYPES[s.kind].name+' discovered at '+s.x+', '+s.y+'.');notice('Planetary discovery · '+FRONTIER_SITE_TYPES[s.kind].name);
+ }
+}
+function frontierSiteReach(s){
+ return Math.hypot(s.x-28,s.y-28)<=17||finished('outpost').some(b=>!b.editOrder&&Math.hypot(b.x-s.x,b.y-s.y)<=13);
+}
+function frontierSiteReason(s){
+ if(s.resolved)return 'Investigation completed';if(!s.seen)return 'Uncharted site';
+ if(!frontierSiteReach(s))return 'Establish an Expedition Outpost within thirteen tiles';
+ if(!S.research.includes('optics'))return 'Requires Rangefinding Optics';
+ const scout=surveyScout(),dist=surveyDistances(scout.x,scout.y,walkable);
+ if(!neighborGoals(s.x,s.y).some(q=>dist[index(q.x,q.y)]>=0))return 'No reachable approach. Clear a route around structures.';
+ return '';
+}
+function frontierOrderSite(id,choice){
+ const s=frontierState().sites.find(s=>s.id===id);if(!s||frontierSiteReason(s)||!['study','recover'].includes(choice))return false;
+ s.order=choice;const p=surveyScout();if(p.task?.type==='survey'||p.task?.type==='research'){p.task=null;p.path=[]}save();return true;
+}
+function frontierInvestigateTarget(p){
+ if(p.role!=='Surveyor'&&p.work!=='survey')return null;
+ for(const s of frontierState().sites)if(s.order&&!s.resolved&&!frontierSiteReason(s)&&!S.colonists.some(q=>q!==p&&q.task?.site===s.id))return {type:'investigate',site:s.id,x:s.x,y:s.y};
+ return null;
+}
+function frontierInvestigate(p,work){
+ const s=frontierState().sites.find(s=>s.id===p.task?.site);if(!s?.order||s.resolved||!frontierSiteReach(s)){p.task=null;return}
+ s.progress+=work;if(s.progress<18)return;
+ s.resolved=true;s.remaining=s.kind==='seam'?180:0;s.choice=s.order;delete s.order;
+ S.resources.knowledge+=s.choice==='study'?18:6;
+ freightOutput('relic',1,{x:s.x,y:s.y,w:1,h:1});
+ if(s.choice==='recover')freightOutput('components',4,{x:s.x,y:s.y,w:1,h:1});
+ log('',FRONTIER_SITE_TYPES[s.kind].name+': '+(s.kind==='seam'?'180 ore mapped underground. ':'')+'A recovered core carries the same unfinished sequence.');
+ p.task=null;save();notice('Investigation complete · core recovered');
+}
+function frontierSitePanel(id){
+ const s=frontierState().sites.find(s=>s.id===id);if(!s||!s.seen)return;
+ sheetSection='discovery';const type=FRONTIER_SITE_TYPES[s.kind],reason=frontierSiteReason(s);
+ showSheet(sectionHeader(type.name,'PLANETARY FIELD RECORD')+'<div class="discovery-art '+s.kind+'">'+uiIcon('world',50)+'</div><p>'+type.description+'</p><p>'+s.x+', '+s.y+' · '+(s.resolved?'Investigated on this expedition':Math.floor(s.progress/18*100)+'% field study')+'</p>'+
+ (s.resolved?'<p>'+(s.kind==='seam'?s.remaining+' finite ore remain. Build an Extraction Rig within six tiles.':'Recovered core sent into the physical hauling network.')+'</p>':
+ '<p>'+(reason||'Choose the focus of the investigation. Both preserve a core for the listening array.')+'</p><button class="primary" data-investigate="'+s.id+'" data-choice="study" '+(reason?'disabled':'')+'>Study · 18 knowledge + core</button><button class="secondary" data-investigate="'+s.id+'" data-choice="recover" '+(reason?'disabled':'')+'>Recover · 4 components + 6 knowledge + core</button>'+(s.order?'<p>Surveyor ordered to '+s.order+'.</p><button class="secondary" data-site-cancel="'+s.id+'">Cancel investigation</button>':''))+'<button class="secondary" data-site-focus="'+s.id+'">Locate on map</button>');
+}
+function frontierPlanetPanel(){
+ const sites=frontierState().sites.filter(s=>s.seen);
+ return '<section class="planet-record"><h3>Beyond the valley</h3><p>'+sites.filter(s=>s.resolved).length+' investigations · '+sites.length+' discovered sites · '+finished('outpost').length+' field stations</p>'+sites.map(s=>'<button class="discovery-row" data-site="'+s.id+'"><span>'+uiIcon('world',21)+'</span><b>'+FRONTIER_SITE_TYPES[s.kind].name+'<small>'+s.x+', '+s.y+' · '+(s.resolved?'Investigated':s.order?'Field work ordered':frontierSiteReach(s)?'Within expedition reach':'Needs an outpost')+'</small></b><span>›</span></button>').join('')+'<p>Investigations yield finite physical cores and useful knowledge. Outposts extend investigation reach and provide temporary beds and storage.</p></section>';
+}
+function frontierResearchTarget(p){
+ const b=finished('observatory').find(b=>!b.editOrder&&!frontierState().signalComplete);
+ if(b&&surveyGrid().supply>=surveyGrid().used&&['Medic','Surveyor','Commander'].includes(p.role))return {type:'align',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
+ return {type:'research',x:26,y:26,w:3,h:3};
+}
+function frontierAlign(p,work){
+ if(surveyGrid().supply<surveyGrid().used){p.task=null;return}
+ const f=frontierState();f.alignment=(f.alignment||0)+work;
+ if(f.alignment<180)return;
+ f.signalComplete=true;f.signalDay=S.day;p.task=null;
+ log('','The listening array resolves a second signal, beyond the mapped valley. It is not an answer. It is an invitation.');notice('Beyond the Frontier · a second horizon');save();
+}
+function frontierProjectPanel(b){
+ if(b.type==='outpost')return '<section class="project-card"><h3>Forward expedition base</h3><p>Supports investigations within thirteen tiles. Four temporary bunks and 180 storage units serve the same colony economy.</p><button class="secondary" data-frontier-map>Review field discoveries</button></section>';
+ if(b.type!=='observatory')return '';
+ const f=frontierState();return '<section class="project-card"><h3>The listening frontier</h3><div class="progress"><i style="width:'+Math.min(100,(f.alignment||0)/180*100)+'%"></i></div><p>'+(f.signalComplete?'A second horizon was heard on Day '+f.signalDay+'. The mystery continues beyond this release.':surveyGrid().supply<surveyGrid().used?'Grid deficit prevents alignment.':'Scientific staff align the array through actual work. '+Math.floor((f.alignment||0)/180*100)+'% complete.')+'</p></section>';
+}
+function frontierSitesDraw(left,top,right,bottom,time){
+ for(const s of frontierState().sites){
+  if(!s.seen||!Number.isFinite(s.x)||s.x<left||s.x>=right||s.y<top||s.y>=bottom)continue;
+  const x=s.x*TS,y=s.y*TS,c=FRONTIER_SITE_TYPES[s.kind].color;
+  ctx.fillStyle='#202c2a';ctx.fillRect(x+3,y+9,26,18);ctx.fillStyle=c;
+  if(s.kind==='wreck'){ctx.fillRect(x+4,y+13,20,9);ctx.fillStyle='#645b4e';ctx.fillRect(x+8,y+10,7,4)}
+  else if(s.kind==='seam'){for(let i=0;i<4;i++)ctx.fillRect(x+5+i*5,y+10+i%2*3,4,11-i)}
+  else if(s.kind==='ruin'){ctx.fillRect(x+5,y+5,5,22);ctx.fillRect(x+22,y+3,5,24);ctx.fillRect(x+8,y+6,16,4)}
+  else{ctx.beginPath();ctx.ellipse(x+16,y+18,11,7,0,0,Math.PI*2);ctx.fill()}
+  if(!s.resolved){ctx.strokeStyle=c;ctx.strokeRect(x+2,y+2,28,28);ctx.fillStyle='#efd7a0';ctx.fillRect(x+14,y-4,4,4)}
+ }
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-site],[data-investigate],[data-site-cancel],[data-site-focus],[data-frontier-map]');if(!b)return;
+ if(b.hasAttribute('data-frontier-map')){openSection('world');return}
+ if(b.dataset.site){frontierSitePanel(b.dataset.site);return}
+ if(b.dataset.investigate){frontierOrderSite(b.dataset.investigate,b.dataset.choice);frontierSitePanel(b.dataset.investigate);return}
+ const s=frontierState().sites.find(s=>s.id===(b.dataset.siteCancel||b.dataset.siteFocus));if(!s)return;
+ if(b.dataset.siteCancel){delete s.order;for(const p of S.colonists)if(p.task?.site===s.id){p.task=null;p.path=[]}save();frontierSitePanel(s.id)}
+ else{camera.x=(s.x+.5)*TS;camera.y=(s.y+.5)*TS;closeSheet()}
+});
+
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

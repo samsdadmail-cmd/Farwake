@@ -63,7 +63,7 @@ function showBuilding(id){
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
  '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
- frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
+ frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
 }

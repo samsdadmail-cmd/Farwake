@@ -94,7 +94,7 @@ function surveyWorldHTML(){
  '<p>'+esc(surveyDiagnostics())+'</p><div class="buttongroup"><button class="primary" data-survey-command>Prioritize exploring</button><button class="secondary" data-survey-ui="overlay">'+(surveyOverlay?'Hide':'Show')+' map markers</button></div>'+
  '<h3>Survey sector</h3><p>Tap a region to direct the surveyor. Each cell shows how much has been mapped.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">'+surveyNames.map((n,i)=>'<button class="'+(i===sector?'primary':'secondary')+'" data-sector="'+i+'">'+n+'<br>'+Math.round(counts[i]*100/totals[i])+'%</button>').join('')+'</div><button class="secondary" data-sector="auto">Survey any frontier</button>'+
  '<h3>Mapped resources</h3>'+Object.entries(surveyTypes).map(([id,label])=>'<div class="service"><span>'+label+' · '+surveyMapped(id).length+'</span><button class="secondary" data-survey-focus="'+id+'">Locate '+label.toLowerCase()+'</button></div>').join('')+
- '<h3>Field record</h3><p>'+S.explore+' surveys · '+(S.ruin?.seen?esc(S.ruin.name):'Landmark undiscovered')+'. Deposits are finite. A depleted outcrop stays depleted.</p>';
+ frontierPlanetPanel()+'<h3>Field record</h3><p>'+S.explore+' surveys · '+(S.ruin?.seen?esc(S.ruin.name):'Landmark undiscovered')+'. Deposits are finite. A depleted outcrop stays depleted.</p>';
 }
 function surveyMapDraw(left,top,right,bottom){
  if(!surveyOverlay)return;

@@ -62,7 +62,7 @@ function frontierState(){
 function frontierMigrate(){
  const f=frontierState();
  for(const k of Object.keys(FRONTIER_MATERIALS)){S.resources[k]??=0;industryPolicy().targets[k]??=({water:60,meals:40,boards:80,metal:80,components:50,composite:60,relic:10})[k]}
- f.version=1;
+ f.version=1;frontierSeedSites();
 }
 function frontierProduced(kind){return frontierState().produced[kind]||0}
 function researchDefinition(id){return FRONTIER_TECH[id]||foundingResearchDefinition(id)}
@@ -225,7 +225,7 @@ function industryDetails(b){
 let frontierInterval=0;
 function frontierTick(step){
  frontierInterval+=step;if(frontierInterval<1)return;frontierInterval%=1;
- const grid=surveyGrid();
+ frontierDiscover();const grid=surveyGrid();
  for(const b of S.buildings){
   if(b.type==='lamppost')b.powered=grid.supply>=grid.used;
   const h=frontierHistory(b);h.ageDays=Math.max(0,S.day-h.createdDay);
@@ -381,3 +381,112 @@ function frontierHistoryPanel(b){
  const h=frontierHistory(b);
  return '<section class="settlement-history"><span class="smallcaps">'+frontierDistrict(b)+'</span><p>Established Day '+h.createdDay+' · '+h.ageDays+' days in service</p><small>'+Math.floor(h.work)+' work seconds · '+h.residentHours.toFixed(1)+' indoor hours · '+h.harvests+' harvests · '+h.visits+' social visits</small></section>';
 }
+
+const FRONTIER_SITE_TYPES={
+ wreck:{name:'Silent expedition wreck',description:'A torn expedition pod. Its recorder contains a fragment of the old signal.',color:'#c79c71'},
+ seam:{name:'Resonant mineral formation',description:'Metallic strata continue beneath the valley. A field study can locate a finite underground seam.',color:'#9cb4ac'},
+ ruin:{name:'Buried listening stones',description:'The stones repeat the interval heard at planetfall. Their purpose remains uncertain.',color:'#acadc8'},
+ anomaly:{name:'The still-water anomaly',description:'A pale mineral lens holds a pattern that ordinary weather cannot explain.',color:'#98c6b4'}
+};
+function frontierSeedSites(){
+ const f=frontierState();if(f.worldVersion)return;
+ const reach=surveyDistances(28,29,(x,y)=>terrain[index(x,y)].kind!=='water');
+ const used=f.sites.filter(s=>Number.isFinite(s.x));
+ for(let i=0;i<8;i++){
+  const candidates=[];
+  for(let y=3;y<VH-3;y++)for(let x=3;x<VW-3;x++){
+   const d=Math.hypot(x-28,y-28);
+   if(reach[index(x,y)]<0||buildingAt(x,y)||d<(i<2?10:17)||d>(i<2?16:32)||used.some(s=>Math.hypot(s.x-x,s.y-y)<7))continue;
+   candidates.push({x,y,rank:hash(x,y,hashStr(S.seed)+2301+i*313)});
+  }
+  candidates.sort((a,b)=>b.rank-a.rank);const q=candidates[0];if(!q)continue;
+  const site={id:'frontier-site-'+i,kind:['wreck','seam','ruin','anomaly'][i%4],x:q.x,y:q.y,seen:false,resolved:false,progress:0};
+  f.sites.push(site);used.push(site);
+ }
+ f.worldVersion=1;
+}
+function frontierDiscover(){
+ for(const s of frontierState().sites){
+  if(s.seen||!Number.isFinite(s.x)||!fog[index(s.x,s.y)])continue;
+  s.seen=true;log('',FRONTIER_SITE_TYPES[s.kind].name+' discovered at '+s.x+', '+s.y+'.');notice('Planetary discovery · '+FRONTIER_SITE_TYPES[s.kind].name);
+ }
+}
+function frontierSiteReach(s){
+ return Math.hypot(s.x-28,s.y-28)<=17||finished('outpost').some(b=>!b.editOrder&&Math.hypot(b.x-s.x,b.y-s.y)<=13);
+}
+function frontierSiteReason(s){
+ if(s.resolved)return 'Investigation completed';if(!s.seen)return 'Uncharted site';
+ if(!frontierSiteReach(s))return 'Establish an Expedition Outpost within thirteen tiles';
+ if(!S.research.includes('optics'))return 'Requires Rangefinding Optics';
+ const scout=surveyScout(),dist=surveyDistances(scout.x,scout.y,walkable);
+ if(!neighborGoals(s.x,s.y).some(q=>dist[index(q.x,q.y)]>=0))return 'No reachable approach. Clear a route around structures.';
+ return '';
+}
+function frontierOrderSite(id,choice){
+ const s=frontierState().sites.find(s=>s.id===id);if(!s||frontierSiteReason(s)||!['study','recover'].includes(choice))return false;
+ s.order=choice;const p=surveyScout();if(p.task?.type==='survey'||p.task?.type==='research'){p.task=null;p.path=[]}save();return true;
+}
+function frontierInvestigateTarget(p){
+ if(p.role!=='Surveyor'&&p.work!=='survey')return null;
+ for(const s of frontierState().sites)if(s.order&&!s.resolved&&!frontierSiteReason(s)&&!S.colonists.some(q=>q!==p&&q.task?.site===s.id))return {type:'investigate',site:s.id,x:s.x,y:s.y};
+ return null;
+}
+function frontierInvestigate(p,work){
+ const s=frontierState().sites.find(s=>s.id===p.task?.site);if(!s?.order||s.resolved||!frontierSiteReach(s)){p.task=null;return}
+ s.progress+=work;if(s.progress<18)return;
+ s.resolved=true;s.remaining=s.kind==='seam'?180:0;s.choice=s.order;delete s.order;
+ S.resources.knowledge+=s.choice==='study'?18:6;
+ freightOutput('relic',1,{x:s.x,y:s.y,w:1,h:1});
+ if(s.choice==='recover')freightOutput('components',4,{x:s.x,y:s.y,w:1,h:1});
+ log('',FRONTIER_SITE_TYPES[s.kind].name+': '+(s.kind==='seam'?'180 ore mapped underground. ':'')+'A recovered core carries the same unfinished sequence.');
+ p.task=null;save();notice('Investigation complete · core recovered');
+}
+function frontierSitePanel(id){
+ const s=frontierState().sites.find(s=>s.id===id);if(!s||!s.seen)return;
+ sheetSection='discovery';const type=FRONTIER_SITE_TYPES[s.kind],reason=frontierSiteReason(s);
+ showSheet(sectionHeader(type.name,'PLANETARY FIELD RECORD')+'<div class="discovery-art '+s.kind+'">'+uiIcon('world',50)+'</div><p>'+type.description+'</p><p>'+s.x+', '+s.y+' · '+(s.resolved?'Investigated on this expedition':Math.floor(s.progress/18*100)+'% field study')+'</p>'+
+ (s.resolved?'<p>'+(s.kind==='seam'?s.remaining+' finite ore remain. Build an Extraction Rig within six tiles.':'Recovered core sent into the physical hauling network.')+'</p>':
+ '<p>'+(reason||'Choose the focus of the investigation. Both preserve a core for the listening array.')+'</p><button class="primary" data-investigate="'+s.id+'" data-choice="study" '+(reason?'disabled':'')+'>Study · 18 knowledge + core</button><button class="secondary" data-investigate="'+s.id+'" data-choice="recover" '+(reason?'disabled':'')+'>Recover · 4 components + 6 knowledge + core</button>'+(s.order?'<p>Surveyor ordered to '+s.order+'.</p><button class="secondary" data-site-cancel="'+s.id+'">Cancel investigation</button>':''))+'<button class="secondary" data-site-focus="'+s.id+'">Locate on map</button>');
+}
+function frontierPlanetPanel(){
+ const sites=frontierState().sites.filter(s=>s.seen);
+ return '<section class="planet-record"><h3>Beyond the valley</h3><p>'+sites.filter(s=>s.resolved).length+' investigations · '+sites.length+' discovered sites · '+finished('outpost').length+' field stations</p>'+sites.map(s=>'<button class="discovery-row" data-site="'+s.id+'"><span>'+uiIcon('world',21)+'</span><b>'+FRONTIER_SITE_TYPES[s.kind].name+'<small>'+s.x+', '+s.y+' · '+(s.resolved?'Investigated':s.order?'Field work ordered':frontierSiteReach(s)?'Within expedition reach':'Needs an outpost')+'</small></b><span>›</span></button>').join('')+'<p>Investigations yield finite physical cores and useful knowledge. Outposts extend investigation reach and provide temporary beds and storage.</p></section>';
+}
+function frontierResearchTarget(p){
+ const b=finished('observatory').find(b=>!b.editOrder&&!frontierState().signalComplete);
+ if(b&&surveyGrid().supply>=surveyGrid().used&&['Medic','Surveyor','Commander'].includes(p.role))return {type:'align',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
+ return {type:'research',x:26,y:26,w:3,h:3};
+}
+function frontierAlign(p,work){
+ if(surveyGrid().supply<surveyGrid().used){p.task=null;return}
+ const f=frontierState();f.alignment=(f.alignment||0)+work;
+ if(f.alignment<180)return;
+ f.signalComplete=true;f.signalDay=S.day;p.task=null;
+ log('','The listening array resolves a second signal, beyond the mapped valley. It is not an answer. It is an invitation.');notice('Beyond the Frontier · a second horizon');save();
+}
+function frontierProjectPanel(b){
+ if(b.type==='outpost')return '<section class="project-card"><h3>Forward expedition base</h3><p>Supports investigations within thirteen tiles. Four temporary bunks and 180 storage units serve the same colony economy.</p><button class="secondary" data-frontier-map>Review field discoveries</button></section>';
+ if(b.type!=='observatory')return '';
+ const f=frontierState();return '<section class="project-card"><h3>The listening frontier</h3><div class="progress"><i style="width:'+Math.min(100,(f.alignment||0)/180*100)+'%"></i></div><p>'+(f.signalComplete?'A second horizon was heard on Day '+f.signalDay+'. The mystery continues beyond this release.':surveyGrid().supply<surveyGrid().used?'Grid deficit prevents alignment.':'Scientific staff align the array through actual work. '+Math.floor((f.alignment||0)/180*100)+'% complete.')+'</p></section>';
+}
+function frontierSitesDraw(left,top,right,bottom,time){
+ for(const s of frontierState().sites){
+  if(!s.seen||!Number.isFinite(s.x)||s.x<left||s.x>=right||s.y<top||s.y>=bottom)continue;
+  const x=s.x*TS,y=s.y*TS,c=FRONTIER_SITE_TYPES[s.kind].color;
+  ctx.fillStyle='#202c2a';ctx.fillRect(x+3,y+9,26,18);ctx.fillStyle=c;
+  if(s.kind==='wreck'){ctx.fillRect(x+4,y+13,20,9);ctx.fillStyle='#645b4e';ctx.fillRect(x+8,y+10,7,4)}
+  else if(s.kind==='seam'){for(let i=0;i<4;i++)ctx.fillRect(x+5+i*5,y+10+i%2*3,4,11-i)}
+  else if(s.kind==='ruin'){ctx.fillRect(x+5,y+5,5,22);ctx.fillRect(x+22,y+3,5,24);ctx.fillRect(x+8,y+6,16,4)}
+  else{ctx.beginPath();ctx.ellipse(x+16,y+18,11,7,0,0,Math.PI*2);ctx.fill()}
+  if(!s.resolved){ctx.strokeStyle=c;ctx.strokeRect(x+2,y+2,28,28);ctx.fillStyle='#efd7a0';ctx.fillRect(x+14,y-4,4,4)}
+ }
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-site],[data-investigate],[data-site-cancel],[data-site-focus],[data-frontier-map]');if(!b)return;
+ if(b.hasAttribute('data-frontier-map')){openSection('world');return}
+ if(b.dataset.site){frontierSitePanel(b.dataset.site);return}
+ if(b.dataset.investigate){frontierOrderSite(b.dataset.investigate,b.dataset.choice);frontierSitePanel(b.dataset.investigate);return}
+ const s=frontierState().sites.find(s=>s.id===(b.dataset.siteCancel||b.dataset.siteFocus));if(!s)return;
+ if(b.dataset.siteCancel){delete s.order;for(const p of S.colonists)if(p.task?.site===s.id){p.task=null;p.path=[]}save();frontierSitePanel(s.id)}
+ else{camera.x=(s.x+.5)*TS;camera.y=(s.y+.5)*TS;closeSheet()}
+});

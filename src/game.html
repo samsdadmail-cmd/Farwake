@@ -246,8 +246,8 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
   ['gather',()=>harvestTaskFor(p)],
   ['field',()=>productionCandidate(p,'garden')],
   ['factory',()=>productionCandidate(p,'workshop')],
-  ['survey',()=>p.role==='Surveyor'||p.work==='survey'?surveyFrontierGoal(p):null],
-  ['research',()=>({type:'research',x:26,y:26,w:3,h:3})]
+  ['survey',()=>p.role==='Surveyor'||p.work==='survey'?(frontierInvestigateTarget(p)||surveyFrontierGoal(p)):null],
+  ['research',()=>frontierResearchTarget(p)]
  ];
  const buildFirst=jobs().some(b=>b.buildPriority&&!b.buildPaused)||S.buildings.some(b=>b.editOrder);
  const ranks={build:6,haul:5,gather:4,field:3,factory:3,survey:2,research:1};
@@ -264,6 +264,8 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
+ if(t.type==='investigate'){frontierInvestigate(p,work);return}
+ if(t.type==='align'){frontierAlign(p,work);return}
  if(t.type==='upgrade'){frontierUpgradeWork(p,work);return}
  if(t.type==='social'){frontierSocial(p,work);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
@@ -339,7 +341,7 @@ function renderWorldSelection(time){
 function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,0,0);rect(0,0,cw,ch,'#1a4241');ctx.save();ctx.translate(cw/2,ch/2);ctx.scale(camera.z,camera.z);ctx.translate(-camera.x,-camera.y);
  const left=Math.max(0,Math.floor((camera.x-cw/(2*camera.z))/TS)-2),right=Math.min(VW,Math.ceil((camera.x+cw/(2*camera.z))/TS)+2),top=Math.max(0,Math.floor((camera.y-ch/(2*camera.z))/TS)-2),bottom=Math.min(VH,Math.ceil((camera.y+ch/(2*camera.z))/TS)+2);
  FarwakeLandscape.ground(ctx,terrain,VW,VH,S.seed,left,top,right,bottom,time,{state:S,fog,onThunder:()=>FarwakeAudio.play("thunder")});
- editorPaths(time,left,top,right,bottom);
+ editorPaths(time,left,top,right,bottom);frontierSitesDraw(left,top,right,bottom,time);
  for(const f of features)if(f.x>=left&&f.x<right&&f.y>=top&&f.y<bottom&&fog[index(f.x,f.y)]){FarwakeWorkFX.feature(ctx,f,time,S.minute);if(S.designations?.[f.id])renderWorkMarker(f)}
  for(const b of S.buildings)if(b.finished&&b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)FarwakeBuildings.shadow(ctx,b.type,b.x*TS,b.y*TS,b.w*TS,b.h*TS,S.minute,b);
  if(S.ruin&&fog[index(S.ruin.x,S.ruin.y)])FarwakeLandscape.ruin(ctx,S.ruin,time);
@@ -424,6 +426,7 @@ async function importExpeditionFile(file){
 function openMenu(){showSheet('<div class="row"><div class="smallcaps">FARWAKE · FOUNDATIONS</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>Expedition Operations</h2><p>Manage the current expedition or start a new world.</p><div class="sectioncap">Current world</div><div class="infocard"><b>Seed: '+S.seed+'</b><p>Day '+S.day+' · '+S.colonists.length+' expedition members · Saved locally on this device.</p></div><div class="buttongroup" style="margin-top:12px"><button class="primary" data-sheet="save">Save Expedition</button><button class="secondary" data-sheet="center">Return to Landing</button></div><div class="sectioncap" style="margin-top:15px">Transfer your expedition</div><p>Export a backup to Files, then import it at another FARWAKE preview. Import asks before replacing the current colony.</p><div class="buttongroup"><button class="primary" data-sheet="export-save">Export Save</button><label class="secondary" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;cursor:pointer">Import Save<input type="file" id="import-expedition-file" accept=".json,application/json" style="display:none"></label></div><div class="sectioncap" style="margin-top:17px">Start a different expedition</div><input class="field" id="seedfield" maxlength="24" value="FW-'+Math.floor(10000+Math.random()*80000)+'" aria-label="World seed"><button class="secondary danger" style="width:100%;margin-top:8px" data-sheet="newconfirm">Generate New World</button><p class="tiny">Starting a new world overwrites only this Alpha 0.3 save. The older FARWAKE game and its saves remain separate.</p>')}
 function selectTap(clientX,clientY){if(editor&&!editor.pan)return;const r=canvas.getBoundingClientRect(),pos=screenToWorld(clientX-r.left,clientY-r.top),x=Math.floor(pos.x),y=Math.floor(pos.y);if(!inMap(x,y))return;
  if(selectedType){const t=TYPES[selectedType];selectedFeature=null;selectedTerrain=null;selectedPile=null;preview={x:clamp(x-Math.floor((t.w-1)/2),0,VW-t.w),y:clamp(y-Math.floor((t.h-1)/2),0,VH-t.h)};selectedBuilding=null;selectedColonist=null;paintHUD();return}
+ const site=frontierState().sites.find(s=>s.seen&&s.x===x&&s.y===y);if(site&&!buildingAt(x,y)){frontierSitePanel(site.id);return}
  let person=S.colonists.find(p=>FarwakeDoors.visible(p)>.4&&Math.hypot(pos.x-FarwakePeople.pose(p).x,pos.y-FarwakePeople.pose(p).y)<.58);if(person){selectedColonist=person.id;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}let b=buildingAt(x,y);if(b){selectedBuilding=b.id;selectedColonist=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}const pile=pileAt(x,y);if(pile){selectedPile=pile.id;selectedFeature=null;selectedTerrain=null;selectedColonist=null;selectedBuilding=null;paintHUD();return}selectedPile=null;const f=featureFromPoint(pos);selectedFeature=f?.id||null;selectedTerrain=f?null:{x,y};selectedColonist=null;selectedBuilding=null;paintHUD();}
 function centerCamera(){camera.x=28*TS;camera.y=28*TS;camera.z=1;}
 function research(id){frontierBeginResearch(id)}
@@ -527,7 +530,7 @@ function frame(now){if(!S){requestAnimationFrame(frame);return}const dt=Math.min
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();last=performance.now()});
 // FOUNDATION MODULES
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;
