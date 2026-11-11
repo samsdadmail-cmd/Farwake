@@ -62,6 +62,23 @@ const SUITES = [
   ['visual', 'check.html', 240000]
 ];
 
+// GitHub's default checkout is one commit deep. These parents are read by the
+// prepare scripts and are not on the pull-request head.
+const HISTORY = [
+  'c4791046f297bcab902a190363f41d8b75ee7a0a',
+  'db55e5c0824ff71392de01939fb07f5d10d35426'
+];
+
+function ensureHistory() {
+  for (const sha of HISTORY) {
+    try {
+      execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], {cwd: root, stdio: 'ignore'});
+    } catch {
+      execFileSync('git', ['fetch', '--depth=1', 'origin', sha], {cwd: root, stdio: 'inherit'});
+    }
+  }
+}
+
 function stageFoundations() {
   const directory = execFileSync('python3', ['-c', 'import tempfile; print(tempfile.mkdtemp(prefix="farwake-foundations-"))'], {encoding: 'utf8'}).trim();
   execFileSync('python3', ['tests/prepare-foundations.py', '--directory', directory], {cwd: root, stdio: 'inherit'});
@@ -117,6 +134,7 @@ const directories = [];
 let exitCode = 0;
 const browser = await chromium.launch();
 try {
+  ensureHistory();
   const roots = {
     foundations: stageFoundations(),
     visual: await stageVisual()
