@@ -46,6 +46,12 @@ function facilityReadout(b){
  const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':'Operational')+'</b>'];
  if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
  if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
+ if(!b.finished){
+   const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
+   lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
+ }
+ if(['garden','workshop'].includes(b.type))lines.push(esc(industrySummary(b)));
+ if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}
  if(b.type==='clinic')lines.push('Nearby resting colonists within 8 tiles recover 20% faster.');
  if(b.type==='solar')lines.push('Generating '+(isNight()?'reduced nighttime':'daytime')+' power.');
  return lines.join('<br>');
@@ -83,7 +89,7 @@ const guideEntries=[
  ['Automation','Giving orders','Use Work & production for colony priorities and targets. Open a colonist profile for personal work choices. Hunger and rest still interrupt work.'],
  ['Personnel','Daily life','Tap a person to see their job and needs. Doors and occupancy reflect indoor jobs. Outdoor supplies are handled beside the pallet. A nearby operating clinic improves rest recovery.'],
  ['Research','Technology requirements','The research screen shows costs, prerequisites and benefits. Earn knowledge through real research and survey work. A locked technology lists what the colony still needs.'],
- ['Power','Generation and demand','Compare power supply and demand in Command Center. Solar output falls at night. Check power when a staffed workshop stops producing.'],
+ ['Power','Generation and demand','Compare power supply and demand in Command Center. Solar output falls at night. Power banks charge surplus energy and discharge into a deficit. Check power when a staffed workshop stops producing.'],
  ['Weather','Reading the world','Rain, wind and changing daylight affect the appearance and sound of the map. World settings controls effects, sound levels and dialogue.'],
  ['Saving','Moving an expedition between previews','Open More → Game & Save, then Export Save. On another preview, Import Save and select the exported JSON. Browser storage is separate for each preview address.'],
  ['Touch controls','Inspect, pan and zoom','Tap a tile, colonist or facility to inspect it. Drag the map to pan and pinch to zoom. In a drawing tool, use the preview and confirmation controls before issuing the order.']
