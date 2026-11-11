@@ -47,16 +47,19 @@ async function verifyFrontierJourney(frame,out){
  await study('commons');await place('dining');await study('lodging');await place('dormitory');await study('civiclife');await place('recreation');
  await study('signal');await place('comms');await study('fieldstations');
  await investigate(g.frontierState().sites.find(q=>q.seen&&!q.resolved&&g.frontierSiteReach(q)));
+ // Secure finite ore before metal-costing population/logistics expansion.
+ const seam=g.frontierState().sites.find(q=>q.kind==='seam'&&q.seen);if(!seam.resolved)await investigate(seam);
+ await study('extraction');const fieldBefore=seam.remaining;ok(g.frontierOrderExtraction(seam.id,true),'order finite field extraction without a rig');
+ const needsFieldOre=g.freightAvailable('metal')<24;
+ ok(await run(()=>g.freightAvailable('metal')>=24&&(!needsFieldOre||seam.remaining<fieldBefore)),'finite surface/field ore funds the extraction rig');
+ if(needsFieldOre)ok(seam.remaining<fieldBefore,'hand extraction depletes the same investigated seam');
+ const rig=await place('drill',seam);g.frontierOrderExtraction(seam.id,false);const before=seam.remaining;
+ ok(await run(()=>seam.remaining<before),'organically built rig extracts finite deep ore');
  const pop=s.colonists.length;
  for(let i=0;i<3;i++){ok(await run(()=>!g.frontierArrivalReason()),'arrival infrastructure and provisions ready');ok(g.frontierInvite(),'invite one supported settler')}
  ok(s.colonists.length===pop+3&&s.colonists.every(p=>p.home!=null),'controlled growth to eight genuinely housed people');
  await place('shed');await study('freightnetwork');await place('warehouse');
- const seam=g.frontierState().sites.find(q=>q.kind==='seam'&&q.seen);if(!seam.resolved)await investigate(seam);
- await study('extraction');const fieldBefore=seam.remaining;ok(g.frontierOrderExtraction(seam.id,true),'order finite field extraction without a rig');
- ok(await run(()=>g.freightAvailable('metal')>=24),'field ore supplies the bootstrap smelting chain');
- ok(seam.remaining<fieldBefore,'hand extraction depletes the same investigated seam');
- const rig=await place('drill',seam);g.frontierOrderExtraction(seam.id,false);const before=seam.remaining;
- ok(await run(()=>seam.remaining<before),'organically built rig extracts finite deep ore');
+
  const third=g.frontierState().sites.find(q=>q.seen&&!q.resolved);await investigate(third);
  await study('accumulation');await place('accumulator');await recipe('panels');
  ok(await run(()=>g.frontierState().produced.composite>=30),'complete advanced construction-material chain');

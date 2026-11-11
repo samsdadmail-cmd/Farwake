@@ -116,10 +116,10 @@ async function runSuite(page, origin, file, timeout) {
   const started = Date.now();
   try {
     await page.goto(`${origin}/${file}`, {waitUntil: 'domcontentloaded', timeout: 30000});
-    const finished = file === 'regression.html' ? 'ALL SUITES FINISHED' : null;
+    const finished = file === 'regression.html' ? 'ALL SUITES FINISHED' : file === 'journey.html' ? 'COMPLETE ORGANIC JOURNEY' : null;
     await page.waitForFunction(token => {
       const text = document.querySelector('pre')?.textContent || '';
-      if (token) return text.includes(token);
+      if (token) return text.includes(token) || (token === 'COMPLETE ORGANIC JOURNEY' && text.includes('FAILED'));
       return text.includes('COMPLETE') || text.includes('FAILED');
     }, finished, {timeout});
     const text = await page.locator('pre').innerText();

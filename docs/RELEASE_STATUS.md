@@ -29,3 +29,13 @@ Same-host sequential late-colony benchmarks, Chromium 153, 390×844/DPR3, 4× CP
 WebKit could not launch: its binary is unavailable in this environment (download attempts returned invalid/truncated archives). Physical iPhone Safari, GPU/memory/thermal behavior and long-term all-seed balance remain unverified. Earlier organic execution stalled on an extra wind-turbine build after Observatory construction; two subsequent organic executions completed. That intermittent late construction delay is not isolated or claimed fixed; the required journey gate and saved diagnostics expose recurrence.
 
 The root save remains v3 and the existing key is retained. No v4 migration was introduced. Old pages without the new guard cannot retroactively be made safe; export a backup before switching builds. Preview is for review only, never approval to replace production.
+
+## CI follow-up: run 43101777899
+
+Atlas independently found the required journey failing after the warehouse: supply 34 / demand 32, metal 2 / ore 3. The scripted director requested another 10-metal turbine for three spare power before ordering finite-seam extraction. Faster CI and random founder needs changed which reserves were left at that point. The journey now investigates/works the seam and establishes the actual rig before further population/logistics expansion. Existing surface metal can legitimately fund the rig; hand-extraction depletion is required when that bootstrap is needed, and actual powered rig depletion remains mandatory in every journey.
+
+Founder starting needs now use the expedition seed; existing saved needs are untouched. Field dispatch and survey retry cadence use simulation time instead of host wall time. A regression compares 6,000 identical ticks under opposite random sources and different wall clocks and requires equal mechanical state.
+
+The runner also had a false-success window: the fresh phase reports COMPLETE while the full journey is still running. Journey completion now requires the exact COMPLETE ORGANIC JOURNEY marker, with FAILED still terminating immediately. The required journey is not skipped or marked known-failing. CI uploads its log and save/live checkpoint even on failure.
+
+Executed locally after this fix: 23 Chromium headless tests; source/build equality, housing, fixture sanity, content and survival checks passed. The focused full journey reached the actual listening-array objective on Day 57 with save/load. Remote CI results are recorded in PR #18 after the new commit runs; earlier c1cfb6d local results were not sufficient to establish CI success.
