@@ -162,7 +162,8 @@ function notice(message){const el=$('toast');el.textContent=message;el.classList
 // Bounded local diagnostics without inventories or colonist records.
 const health={frames:0,ticks:0,saves:0,resizes:0,contextLosses:0,contextRestores:0,phase:'boot',phaseStarted:0,maxPhaseMs:{},error:null};
 const healthEnabled=new URLSearchParams(location.search).has('diagnostics');
-let healthLastWrite=0;
+let healthLastWrite=0,healthPrevious=null;
+try{healthPrevious=JSON.parse(localStorage.getItem('farwake_diagnostics_v1')||'null')}catch{}
 function healthPhase(phase){
  const now=performance.now();if(health.phaseStarted)health.maxPhaseMs[health.phase]=Math.max(health.maxPhaseMs[health.phase]||0,now-health.phaseStarted);
  health.phase=phase;health.phaseStarted=now;
@@ -177,7 +178,7 @@ window.addEventListener('unhandledrejection',e=>healthRecord(e.reason||'Unhandle
 canvas.addEventListener('contextlost',()=>{health.contextLosses++;healthRecord(new Error('Canvas 2D context lost'))});
 canvas.addEventListener('contextrestored',()=>{health.contextRestores++;if(healthEnabled)healthRecord()});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-diagnostics-export]'))return;
- const a=document.createElement('a'),raw=JSON.stringify({current:healthSnapshot(),previousFault:JSON.parse(localStorage.getItem('farwake_diagnostics_fault_v1')||'null'),heartbeat:JSON.parse(localStorage.getItem('farwake_diagnostics_v1')||'null')});
+ const a=document.createElement('a'),raw=JSON.stringify({current:healthSnapshot(),previousFault:JSON.parse(localStorage.getItem('farwake_diagnostics_fault_v1')||'null'),previousSession:healthPrevious});
  const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));a.href=url;a.download='FARWAKE-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 let importedNavigation=false,saveLocked=false,loadedStamp=null,lastWrittenStamp=null;
