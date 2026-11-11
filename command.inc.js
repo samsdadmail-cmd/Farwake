@@ -13,11 +13,11 @@ function commandStats(){
   if(homes<people.length)need.push((people.length-homes)+' without a permanent bed');
   if(powerNow.used>powerNow.supply)need.push('Power demand exceeds supply');
   if(storedTotal()>=storageCapacity())need.push('Stores at capacity');
-  if(S.resources.food<people.length)need.push('Less than one stored meal per colonist');
+  if((S.resources.food||0)+(S.resources.meals||0)<people.length)need.push('Less than one stored meal per colonist');
   const cards=[
     ['Population',people.length,homes+' permanently housed'],
     ['Wellbeing',mean('mood')+'%',mean('energy')+'% average energy'],
-    ['Provisions',Math.floor(S.resources.food),finished('garden').length+' grow beds'],
+    ['Provisions',Math.floor((S.resources.food||0)+(S.resources.meals||0)),(S.resources.meals||0)+' prepared meals'],
     ['Power',powerNow.supply-powerNow.used,powerNow.supply+' supply / '+powerNow.used+' demand'],
     ['Construction',jobs().length,'unfinished blueprints'],
     ['Survey',Math.round(100*fog.filter(Boolean).length/fog.length)+'%',S.explore+' expeditions']
@@ -27,7 +27,7 @@ function commandStats(){
 }
 function showCommand(){
   sheetSection='colony';
-  showSheet(sectionHeader('Command Center','SETTLEMENT • DAY '+S.day)+
+  showSheet(sectionHeader('Command Center','SETTLEMENT • DAY '+S.day)+frontierCommandHero()+
     '<div id="command-stats">'+commandStats()+'</div><div class="command-links">'+
     commandLink('resources','storage','Logistics','Stores, reserves & hauling')+
     commandLink('industry','workshop','Work & production','Assignments and targets')+
@@ -36,7 +36,7 @@ function showCommand(){
     commandLink('world','world','Survey','Resources & expeditions')+
     commandLink('guide','inspect','Field guide','Search colony mechanics')+
     '</div><h3 class="sectioncap">Settlement facilities</h3><div class="facility-list">'+
-    S.buildings.filter(b=>b.type!=='path').map(b=>'<button data-facility="'+b.id+'">'+uiIcon(TYPES[b.type]?b.type:'storage',17)+'<span>'+facilityName(b)+'</span><small>'+b.x+', '+b.y+'</small></button>').join('')+
+    frontierFacilityRows()+
     '</div><h3 class="sectioncap">Field log</h3>'+S.events.slice(0,6).map(e=>'<div class="event"><b>Day '+e.day+'</b> '+esc(e.message)+'</div>').join(''));
   renderNavState();
 }
@@ -62,7 +62,7 @@ function showBuilding(id){
  const housing=housingBeds(b)?housingPanel(b):'';
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
- '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
+ frontierFacilityHero(b)+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
  frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();

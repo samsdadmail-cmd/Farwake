@@ -17,3 +17,12 @@ Town development tests pass: physical cabin expansion, added permanent capacity,
 History/Hearth integration verified: nighttime residents physically enter their assigned expanded homes; door occupancy reports actual resting occupants; indoor time only accumulates while inside; rainy-night save/load retains it. Rendering uses persistent age, work, occupancy, harvest and street-traffic counters for cached development details. Occupied heated homes emit chimney smoke; windows use actual occupants, rest dimming and silhouettes. Real community visits support one restrained evening break. Lanterns depend on grid availability. Existing Living World weather/audio controls remain intact; expanded building-specific audio is still pending.
 
 Planetary vertical slice passes: deterministic reachable sites, survey discovery, actual Surveyor travel and study/recovery choice, physical finite core rewards, duplicate-reward prevention, outpost construction extending investigation reach, finite underground seam investigation/extraction, advanced observatory construction and powered staff alignment. Discoveries/extraction/project completion survive loading. Industry/planet integration tests seed research and supplies to isolate systems; they do not certify complete fresh-colony pacing.
+
+## Recovery, 11 November 2026
+Remote baseline verified at 37745f1, five implementation commits after Foundations 368c2c0. The exact later UI survived locally: compact HUD/Research navigation, illustrated catalogue/detail/chain previews, Command Center hero and facility rows, inspector artwork, research branch shortcuts and responsive layouts. Recovered new-building door admissions were also missing from the remote baseline.
+
+Current browser UI suite passes 375×667, 390×844, 430×932 and 844×390. The prior branch-scroll failure inspected a hidden legacy research tree; assertions now scope the visible sheet and require nonzero dimensions. Current syntax check passes on the generated bundle. Other subsystem tests must be rerun after recovery.
+
+GitHub issue #4 records implementation ownership and Studio QA requests. No specialist branches or overlapping proposals existed at inspection. No deployment authorized: branch-specific Vercel deployment suppression committed in d533431. Do not remove it without Kyle’s approval.
+
+Next: live inspector integration, parallel-research protection, current regression suites and fresh-colony progression. The recovered UI is a priority deliverable, not deferred work.

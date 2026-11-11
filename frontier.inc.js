@@ -117,7 +117,7 @@ function frontierTree(){
  const active=frontierState().research;
  return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<span class="'+(i===frontierEra()?'current':'')+'">'+n+'</span>').join('')+'</div>'+
  '<div class="tree-controls"><span>Drag the tree to explore · '+S.resources.knowledge+' knowledge</span><button class="secondary" data-tech-zoom="-1" aria-label="Zoom technology tree out">−</button><button class="secondary" data-tech-zoom="1" aria-label="Zoom technology tree in">+</button></div>'+
- '<div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
+ '<div class="tree-branches">'+branches.map((id,i)=>'<button class="secondary" data-tech-branch="'+i+'">'+FRONTIER_BRANCHES[id][0]+'</button>').join('')+'</div><div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
  '<svg class="tech-links" width="'+width+'" height="'+height+'" aria-hidden="true">'+lines+'</svg>'+
  FRONTIER_ERAS.map((n,i)=>'<h3 class="tech-era" style="left:'+(136+i*colWidth)+'px">'+n+'</h3>').join('')+
  branches.map((id,i)=>'<div class="tech-branch" style="top:'+(70+i*rowHeight)+'px">'+uiIcon(FRONTIER_BRANCHES[id][1],22)+'<b>'+FRONTIER_BRANCHES[id][0]+'</b></div>').join('')+
@@ -137,6 +137,7 @@ function frontierTechDetail(id){
  '<p>'+ (t.requirement||'Founding expedition knowledge')+'</p><button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
 }
 document.addEventListener('click',e=>{
+ const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=(70+Number(branch.dataset.techBranch)*345)*techZoom-10;return}
  const detail=e.target.closest('[data-tech-detail]');if(detail){frontierTechDetail(detail.dataset.techDetail);return}
  const start=e.target.closest('[data-tech-start]');if(start){frontierBeginResearch(start.dataset.techStart);return}
  const zoom=e.target.closest('[data-tech-zoom]');if(zoom){techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research')}
@@ -490,3 +491,67 @@ document.addEventListener('click',e=>{
  if(b.dataset.siteCancel){delete s.order;for(const p of S.colonists)if(p.task?.site===s.id){p.task=null;p.path=[]}save();frontierSitePanel(s.id)}
  else{camera.x=(s.x+.5)*TS;camera.y=(s.y+.5)*TS;closeSheet()}
 });
+
+let frontierCatalogMode='all',frontierCatalogSort='era';
+function catalogResults(){
+ const list=$('catalogresults');if(!list)return;
+ const query=catalogQuery.toLowerCase().trim();
+ const items=Object.entries(TYPES).filter(([id,t])=>(catalogGroup==='All'||GROUP_FOR[id]===catalogGroup)&&(!query||(t.name+' '+t.description+' '+GROUP_FOR[id]).toLowerCase().includes(query))&&(frontierCatalogMode!=='ready'||accessible(id)));
+ const era=t=>researchDefinition(t.tech)?.era||0;
+ items.sort(([a,t],[b,u])=>frontierCatalogSort==='name'?t.name.localeCompare(u.name):Number(accessible(b))-Number(accessible(a))||era(t)-era(u)||t.name.localeCompare(u.name));
+ list.innerHTML=items.map(([id,t])=>{
+  const ready=accessible(id),tech=researchDefinition(t.tech);
+  return '<button class="civil-blueprint '+(ready?'ready':'future')+'" data-blueprint-detail="'+id+'" aria-label="Inspect '+t.name+'"><span class="civil-art">'+blueprintArt(id)+'<small>'+ (ready?'Blueprint ready':FRONTIER_ERAS[era(t)])+'</small></span><span class="civil-info"><span class="smallcaps">'+GROUP_FOR[id]+'</span><b>'+t.name+'</b><span>'+t.description+'</span><small>'+ (ready?Object.entries(t.cost).map(([k,n])=>n+' '+MATERIALS[k].verb).join(' · '):'Unlock: '+(tech?.name||'Founding research'))+'</small></span><span class="civil-arrow">'+uiIcon(ready?'build':'research',18)+'</span></button>';
+ }).join('')||'<p>No matching blueprints. Try another category or show future designs.</p>';
+ for(const b of $('sheet').querySelectorAll('[data-filter]'))b.classList.toggle('active',b.dataset.filter===catalogGroup);
+}
+function showCatalog(){
+ sheetSection='build';const available=Object.keys(TYPES).filter(accessible).length;
+ showSheet(sectionHeader('Build a civilization','FRONTIER DESIGN OFFICE')+'<div class="catalog-summary"><span>'+FRONTIER_ERAS[frontierEra()]+'</span><b>'+available+' / '+Object.keys(TYPES).length+' blueprints ready</b></div>'+editorToolbar()+
+ '<label class="searchwrap">'+uiIcon('inspect',18)+'<input id="catalogsearch" type="search" placeholder="Find a building or industry" aria-label="Search blueprints"></label>'+
+ '<div class="catalogfilters">'+CATALOG_GROUPS.map(g=>'<button class="filterchip" data-filter="'+g+'">'+g+'</button>').join('')+'</div>'+
+ '<div class="catalog-options"><button class="secondary" data-catalog-mode="all" aria-pressed="'+(frontierCatalogMode==='all')+'">All designs</button><button class="secondary" data-catalog-mode="ready" aria-pressed="'+(frontierCatalogMode==='ready')+'">Ready to build</button><select aria-label="Sort blueprints" data-catalog-sort><option value="era">Development order</option><option value="name" '+(frontierCatalogSort==='name'?'selected':'')+'>Name</option></select></div><div id="catalogresults" class="civil-catalog"></div>');
+ $('catalogsearch').value=catalogQuery;catalogResults();renderNavState();
+}
+function frontierBlueprintDetail(id){
+ const t=TYPES[id];if(!t)return;const tech=researchDefinition(t.tech),ready=accessible(id),recipe=FRONTIER_RECIPES[t.recipe];
+ showSheet(sectionHeader(t.name,GROUP_FOR[id]+' / '+(FRONTIER_ERAS[tech?.era||0]))+'<div class="facility-hero">'+blueprintArt(id)+'</div><p class="blueprint-lede">'+t.description+'</p>'+
+ '<div class="blueprint-specs"><span><b>'+t.w+' × '+t.h+'</b>footprint</span><span><b>'+ (t.power>0?'+':'')+t.power+'</b>power</span><span><b>'+ (t.beds||t.storage||t.time)+'</b>'+ (t.beds?'beds':t.storage?'storage':'build work')+'</span></div>'+
+ '<h3>Construction supplies</h3><div class="material-chips">'+Object.entries(t.cost).map(([k,n])=>'<span class="'+(freightAvailable(k)<n?'short':'')+'">'+n+' '+MATERIALS[k].name+' <small>'+freightAvailable(k)+' available</small></span>').join('')+'</div>'+
+ (recipe?'<section class="chain-preview"><h3>Production chain</h3><p>'+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+Object.entries(recipe.output).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+'</p><small>Delivered inputs · labour · '+recipe.seconds+' work seconds · '+(-t.power)+' power</small></section>':'')+
+ (FRONTIER_UPGRADABLE.has(id)?'<p>Upgradeable through physically supplied construction work after the appropriate technology.</p>':'')+
+ (ready?'<button class="primary wide-action" data-build="'+id+'">'+uiIcon('build',18)+' Place blueprint</button>':'<button class="primary wide-action" data-tech-detail="'+t.tech+'">'+uiIcon('research',18)+' Discover '+(tech?.name||'research')+'</button>')+'<button class="secondary" data-open="build">Back to designs</button>');
+}
+function frontierCommandHero(){
+ const f=frontierState(),built=S.buildings.filter(b=>b.finished).length;
+ const objective=frontierObjective();
+ return '<section class="civilization-hero"><span class="smallcaps">'+FRONTIER_ERAS[frontierEra()]+' / '+esc(S.seed)+'</span><h3>A small home.<br>A wider horizon.</h3><p>'+built+' established structures · '+f.sites.filter(s=>s.resolved).length+' planetary investigations</p><button data-open="research">'+uiIcon('research',18)+' '+esc(objective)+' <span>›</span></button></section>';
+}
+function frontierObjective(){
+ if(S.goal<6)return surveyObjective();
+ if(!finished('sawmill').length)return 'Build a sawmill and process structural timber';
+ if(!finished('cabin').length)return 'Develop permanent frontier cabins';
+ if(!finished('smelter').length)return 'Establish dedicated metallurgy';
+ if(!finished('fabricator').length)return 'Fabricate the next generation of equipment';
+ if(!finished('outpost').length)return 'Establish a forward expedition base';
+ if(frontierState().sites.filter(s=>s.resolved).length<3)return 'Investigate three planetary sites';
+ if(!finished('observatory').length)return 'Construct the Signal Observatory';
+ return frontierState().signalComplete?'A second horizon awaits':'Align the planetary listening array';
+}
+function frontierFacilityHero(b){
+ const src=TYPES[b.type]?FarwakeBuildings.thumbnail(b.type):null;
+ return '<div class="facility-hero">'+(src?'<img alt="'+esc(facilityName(b))+'" class="plate" src="'+src+'">':uiIcon('colony',64))+'<span><b>'+ (b.finished?'Established':'Under construction')+'</b><small>Level '+(b.level||1)+' · '+frontierDistrict(b)+'</small></span></div>';
+}
+function frontierFacilityRows(){
+ return S.buildings.filter(b=>!['path','road'].includes(b.type)).map(b=>{
+  const active=S.colonists.filter(p=>p.task?.id===b.id).length;
+  const status=!b.finished?'Under construction':b.upgradeOrder?'Expanding':frontierProducer(b)||['garden','workshop'].includes(b.type)?industrySummary(b):housingBeds(b)?housingResidents(b).length+' / '+housingBeds(b)+' residents':active+' active workers';
+  return '<button data-facility="'+b.id+'"><img class="plate" alt="" src="'+(TYPES[b.type]?FarwakeBuildings.thumbnail(b.type):FarwakeBuildings.thumbnail('shed'))+'"><span><b>'+facilityName(b)+'</b><small>'+esc(status)+'</small></span><span>›</span></button>';
+ }).join('');
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-blueprint-detail],[data-catalog-mode]');if(!b)return;
+ if(b.dataset.blueprintDetail)frontierBlueprintDetail(b.dataset.blueprintDetail);
+ else{frontierCatalogMode=b.dataset.catalogMode;showCatalog()}
+});
+document.addEventListener('change',e=>{if(e.target.matches('[data-catalog-sort]')){frontierCatalogSort=e.target.value;catalogResults()}});
