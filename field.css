@@ -26,3 +26,8 @@
 button:focus-visible,input:focus-visible{outline:2px solid #f8d399;outline-offset:2px}
 @media(orientation:landscape) and (max-height:520px){.top{display:flex;align-items:center;justify-content:space-between}.brand{height:44px;flex:1}.resbar{width:40%;border:0}.lower{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:min(400px,65%);border:1px solid #676454}.nav,.navbutton{min-height:39px;height:39px}.inspector{bottom:58px}.sheet{height:97dvh;max-height:97dvh}.cataloggrid{grid-template-columns:repeat(3,1fr)}}
 .subbrand{white-space:nowrap;letter-spacing:.07em;font-size:7px}
+.preferences fieldset{border:0;border-bottom:1px solid #ffffff24;margin:0;padding:18px 0}
+.preferences legend{font:18px Georgia,serif;padding:12px 0 0}
+.preferences [aria-pressed=true]{background:#d4aa72;color:#171916}
+.preferences .pill{min-height:44px}.preferences label{display:flex;align-items:center;justify-content:space-between;height:46px}.preferences input{width:62%;accent-color:#d4aa72}
+@media(prefers-reduced-motion:no-preference){.sheetbg.open .sheet{animation:open-journal .18s ease-out}@keyframes open-journal{from{opacity:.5;transform:translateY(7px)}}}

@@ -6,8 +6,19 @@ window.FarwakeBuildings = (() => {
     lander:[96,96], supplies:[64,64], camp:[96,64]};
   const cache = new Map(), thumbnails = new Map();
 
-  function plate(type, night) {
-    const key = type + (night ? '.night' : '.day');
+  // The coordinates describe the operable aperture in each native sprite.
+  const homeDoors=[[54,40],[22,39],[65,42],[40,40]];
+  function variant(b){return b ? Math.abs(b.id||0)%4 : 0;}
+  function entrance(b){
+    if(!b)return null;
+    const home=homeDoors[variant(b)];
+    const dims=({shelter:[...home,10,14,'hinge'],workshop:[14,38,30,13,'roller'],
+      shed:[21,37,31,15,'roller'],clinic:[42,40,10,14,'slide'],lander:[43,60,10,15,'split'],
+      camp:[77,36,10,14,'flap'],supplies:[24,42,16,12,'gate']})[b.type];
+    return dims&&{x:dims[0],y:dims[1],w:dims[2],h:dims[3],kind:dims[4]};
+  }
+  function plate(type, night,style=0) {
+    const key = type + style + (night ? '.night' : '.day');
     if (cache.has(key)) return cache.get(key);
     const image = document.createElement('canvas');
     [image.width, image.height] = sizes[type];
@@ -94,6 +105,26 @@ window.FarwakeBuildings = (() => {
 
     switch(type) {
       case 'shelter':
+        if(style){
+          const roofs=[null,['#abaf98','#748b79','#52695e'],['#d1aa79','#b78659','#846247'],['#aeb9ae','#809797','#586e71']];
+          const wing=['#c7ba95','#ab9d82','#847967'];
+          if(style===1){
+            cabin(54,18,33,34,wing);windowBay(67,40,13);
+            cabin(7,7,53,43,roofs[style]);windowBay(38,39,12);
+            vent(38,14,11);grassPot(9,52);crate(78,49,9,8);
+          }else if(style===2){
+            cabin(5,14,47,38,wing);windowBay(12,41,20);
+            cabin(49,5,38,48,roofs[style]);vent(57,12,15);
+            for(let i=0;i<4;i++)box(43+i*4,48,2,9,wood);
+            box(41,47,19,2,brass);grassPot(81,51);
+          }else{
+            cabin(7,8,79,44,roofs[style]);windowBay(16,40,14);windowBay(59,40,16);
+            photovoltaic(20,15,17,10);vent(63,13,13);
+            box(29,53,33,5,wood);grassPot(24,53);grassPot(70,52);
+          }
+          const [hx,hy]=homeDoors[style];hatch(hx,hy);
+          box(hx-4,hy-4,19,3,ivory);box(hx-3,hy-1,17,2,slate);break;
+        }
         // Offset sleeping wing, main common room and sheltered entrance porch.
         cabin(4,18,29,34,['#c3b58f','#a89b7e','#7a7768']);
         windowBay(9,39,14);
@@ -181,34 +212,75 @@ window.FarwakeBuildings = (() => {
         for(let i=0;i<3;i++)box(37,77+i*3,22,1,steel);
         box(60,8,2,12,slate);box(59,6,4,3,'#d59668');break;
     }
+    if(style && ['workshop','shed','clinic'].includes(type)){
+      const props=[[0,0],[7,49],[77,48],[65,52]][style];
+      if(style===1)crate(...props,9,8);
+      if(style===2)grassPot(...props);
+      if(style===3){box(...props,13,4,darkWood);box(props[0]+1,props[1],10,1,brass);}
+    }
     cache.set(key,image);
     return image;
   }
   const shadows = new Map();
   return {
-    shadow(ctx,type,x,y,w,h,minute) {
+    entrance,
+    shadow(ctx,type,x,y,w,h,minute,b) {
       if(!sizes[type] || type==='path')return;
-      if(!shadows.has(type)){
-        const sprite=plate(type,false);
+      const key=type+variant(b);
+      if(!shadows.has(key)){
+        const sprite=plate(type,false,variant(b));
         const mask=document.createElement('canvas');
         mask.width=sprite.width;mask.height=sprite.height;
         const brush=mask.getContext('2d');
         brush.drawImage(sprite,0,0);
         brush.globalCompositeOperation='source-in';
         brush.fillStyle='#182626';brush.fillRect(0,0,mask.width,mask.height);
-        shadows.set(type,mask);
+        shadows.set(key,mask);
       }
       const sun=Math.cos((minute-360)*Math.PI/720);
       ctx.save();ctx.translate(x,y+h);
       ctx.transform(1,0,-sun*.33,.73,0,2);
       ctx.globalAlpha=.27;
-      ctx.drawImage(shadows.get(type),0,-h,w,h);
+      ctx.drawImage(shadows.get(key),0,-h,w,h);
       ctx.restore();
     },
-    draw(ctx,type,x,y,w,h,night=false) {
+    draw(ctx,type,x,y,w,h,night=false,b,door) {
       if(!sizes[type]) return;
-      const sprite=plate(type,night);
-      ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite,x,y,w,h);ctx.restore();
+      const sprite=plate(type,night && (!b || !!door?.occupied),variant(b));
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite,x,y,w,h);
+      if(b&&door){
+        const port=entrance(b);
+        ctx.translate(x,y);ctx.scale(w/sprite.width,h/sprite.height);
+        if(port){
+          const {x:px,y:py,w:pw,h:ph,kind}=port,open=door.openness;
+          if(open>.01||kind==='gate'){
+            ctx.fillStyle=night&&door.occupied?'#755831':'#302e28';ctx.fillRect(px,py,pw,ph);
+            const fraction=1-open;
+            ctx.fillStyle=kind==='hinge'?'#877350':kind==='flap'?'#9d845c':'#89918a';
+            if(kind==='roller'){
+              const height=Math.max(1,Math.round(ph*fraction));
+              ctx.fillRect(px,py,pw,height);ctx.fillStyle='#485654';
+              for(let k=1;k<height;k+=3)ctx.fillRect(px,py+k,pw,1);
+            }else if(kind==='split'){
+              const sw=Math.round(pw*fraction/2);
+              ctx.fillRect(px,py,sw,ph);ctx.fillRect(px+pw-sw,py,sw,ph);
+            }else{
+              const sw=Math.max(1,Math.round(pw*fraction));
+              ctx.fillRect(px,py,sw,ph);ctx.fillStyle='#e2be7e';ctx.fillRect(px+sw-2,py+ph*.56,2,1);
+            }
+          }
+          if(door.occupied){
+            const pulse=.5+.5*Math.sin(door.phase*2+b.id);
+            ctx.fillStyle=night?'#ffc776':'#d8cc9a';ctx.fillRect(px-3,py+1,2,3);
+            if(door.actions.includes('craft')||door.actions.includes('research')){
+              for(let i=0;i<3;i++){ctx.fillStyle=(Math.floor(door.phase*3)+i)%3===0?'#c6e4bc':'#677f73';ctx.fillRect(px+pw+2+i*2,py+6,1,2);}
+            }else if(door.actions.includes('rest')&&night&&pulse>.83){
+              ctx.fillStyle='#e9ca8c';ctx.fillRect(px-5,py-6,3,1);ctx.fillRect(px-3,py-8,2,1);
+            }
+          }
+        }
+      }
+      ctx.restore();
     },
     thumbnail(type) {
       if(!sizes[type]) return '';
