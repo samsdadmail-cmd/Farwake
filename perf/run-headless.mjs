@@ -14,6 +14,8 @@ const PORT = 47321;
 const CHECK_PORT = 47322;
 const SAVE_KEY = 'farwake_founders_alpha03_v1';
 const MARKER_KEY = 'farwake_perf_harness';
+const FINGERPRINT_KEY = 'farwake_perf_harness_save_fp';
+const PREFS_KEY = 'farwake_living_preferences';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS = path.join(ROOT, 'perf', 'results');
 const SAMPLING_INTERVAL = 32768;
@@ -33,12 +35,14 @@ const MIME = {
 function parseArgs(argv) {
   const out = {
     repeat: 3,
-    seconds: 5,
+    seconds: null,
     warmup: 1500,
     suite: 'default',
     scene: '',
     fixture: '',
+    executable: '',
     ops: false,
+    noSandbox: false,
     checkOnly: false,
     help: false
   };
@@ -56,12 +60,14 @@ function parseArgs(argv) {
     else if (arg === '--scene') out.scene = next();
     else if (arg === '--fixture') out.fixture = next();
     else if (arg === '--ops') out.ops = true;
+    else if (arg === '--no-sandbox') out.noSandbox = true;
+    else if (arg === '--executable') out.executable = next();
     else if (arg === '--check-only') out.checkOnly = true;
     else if (arg === '--help' || arg === '-h') out.help = true;
     else throw new Error('Unknown argument ' + arg);
   }
   if (!Number.isFinite(out.repeat) || out.repeat < 1 || out.repeat > 20) throw new Error('--repeat must be 1..20');
-  if (!Number.isFinite(out.seconds) || out.seconds < 1 || out.seconds > 60) throw new Error('--seconds must be 1..60');
+  if (out.seconds != null && (!Number.isFinite(out.seconds) || out.seconds < 1 || out.seconds > 60)) throw new Error('--seconds must be 1..60');
   if (!Number.isFinite(out.warmup) || out.warmup < 0 || out.warmup > 15000) throw new Error('--warmup must be 0..15000');
   return out;
 }
@@ -70,12 +76,19 @@ function help() {
   return `FARWAKE performance harness
 
   node perf/run-headless.mjs [--suite default|audit|all] [--scene id]
-                             [--repeat 3] [--seconds 5] [--warmup 1500]
+                             [--repeat 3] [--seconds N] [--warmup 1500]
                              [--ops] [--fixture file.json] [--check-only]
+                             [--executable path] [--no-sandbox]
 
 Serves ONLY http://127.0.0.1:${PORT} and uses a fresh browser profile per
-measurement. The game save key is ${SAVE_KEY}. Do not point this at any
-other origin.
+measurement. The game save key is ${SAVE_KEY}. / on this port is the real
+game; do not play there. Omit --seconds to use each scene's own window
+(15 s for sim-on late colonies, 5 s otherwise).
+
+Requires Node 20+ and Google Chrome stable. playwright-core does not
+download a browser. Set CHROME_PATH or pass --executable to override the
+Chrome channel. --no-sandbox is off unless you pass it or set
+FARWAKE_PERF_NO_SANDBOX=1.
 
 Headless Chromium iPhone 14 emulation (390×844, DPR 3, 4× CPU throttle)
 is only a proxy for iPhone Safari.`;
@@ -140,14 +153,14 @@ function iphoneContextOptions() {
   };
 }
 
-async function launchBrowser() {
+async function launchBrowser(options) {
   const args = ['--enable-precise-memory-info', '--disable-dev-shm-usage'];
-  try {
-    return await chromium.launch({ headless: true, channel: 'chrome', args });
-  } catch (error) {
-    console.warn('Installed Chrome channel failed (' + error.message + '). Retrying with --no-sandbox.');
-    return chromium.launch({ headless: true, channel: 'chrome', args: args.concat(['--no-sandbox']) });
-  }
+  if (options.noSandbox || process.env.FARWAKE_PERF_NO_SANDBOX === '1') args.push('--no-sandbox');
+  const executablePath = options.executable || process.env.CHROME_PATH || '';
+  const launch = { headless: true, args };
+  if (executablePath) launch.executablePath = executablePath;
+  else launch.channel = 'chrome';
+  return chromium.launch(launch);
 }
 
 function harnessUrl(port, query) {
@@ -222,6 +235,44 @@ async function checkForeignSave(browser) {
   }
 }
 
+async function checkMarkedPlayerSave(browser, fingerprint) {
+  const playerSave = '{"v":3,"seed":"PLAYER-REAL-PROGRESS","sentinel":true}';
+  const context = await browser.newContext(iphoneContextOptions());
+  await context.addInitScript(({ saveKey, markerKey, fpKey, playerSave, fingerprint }) => {
+    localStorage.setItem(saveKey, playerSave);
+    localStorage.setItem(markerKey, '1');
+    if (fingerprint == null) localStorage.removeItem(fpKey);
+    else localStorage.setItem(fpKey, fingerprint);
+  }, {
+    saveKey: SAVE_KEY,
+    markerKey: MARKER_KEY,
+    fpKey: FINGERPRINT_KEY,
+    playerSave,
+    fingerprint: fingerprint == null ? null : fingerprint
+  });
+  const page = await context.newPage();
+  const label = fingerprint == null
+    ? 'marker plus a save with no fingerprint is preserved'
+    : 'marker plus a player-modified save is preserved';
+  try {
+    await page.goto(harnessUrl(PORT, { perf: '1', scene: 'day2', seconds: '2' }), { waitUntil: 'networkidle', timeout: 15000 }).catch(() => {});
+    await page.waitForFunction(() => window.__PERF_REPORT__, null, { timeout: 10000 }).catch(() => {});
+    const text = await page.locator('body').innerText();
+    const stored = await page.evaluate(({ saveKey, markerKey, fpKey }) => ({
+      save: localStorage.getItem(saveKey),
+      marker: localStorage.getItem(markerKey),
+      fingerprint: localStorage.getItem(fpKey)
+    }), { saveKey: SAVE_KEY, markerKey: MARKER_KEY, fpKey: FINGERPRINT_KEY });
+    const names = await resourceNames(page);
+    const loadedGame = names.some(name => name.endsWith('/index.html'));
+    const fingerprintOk = fingerprint == null ? stored.fingerprint == null : stored.fingerprint === fingerprint;
+    const ok = /Harness refused to start/.test(text) && stored.save === playerSave && stored.marker === '1' && fingerprintOk && !loadedGame;
+    return { name: label, ok, detail: ok ? 'player save preserved' : JSON.stringify({ text: text.slice(0, 180), stored, loadedGame }) };
+  } finally {
+    await context.close();
+  }
+}
+
 function walkSelfSize(node) {
   let total = 0;
   const stack = [node];
@@ -289,10 +340,10 @@ async function runScene(browser, commit, sceneId, options) {
     const query = {
       perf: '1',
       scene: sceneId,
-      seconds: options.seconds,
       warmup: options.warmup,
       commit
     };
+    if (options.seconds != null) query.seconds = options.seconds;
     if (options.ops) query.ops = '1';
     if (options.fixture) query.fixture = options.fixture;
     await page.goto(harnessUrl(PORT, query), { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -306,7 +357,8 @@ async function runScene(browser, commit, sceneId, options) {
     try { sampling = await startSampling(session); }
     catch (error) { samplingError = String(error && error.message || error); }
     await page.evaluate(() => { window.__PERF_START_RECORDING__ = true; });
-    const timeout = (options.seconds + options.warmup / 1000) * 1000 + 60000;
+    const secondsBudget = options.seconds || 30;
+    const timeout = (secondsBudget + options.warmup / 1000) * 1000 + 90000;
     await page.waitForFunction(() => window.__PERF_REPORT__, null, { timeout });
     let allocation = { supported: false, error: samplingError };
     if (sampling) {
@@ -320,11 +372,23 @@ async function runScene(browser, commit, sceneId, options) {
     }
     const report = await page.evaluate(() => window.__PERF_REPORT__);
     const frames = report && report.recording && report.recording.frame;
-    const ok = !!(report && frames && frames.count > 0 && !report.error);
+    const windowMs = report && report.windowMs;
+    if (allocation.supported && windowMs > 0) {
+      allocation.windowMs = windowMs;
+      allocation.kbPerSecond = allocation.estimatedBytes / (windowMs / 1000) / 1024;
+    }
+    const leftover = await page.evaluate(({ saveKey, markerKey, fpKey, prefsKey }) => ({
+      save: localStorage.getItem(saveKey),
+      marker: localStorage.getItem(markerKey),
+      fingerprint: localStorage.getItem(fpKey),
+      prefs: localStorage.getItem(prefsKey)
+    }), { saveKey: SAVE_KEY, markerKey: MARKER_KEY, fpKey: FINGERPRINT_KEY, prefsKey: PREFS_KEY });
+    const dirty = leftover.save != null || leftover.marker != null || leftover.fingerprint != null || leftover.prefs != null;
+    const ok = !!(report && frames && frames.count > 0 && !report.error) && !dirty;
     return {
       scene: sceneId,
       ok,
-      error: ok ? null : (report && report.error) || 'no frames recorded',
+      error: ok ? null : (dirty ? 'harness left save, marker, fingerprint, or preferences after the report' : ((report && report.error) || 'no frames recorded')),
       pageErrors: errors.slice(0, 8),
       wallMs: Date.now() - started,
       report,
@@ -354,6 +418,8 @@ function sceneRows(result) {
   const canvas = meta && meta.canvas;
   const frames = frame && frame.count || 0;
   const alloc = result.allocation && result.allocation.supported ? result.allocation.estimatedBytes / Math.max(1, frames) / 1024 : null;
+  const windowMs = result.report && result.report.windowMs;
+  const long33 = longs && longs.over33ms;
   return {
     id: result.scene,
     label: meta ? meta.label : result.scene,
@@ -365,7 +431,9 @@ function sceneRows(result) {
     p99: frame && frame.p99,
     max: frame && frame.max,
     long16: longs && longs.over16ms,
-    long33: longs && longs.over33ms,
+    long33: long33,
+    long33PerMin: windowMs > 0 && long33 != null ? long33 / (windowMs / 60000) : null,
+    allocKbPerSecond: result.allocation && result.allocation.kbPerSecond != null ? result.allocation.kbPerSecond : null,
     intervalMedian: interval && interval.median,
     heapUsed: heap && heap.supported ? heap.usedJSHeapSize : null,
     heapTotal: heap && heap.supported ? heap.totalJSHeapSize : null,
@@ -412,13 +480,17 @@ function markdown(output) {
   lines.push('');
   lines.push('## Scenes');
   lines.push('');
-  lines.push('| Scene | Rep | Frames | Median ms | p95 | p99 | Max | >16.7 | >33 | Heap MB | Alloc KB/frame | Canvas CSS | Backing | DPR |');
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---:|');
-  output.runs.forEach((result, index) => {
+  lines.push('Frames over 33 ms are counted inside the recording window. Divide by the window length before comparing runs of different durations. Allocation KB/s uses the measured window, because KB/frame moves when the frame rate does.');
+  lines.push('');
+  lines.push('| Scene | Rep | Frames | Median ms | p95 | p99 | Max | >16.7 | >33 | >33/min | Heap MB | Alloc KB/frame | Alloc KB/s | Canvas CSS | Backing | DPR |');
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---:|');
+  output.runs.forEach((result) => {
     const row = sceneRows(result);
     const heap = row.heapUsed == null ? '—' : (row.heapUsed / 1048576).toFixed(2);
     const alloc = row.allocKbPerFrame == null ? '—' : row.allocKbPerFrame.toFixed(1);
-    lines.push('| ' + [row.label, index + 1, row.frames, ms(row.median), ms(row.p95), ms(row.p99), ms(row.max), row.long16 ?? '—', row.long33 ?? '—', heap, alloc, row.css, row.backing, row.dpr ?? '—'].join(' | ') + ' |');
+    const rate = row.allocKbPerSecond == null ? '—' : row.allocKbPerSecond.toFixed(0);
+    const perMin = row.long33PerMin == null ? '—' : row.long33PerMin.toFixed(1);
+    lines.push('| ' + [row.label, result.repeat ?? '—', row.frames, ms(row.median), ms(row.p95), ms(row.p99), ms(row.max), row.long16 ?? '—', row.long33 ?? '—', perMin, heap, alloc, rate, row.css, row.backing, row.dpr ?? '—'].join(' | ') + ' |');
   });
   const failed = output.runs.filter(result => !result.ok);
   if (failed.length) {
@@ -467,11 +539,13 @@ async function main() {
   const checks = [];
   const runs = [];
   try {
-    browser = await launchBrowser();
+    browser = await launchBrowser(options);
     const browserVersion = browser.version();
     checks.push(await checkInert(browser));
     checks.push(await checkWrongPort(browser));
     checks.push(await checkForeignSave(browser));
+    checks.push(await checkMarkedPlayerSave(browser, null));
+    checks.push(await checkMarkedPlayerSave(browser, '{"v":3,"seed":"FW-10402"}'));
     for (const check of checks) console.log((check.ok ? 'pass' : 'FAIL') + '  ' + check.name);
     if (checks.some(check => !check.ok)) {
       console.error('Isolation checks failed. Benchmarks were not started.');

@@ -37,8 +37,11 @@
   const PORT = '47321';
   const SAVE_KEY = 'farwake_founders_alpha03_v1';
   const MARKER_KEY = 'farwake_perf_harness';
+  const FINGERPRINT_KEY = 'farwake_perf_harness_save_fp';
   const PREFS_KEY = 'farwake_living_preferences';
   const screen = document.getElementById('screen');
+  let claimed = false;
+  let releasing = false;
 
   function allowedHost(hostname) {
     const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
@@ -77,18 +80,53 @@
     window.__PERF_REPORT__ = { error: title + ' ' + message };
   }
 
+  // The game writes the save from the iframe. Remember those bytes only while
+  // this page still owns the frame, so a later edit (playing / on this port)
+  // no longer matches and is refused.
+  window.addEventListener('storage', function (event) {
+    if (!claimed || releasing || event.key !== SAVE_KEY || event.newValue == null) return;
+    try { localStorage.setItem(FINGERPRINT_KEY, event.newValue); } catch (e) {}
+  });
+
+  async function releaseGame() {
+    if (!claimed || releasing) return;
+    releasing = true;
+    const frame = document.querySelector('iframe');
+    if (frame) {
+      await new Promise(function (resolve) {
+        let settled = false;
+        const finish = function () { if (!settled) { settled = true; resolve(); } };
+        try {
+          if (frame.contentWindow) frame.contentWindow.addEventListener('pagehide', finish, { once: true });
+        } catch (e) {}
+        frame.remove();
+        setTimeout(finish, 100);
+      });
+    }
+    // pagehide runs the game's save. Delete that save and the marker afterwards
+    // so a later colony on this origin counts as foreign.
+    try {
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(MARKER_KEY);
+      localStorage.removeItem(FINGERPRINT_KEY);
+      localStorage.removeItem(PREFS_KEY);
+    } catch (e) {}
+    claimed = false;
+    releasing = false;
+  }
+
   function inert() {
     show(
       '<h1>FARWAKE performance harness</h1>' +
       '<div class="warn"><strong>Recording is off.</strong> This page does not load the game, does not wrap <code>requestAnimationFrame</code>, and does not read or write storage. Add <code>?perf=1</code> to run a benchmark.</div>' +
-      '<div class="warn"><strong>Save safety.</strong> The game stores the colony under a fixed key, <code>' + SAVE_KEY + '</code>, for the whole origin. Automated runs use a fresh browser profile on <code>http://127.0.0.1:' + PORT + '</code> only. Never open this harness on the production or preview origin, and never point it at a host where a real expedition is saved.</div>' +
+      '<div class="warn"><strong>Save safety.</strong> The game stores the colony under a fixed key, <code>' + SAVE_KEY + '</code>, for the whole origin. <strong>http://127.0.0.1:' + PORT + '/ is the real game.</strong> Do not play a colony on port ' + PORT + '. Automated runs use a fresh browser profile on <code>http://127.0.0.1:' + PORT + '</code> only. Never open this harness on the production or preview origin.</div>' +
       '<h2>Scenes</h2>' +
       '<div class="card">' +
       '<a href="?perf=1&amp;scene=day2&amp;seconds=8">Day 2 early game</a>' +
-      '<a href="?perf=1&amp;scene=late&amp;seconds=8">Late colony</a>' +
+      '<a href="?perf=1&amp;scene=late&amp;seconds=15">Late colony</a>' +
       '<a href="?perf=1&amp;scene=idle&amp;seconds=8">Idle paused</a>' +
       '</div>' +
-      '<p>On an iPhone, serve the repo on port ' + PORT + ' and open the same URL over the Mac’s LAN address. Results stay on screen and can be downloaded as JSON. Headless Chromium emulation is only a proxy for iPhone Safari; a phone run is the one that measures Safari.</p>' +
+      '<p>On an iPhone, serve the repository on port ' + PORT + ' bound to the computer’s LAN address, and open the harness URL only. Do not open <code>/</code> on that port: that is the game, and a colony saved there is a real save. Results stay on screen and can be downloaded as JSON. Headless Chromium emulation is only a proxy for iPhone Safari; a phone run is the one that measures Safari.</p>' +
       '<p>See <code>perf/README.md</code>.</p>'
     );
   }
@@ -105,7 +143,9 @@
     const lines = [
       report.meta.label + (report.repeat ? '  (repeat ' + report.repeat + ')' : ''),
       'Frame JS ms   median ' + roundMs(frame && frame.median) + '   p95 ' + roundMs(frame && frame.p95) + '   max ' + roundMs(frame && frame.max),
-      'Long frames   >16.7ms ' + report.recording.longFrames.over16ms + '   >33ms ' + report.recording.longFrames.over33ms + '   of ' + frame.count,
+      'Long frames   >16.7ms ' + report.recording.longFrames.over16ms + '   >33ms ' + report.recording.longFrames.over33ms +
+        (report.windowMs > 0 ? '   (' + (report.recording.longFrames.over33ms / (report.windowMs / 60000)).toFixed(1) + '/min)' : '') +
+        '   of ' + frame.count,
       'Heap          ' + (heap && heap.supported ? (heap.usedJSHeapSize / 1048576).toFixed(2) + ' MB used' : 'not exposed in this browser'),
       'Canvas        ' + canvas.cssWidth.toFixed(0) + '×' + canvas.cssHeight.toFixed(0) + ' CSS, backing ' + canvas.backingWidth + '×' + canvas.backingHeight + ', DPR ' + report.meta.devicePixelRatio,
       'Scene         day ' + report.meta.day + '  ' + report.meta.buildings + ' buildings  ' + report.meta.colonists + ' colonists  zoom ' + report.meta.zoom.toFixed(2) + '  ' + report.meta.preset + (report.meta.paused ? '  paused' : '  simulating')
@@ -167,6 +207,9 @@
     while (!window.__PERF_START_RECORDING__ && performance.now() < deadline) {
       await sleep(20);
     }
+    if (!window.__PERF_START_RECORDING__) {
+      throw new Error('The headless runner did not arm recording within 20s. No uncoordinated sample was taken.');
+    }
   }
 
   async function boot() {
@@ -192,8 +235,10 @@
       fail('Harness refused to start.', 'localStorage is not available (' + error.message + ').');
       return;
     }
-    if (existing && marker !== '1') {
-      fail('Harness refused to start.', 'A save already exists on this origin that was not created by the performance harness. The game was not loaded, so that save was not handed to the game and was not overwritten. Use a fresh browser profile on http://127.0.0.1:' + PORT + '.');
+    let fingerprint = null;
+    try { fingerprint = localStorage.getItem(FINGERPRINT_KEY); } catch (error) { fingerprint = null; }
+    if (existing && (marker !== '1' || existing !== fingerprint)) {
+      fail('Harness refused to start.', 'A save already exists on this origin that this harness does not own. A marker left by an earlier run is not enough: the save must still match the fingerprint of the last harness-written colony. This one was left byte-for-byte as found. The game was not loaded. Do not play on port ' + PORT + ', because / on that port is the real game.');
       return;
     }
     const sceneId = params.get('scene') || 'day2';
@@ -234,11 +279,18 @@
     }
 
     try {
+      claimed = true;
       localStorage.removeItem(SAVE_KEY);
       localStorage.removeItem(PREFS_KEY);
+      localStorage.removeItem(FINGERPRINT_KEY);
       localStorage.setItem(MARKER_KEY, '1');
-      if (fixtureSave) localStorage.setItem(SAVE_KEY, JSON.stringify(fixtureSave));
+      if (fixtureSave) {
+        const raw = JSON.stringify(fixtureSave);
+        localStorage.setItem(SAVE_KEY, raw);
+        localStorage.setItem(FINGERPRINT_KEY, raw);
+      }
     } catch (error) {
+      await releaseGame();
       fail('Harness refused to start.', 'Could not prepare the harness save slot (' + error.message + ').');
       return;
     }
@@ -252,11 +304,13 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       html = await response.text();
     } catch (error) {
+      await releaseGame();
       fail('Harness refused to start.', 'Could not read the built index.html (' + error.message + '). Serve the repository root, not the perf/ directory.');
       return;
     }
     const head = html.indexOf('<head>');
     if (head < 0) {
+      await releaseGame();
       fail('Harness refused to start.', 'The built index.html has no <head>, so the recorder cannot be injected.');
       return;
     }
@@ -283,10 +337,12 @@
       await sleep(spec.warmupMs);
       await waitForStart();
       const heapBefore = win.FARWAKE_PERF.snapshot().heap;
+      const recordStarted = performance.now();
       win.FARWAKE_PERF.start();
       status('Recording ' + spec.seconds + 's…');
       await sleep(spec.seconds * 1000);
       const recording = win.FARWAKE_PERF.stop();
+      const windowMs = performance.now() - recordStarted;
       const report = {
         harness: 'farwake-perf',
         commit: params.get('commit') || null,
@@ -294,14 +350,17 @@
         meta: window.FarwakePerfScenes.meta(win, spec),
         recording: recording,
         heapBefore: heapBefore,
+        windowMs: windowMs,
         recordedAt: new Date().toISOString(),
-        note: 'Frame time is JavaScript in the animation callback. Headless Chromium emulation is only a proxy for iPhone Safari.'
+        note: 'Frame time is JavaScript in the animation callback. Headless Chromium emulation is only a proxy for iPhone Safari. Frames over 33 ms scale with the length of the window.'
       };
+      await releaseGame();
       window.__PERF_REPORT__ = report;
-      status('');
-      document.querySelector('.hud').remove();
+      const hud = document.querySelector('.hud');
+      if (hud) hud.remove();
       showReport(report);
     } catch (error) {
+      await releaseGame();
       fail('Benchmark failed.', String(error && error.stack || error));
     }
   }

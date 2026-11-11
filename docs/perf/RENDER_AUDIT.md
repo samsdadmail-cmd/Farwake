@@ -1,5 +1,7 @@
 # FARWAKE: iPhone 14 render, camera and input audit (issue #7)
 
+> **Repo copy.** This is the audit text as written. Paths under `/workspace/` and the scratch scripts named in §5 stayed on that audit machine and are not in this repository. Acceptance criterion 7.3 item 6 means re-baseline on each host: ±15% only applies when the same box is measured again. A different machine is not expected to match.
+
 **Author:** FARWAKE Render & Performance · **Date:** Wed 11 Nov 2026 (Europe/London)
 **Baseline:** `farwake/integration` @ `37745f19670be8c82b560b5cf9af2672d27b3ac7` (short `37745f1`). I checked this in a fresh read-only clone at `/workspace/audit-render`. HEAD matched, the working tree was clean, and there were no local edits.
 **Scope:** audit only. I made no repo changes, pushed nothing, opened no PRs, posted nothing to GitHub and launched no cloud agent. All scripts and artefacts are in `/workspace/render-audit-scratch/`, outside the clone.
@@ -273,7 +275,7 @@ This would add about 3 lines to `src/game.html` (load `perf/recorder.js` when `?
 3. With `?perf=1&scene=fresh-z1&seconds=10`, it outputs JSON with frame-JS median/p95/p99/max, interval stats, long-frame counts (>16.7 ms, >33 ms), scene metadata (commit SHA if available, UA, DPR, canvas backing size, preset, zoom) and, with `&ops=1`, canvas op counts.
 4. At least these scenes: fresh z=0.6/1/2.35; grown-synthetic z=0.6 day and night+rain; Performance-preset variant; each render-only and sim-on; plus "load fixture" for a real save JSON.
 5. Isolation: it only runs on the dedicated harness origin/port, refuses otherwise, and never reads or writes the real-play origin. This is verified by a test in the README procedure.
-6. `node perf/run-headless.mjs --repeat 3` reproduces the §5 baseline at `37745f1` within ±15 % median (same box) and writes `docs/perf/BASELINE.md`.
+6. `node perf/run-headless.mjs --repeat 3` re-baselines §5 on the host where it is run (within ±15% median only when repeated on the same box) and writes `docs/perf/BASELINE.md`.
 7. It works on iPhone 14 Safari over LAN from a Mac or other static server (`python3 -m http.server`). Results are shown on screen and downloadable as JSON.
 8. QA & Saves reviews the PR. Kyle approves the merge. No deploy.
 

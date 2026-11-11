@@ -66,7 +66,8 @@
       day: 80,
       minute: 10 * 60,
       weather: 'clear',
-      description: 'Synthetic late colony on seed FW-10402: finished buildings of 14 types (including dormitory, warehouse, lamppost and garden), path and road tiles, history counters, and cloned colonists. Day 80 10:00, clear weather, simulation running, zoom 0.6, balanced preset. This is a stress layout, not a played save.'
+      seconds: 15,
+      description: 'Synthetic late colony on seed FW-10402: finished buildings of 14 types (including dormitory, warehouse, lamppost and garden), path and road tiles, history counters, and cloned colonists. Day 80 10:00, clear weather, simulation running, zoom 0.6, balanced preset. Default window is 15 s. This is a stress layout, not a played save.'
     }),
     idle: scene({
       id: 'idle',
@@ -168,7 +169,8 @@
       day: 80,
       minute: 10 * 60,
       weather: 'clear',
-      description: 'Audit scene E with the simulation running. Same synthetic colony as the late-colony benchmark.'
+      seconds: 15,
+      description: 'Audit scene E with the simulation running. Same synthetic colony as the late-colony benchmark. Default window is 15 s.'
     }),
     'grown-sim-z1': scene({
       id: 'grown-sim-z1',
@@ -181,7 +183,8 @@
       day: 80,
       minute: 10 * 60,
       weather: 'clear',
-      description: 'Audit scene D. Synthetic grown colony, zoom 1, simulation running.'
+      seconds: 15,
+      description: 'Audit scene D. Synthetic grown colony, zoom 1, simulation running. Default window is 15 s.'
     }),
     fixture: scene({
       id: 'fixture',
@@ -196,7 +199,7 @@
   };
 
   function scene(spec) {
-    spec.seconds = 5;
+    if (!Number.isFinite(spec.seconds)) spec.seconds = 5;
     spec.warmupMs = 1500;
     return spec;
   }
@@ -208,9 +211,9 @@
   function requireApi(win) {
     const game = win.FARWAKE_TEST;
     if (!game) throw new Error('FARWAKE_TEST is missing. The built game did not expose the test API.');
-    const need = ['state', 'camera', 'terrain', 'clearFootprint', 'setZoom', 'centerCamera', 'save', 'load', 'renderUI', 'draw'];
+    const need = ['state', 'camera', 'terrain', 'features', 'clearFootprint', 'setZoom', 'centerCamera', 'save', 'load', 'renderUI', 'draw'];
     const missing = need.filter(function (name) {
-      if (name === 'state' || name === 'camera' || name === 'terrain') return game[name] == null;
+      if (name === 'state' || name === 'camera' || name === 'terrain' || name === 'features') return game[name] == null;
       return typeof game[name] !== 'function';
     });
     if (missing.length) throw new Error('FARWAKE_TEST is missing: ' + missing.join(', '));
@@ -307,7 +310,7 @@
       const tile = game.terrain[i];
       if (!tile || tile.kind === 'water' || tile.kind === 'stone') blocked.add(i);
     }
-    const features = game.features || [];
+    const features = game.features;
     for (let i = 0; i < features.length; i++) blocked.add(features[i].y * MAP + features[i].x);
     game.state.buildings.forEach(function (building) {
       for (let y = building.y; y < building.y + building.h; y++) {
