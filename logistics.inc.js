@@ -8,7 +8,7 @@ function freightFlowTable(){
  const f=S.freightFlow?.day===S.day?S.freightFlow:{};
  return '<details><summary>Production &amp; consumption today</summary>'+Object.entries(MATERIALS).map(([k,m])=>'<div class="service"><span>'+m.name+'</span><strong>+'+(f.produced?.[k]||0)+' / −'+(f.consumed?.[k]||0)+'</strong></div>').join('')+'</details>';
 }
-function freightCap(b){return b.type==='supplies'?340:180}
+function freightCap(b){return (b.type==='supplies'?340:FRONTIER_BUILDINGS[b.type]?.storage||180)+((b.level||1)-1)*90}
 function freightUsed(b){return Object.values(b.stock||{}).reduce((a,v)=>a+v,0)}
 function freightAccepts(b,k){return !b.reject?.includes(k)}
 function freightRecorded(id){return S.colonists.reduce((n,p)=>n+(p.carry?.dest===id?p.carry.amount:0)+(p.task?.type==='haul_pickup'&&p.task.dest===id?p.task.amount:0),0)}
@@ -91,7 +91,7 @@ function freightRemoveStore(b){
  b.stock={};
 }
 function freightOutput(k,n,b){freightFlow(k,n,'produced');return freightOutside(k,n,b)}
-function freightSite(id){return S.buildings.find(b=>(!b.finished||b.inputOrder)&&b.id===id)}
+function freightSite(id){return S.buildings.find(b=>(!b.finished||b.inputOrder||b.upgradeOrder)&&b.id===id)}
 function freightCandidateStores(p,k){return storageBuildings().filter(b=>freightAccepts(b,k)).sort((a,b)=>(b.priority||0)-(a.priority||0)||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))}
 function freightClaim(p,q){
  if(!q||q.hold||S.colonists.some(z=>z!==p&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id))return false;

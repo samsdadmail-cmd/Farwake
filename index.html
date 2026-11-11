@@ -177,7 +177,7 @@ function featureById(id){return features.find(f=>f.id===id)}
 const MATERIALS={wood:{name:'Timber',verb:'timber'},ore:{name:'Raw ore',verb:'ore'},scrap:{name:'Salvage metal',verb:'salvage'},alloy:{name:'Alloy',verb:'alloy'},food:{name:'Food',verb:'food'}};
 function storedTotal(){return Object.keys(MATERIALS).reduce((n,k)=>n+(S.resources[k]||0),0)}
 function storageCapacity(){return storageBuildings().reduce((n,b)=>n+freightCap(b),0)}
-function storageBuildings(){return S.buildings.filter(b=>b.finished&&!b.editOrder&&(b.type==='supplies'||b.type==='shed'))}
+function storageBuildings(){return S.buildings.filter(b=>b.finished&&!b.editOrder&&(b.type==='supplies'||b.type==='shed'||FRONTIER_BUILDINGS[b.type]?.storage))}
 function looseTotal(kind){return (S.piles||[]).filter(q=>!kind||q.kind===kind).reduce((sum,q)=>sum+q.amount,0)}
 function transitTotal(kind){return S.colonists.reduce((sum,p)=>sum+(p.carry&&(!kind||p.carry.kind===kind)?p.carry.amount:0),0)}
 function makePile(f,resource,amount){const pile={id:'p'+f.id+'-'+S.day+'-'+Math.round(S.minute),x:f.x,y:f.y,kind:resource,amount};S.piles.push(pile);return pile}
@@ -232,10 +232,11 @@ function taskPosition(t){return{x:t.x,y:t.y}}
 function neighborGoals(x,y,w=1,h=1){const goals=[];for(let yy=y-1;yy<=y+h;yy++)for(let xx=x-1;xx<=x+w;xx++)if((xx===x-1||xx===x+w||yy===y-1||yy===y+h)&&walkable(xx,yy))goals.push({x:xx,y:yy});return goals}
 function findPath(px,py,goals){const sx=clamp(Math.floor(px),0,VW-1),sy=clamp(Math.floor(py),0,VH-1);if(!goals.length)return[];const target=new Set(goals.map(g=>index(g.x,g.y))),start=index(sx,sy);if(target.has(start))return[];const prev=new Int32Array(VW*VH).fill(-1),queue=new Int32Array(VW*VH);let front=0,back=0;queue[back++]=start;prev[start]=start;let end=-1;while(front<back){const p=queue[front++],x=p%VW,y=(p-x)/VW;const cells=[[x+1,y],[x-1,y],[x,y+1],[x,y-1]];for(const [nx,ny] of cells){if(!walkable(nx,ny))continue;let j=index(nx,ny);if(prev[j]!==-1)continue;prev[j]=p;if(target.has(j)){end=j;front=back;break}queue[back++]=j}}
 if(end<0)return[];const result=[];for(let i=end;i!==start;i=prev[i])result.push({x:i%VW+.5,y:Math.floor(i/VW)+.5});return result.reverse()}
-function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
+function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'||t.outdoors?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
- if(p.hunger>67)return{type:'eat',x:30,y:26,w:2,h:2};
+ if(p.hunger>67)return frontierMealTarget(p);
+ if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
   ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
     const q=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress)[0];
@@ -259,15 +260,17 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  return null;
 }
 
-function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
+function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
+ if(t.type==='upgrade'){frontierUpgradeWork(p,work);return}
+ if(t.type==='social'){frontierSocial(p,work);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
  if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
  else if(t.type==='farm'||t.type==='craft'){performProduction(p,t,work);}
  else if(t.type==='rest'&&p.action>1){housingRecovery(p,work);p.hunger=clamp(p.hunger+work*.1,0,100);if(p.energy>85&&S.minute>=6*60&&S.minute<20*60){p.task=null;}}
- else if(t.type==='eat'&&p.action>2.3){p.action=0;if(freightSpend({food:1})){p.hunger=Math.max(0,p.hunger-70);p.mood=clamp(p.mood+1,0,100)}p.task=null}
+ else if(t.type==='eat'&&p.action>2.3){frontierEat(p);}
  else if(t.type==='research'&&p.action>7.5){p.action=0;p.task=null;S.resources.knowledge+=p.role==='Medic'?2:1;p.mood=clamp(p.mood+.2,0,100);}
  else if(t.type==='survey'&&p.action>2){p.action=0;reveal(p.x,p.y,surveyRadius());surveyEpoch++;S.resources.knowledge+=1;S.explore++;p.task=null;}
  else if(t.type==='harvest'){
@@ -304,7 +307,7 @@ function disk(x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r,r*.
 function renderBuilding(b,time){
  const x=b.x*TS,y=b.y*TS,w=b.w*TS,h=b.h*TS;
  if(b.finished){
-   FarwakeBuildings.draw(ctx,b.type,x,y,w,h,isNight(),b,FarwakeDoors.state(b));drawProduction(b,x,y);
+   FarwakeBuildings.draw(ctx,b.type,x,y,w,h,isNight(),b,FarwakeDoors.state(b));drawProduction(b,x,y);FarwakeHearth.configure(prefs.preset);FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,FarwakeDoors.state(b),FieldPreferences.reduced);
    return;
  }
  const progress=clamp(b.progress/TYPES[b.type].time,0,1);
@@ -363,7 +366,7 @@ function renderUI(force=false){if(!S)return;const nav=$('nav');nav.innerHTML=NAV
  body.scrollTop=st;body.scrollLeft=sl;if(tab==='build'&&body.querySelector('.builder'))body.querySelector('.builder').scrollLeft=builderScroll;
  $('headextra').textContent=tab==='crew'?'5 aboard':tab==='research'?S.resources.knowledge+' ✦ available':tab==='build'?jobs().length+' under construction':tab==='world'?'SEED '+S.seed:S.buildings.length+' structures';
  paintHUD();}
-function taskLabel(p){if(p.task?.type==='harvest')return NATURAL[featureById(p.task.feature)?.type]?.verb||'Gathering';let t=p.task?.type;return({build:'Building',farm:'Growing crops',craft:'Manufacturing',rest:'Resting',eat:'Eating',research:'Studying',survey:'Surveying',gather:'Salvaging',forage:'Foraging',haul_pickup:'Collecting supplies',haul_dropoff:'Hauling to storage'})[t]||'Assessing priorities'}
+function taskLabel(p){if(p.task?.type==='harvest')return NATURAL[featureById(p.task.feature)?.type]?.verb||'Gathering';let t=p.task?.type;return({social:'Sharing a break',upgrade:'Upgrading equipment',investigate:'Investigating a planetary site',align:'Aligning the signal array',build:'Building',farm:'Growing crops',craft:'Manufacturing',rest:'Resting',eat:'Eating',research:'Studying',survey:'Surveying',gather:'Salvaging',forage:'Foraging',haul_pickup:'Collecting supplies',haul_dropoff:'Hauling to storage'})[t]||'Assessing priorities'}
 function naturalInspector(f){const spec=NATURAL[f.type],q=S.designations?.[f.id],worker=S.colonists.find(p=>p.task?.type==='harvest'&&p.task.feature===f.id),pct=q?Math.round(100*(q.progress||0)/spec.workTime):0;
  return '<div class="inspectcard inspectnatural"><div class="naturalhead"><div class="naturalicon">'+uiIcon(f.type,23)+'</div><div class="naturaltitle"><div class="label">'+spec.name+'</div><div class="naturalmeta">'+spec.kind+' · '+f.x+', '+f.y+(q?' · '+(worker?'In progress':'Queued'):'')+'</div></div><button class="secondary" data-inspect="cancel">Close</button></div><div class="naturedesc">'+spec.description+'</div><div class="naturalmeta">On completion: '+spec.yield+(q?' · '+(worker?worker.name+' working':'Awaiting crew'):'')+'</div>'+(q?'<div class="workmeter"><i style="width:'+pct+'%"></i></div>':'')+'<div class="naturalbuttons"><button class="'+(q?'secondary':'primary')+'" data-inspect="'+(q?'cancelwork':'designate')+'" data-id="'+f.id+'">'+(q?'Cancel work order':spec.action)+'</button></div></div>';
 }
@@ -522,13 +525,14 @@ document.addEventListener('click',e=>{
 $('sheet').addEventListener('input',e=>{if(e.target.dataset.volume)FieldPreferences.change(e.target.dataset.volume,+e.target.value/100)});
 function frame(now){if(!S){requestAnimationFrame(frame);return}const dt=Math.min(.07,(now-last)/1000||0);last=now;renderAccum+=dt;uiAccum+=dt;saveAccum+=dt;if(zoomRequest){const q=zoomRequest;setZoom(camera.z+(q.z-camera.z)*(FieldPreferences.reduced?1:1-Math.exp(-dt*17)),q.x,q.y);if(Math.abs(camera.z-q.z)<.002)zoomRequest=null}tick(dt);advanceWorld(dt);if(prefs.preset!=='performance'||renderAccum>=1/30){draw(now);renderAccum=0}if(uiAccum>.8){frontierRefreshTree();refreshCommandReadouts();paintHUD();if(tab!=='build'&&!$('sheetbg').classList.contains('open'))renderUI();uiAccum=0}if(saveAccum>12){save();saveAccum=0}requestAnimationFrame(frame)}
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();last=performance.now()});
+function housingPermanent(b){return b.type!=='camp'&&!FRONTIER_BUILDINGS[b.type]?.temporary}
 // Bed allocation is persistent (p.home). Current occupancy is driven by a visit.
 function housingBeds(b) {
   if(!b?.finished||b.editOrder)return 0;
-  return b.type==='shelter'?3:b.type==='camp'?5:0;
+  return (b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0)+(b.level>1?b.level-1:0);
 }
 function housingName(b){
-  return b?(b.type==='camp'?'Expedition camp':'Prefab home')+' · '+b.x+', '+b.y:'No bed assigned';
+  return b?(TYPES[b.type]?.name||'Expedition camp')+' · '+b.x+', '+b.y:'No bed assigned';
 }
 function housingResidents(b){return S.colonists.filter(p=>p.home===b.id);}
 function housingAllocate(){
@@ -542,8 +546,8 @@ function housingAllocate(){
   }
   for(const p of S.colonists){
     const old=houses.find(b=>b.id===p.home);
-    if(old&&(old.type==='shelter'||p.homePinned))continue;
-    const next=houses.find(b=>b.type==='shelter'&&usage.get(b.id)<housingBeds(b))
+    if(old&&(housingPermanent(old)||p.homePinned))continue;
+    const next=houses.find(b=>housingPermanent(b)&&usage.get(b.id)<housingBeds(b))
       ||old||houses.find(b=>usage.get(b.id)<housingBeds(b));
     if(next&&next!==old){
       if(old)usage.set(old.id,usage.get(old.id)-1);
@@ -580,17 +584,17 @@ function housingRestTarget(p){
 }
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
-  const permanent=b?.type==='shelter', temporary=b?.type==='camp';
+  const permanent=b&&housingPermanent(b), temporary=b&&!permanent;
   const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
-  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1)*(clinic?1.2:1),0,100);
+  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic?1.2:1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){
   const residences=S.buildings.filter(b=>housingBeds(b));
-  const permanent=residences.filter(b=>b.type==='shelter');
+  const permanent=residences.filter(housingPermanent);
   const sheltered=permanent.reduce((n,b)=>n+housingResidents(b).length,0);
-  const camp=residences.filter(b=>b.type==='camp').reduce((n,b)=>n+housingResidents(b).length,0);
-  return {permanent:sheltered,camp,unhoused:S.colonists.length-sheltered-camp,beds:permanent.length*3,totalBeds:residences.reduce((n,b)=>n+housingBeds(b),0)};
+  const camp=residences.filter(b=>!housingPermanent(b)).reduce((n,b)=>n+housingResidents(b).length,0);
+  return {permanent:sheltered,camp,unhoused:S.colonists.length-sheltered-camp,beds:permanent.reduce((n,b)=>n+housingBeds(b),0),totalBeds:residences.reduce((n,b)=>n+housingBeds(b),0)};
 }
 function housingSummary(){
   const h=housingCounts();
@@ -598,7 +602,7 @@ function housingSummary(){
     (h.unhoused?'<p>Over capacity. Construct a Prefab Home for three more beds.</p>':'')+'</div>';
 }
 function housingPanel(b){
-  if(!['shelter','camp'].includes(b.type))return '';
+  if(!housingBeds(b))return '';
   const members=housingResidents(b),visitors=FarwakeDoors.occupants(S,b);
   const people=ps=>ps.map(p=>esc(p.name)).join(', ')||'None';
   return '<section class="infocard"><b>'+ (b.type==='camp'?'Temporary bunks':'Permanent beds')+'</b><p>'+members.length+' / '+housingBeds(b)+' assigned · '+visitors.length+' inside</p><p>Residents: '+people(members)+'</p><p>Inside now: '+people(visitors)+'</p><p>'+ (b.type==='camp'?'Camp rest restores energy.':'Residents recover energy faster and gain morale while resting here.')+'</p><p>Change beds from a colonist’s profile.</p></section>';
@@ -630,7 +634,7 @@ function freightFlowTable(){
  const f=S.freightFlow?.day===S.day?S.freightFlow:{};
  return '<details><summary>Production &amp; consumption today</summary>'+Object.entries(MATERIALS).map(([k,m])=>'<div class="service"><span>'+m.name+'</span><strong>+'+(f.produced?.[k]||0)+' / −'+(f.consumed?.[k]||0)+'</strong></div>').join('')+'</details>';
 }
-function freightCap(b){return b.type==='supplies'?340:180}
+function freightCap(b){return (b.type==='supplies'?340:FRONTIER_BUILDINGS[b.type]?.storage||180)+((b.level||1)-1)*90}
 function freightUsed(b){return Object.values(b.stock||{}).reduce((a,v)=>a+v,0)}
 function freightAccepts(b,k){return !b.reject?.includes(k)}
 function freightRecorded(id){return S.colonists.reduce((n,p)=>n+(p.carry?.dest===id?p.carry.amount:0)+(p.task?.type==='haul_pickup'&&p.task.dest===id?p.task.amount:0),0)}
@@ -713,7 +717,7 @@ function freightRemoveStore(b){
  b.stock={};
 }
 function freightOutput(k,n,b){freightFlow(k,n,'produced');return freightOutside(k,n,b)}
-function freightSite(id){return S.buildings.find(b=>(!b.finished||b.inputOrder)&&b.id===id)}
+function freightSite(id){return S.buildings.find(b=>(!b.finished||b.inputOrder||b.upgradeOrder)&&b.id===id)}
 function freightCandidateStores(p,k){return storageBuildings().filter(b=>freightAccepts(b,k)).sort((a,b)=>(b.priority||0)-(a.priority||0)||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))}
 function freightClaim(p,q){
  if(!q||q.hold||S.colonists.some(z=>z!==p&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id))return false;
@@ -803,6 +807,7 @@ function editorToolbar() {
 }
 function editorControls(b) {
   if(!b||!TYPES[b.type])return '<p class="tiny">Permanent expedition infrastructure.</p>';
+  if(b.upgradeOrder)return '<p>Cancel the upgrade before dismantling or relocating.</p>';
   if(b.editOrder){
     const action=b.editOrder.kind==='move'?'Dismantling for relocation':'Dismantling';
     return '<p>'+action+' · '+Math.floor(100*b.editOrder.progress/editorWorkTime(b))+'%</p>'+editorButton('withdraw','Withdraw order',b.id);
@@ -922,12 +927,12 @@ function editorEvacuate(b) {
   }
 }
 function editorOrder(b,kind,dest=null){
-  if(!b?.finished||!TYPES[b.type]||b.editOrder)return;
+  if(!b?.finished||!TYPES[b.type]||b.editOrder||b.upgradeOrder)return;
   b.editOrder={kind,progress:0,...(dest?{dest:{...dest}}:{})};
   editorEvacuate(b);
   if(b.inputOrder||Object.values(b.siteStock||{}).some(n=>n>0)){freightCancel(b);b.inputOrder=false}
-  if(b.type==='shed')freightRemoveStore(b);
-  if(b.type==='shelter'){housingRelease(b);housingAllocate()}
+  if(b.type==='shed'||FRONTIER_BUILDINGS[b.type]?.storage)freightRemoveStore(b);
+  if(housingBeds(b)){housingRelease(b);housingAllocate()}
   // Free the dispatch queue so an indefinitely researching builder can respond.
   for(const p of S.colonists)if(['Commander','Engineer'].includes(p.role)&&p.task?.type==='research'){p.task=null;p.path=[]}
 }
@@ -938,6 +943,8 @@ function editorCancelSite(b){
   S.buildings=S.buildings.filter(v=>v!==b);selectedBuilding=null;
 }
 function editorCandidate(p) {
+  const upgrade=S.buildings.find(b=>b.upgradeOrder&&freightSiteReady(b)&&!S.colonists.some(q=>q!==p&&q.task?.type==='upgrade'&&q.task.id===b.id));
+  if(upgrade)return {type:'upgrade',id:upgrade.id,x:upgrade.x,y:upgrade.y,w:upgrade.w,h:upgrade.h};
   if(p.work==='survey'||!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))return null;
   const b=S.buildings.find(b=>b.editOrder&&!S.colonists.some(other=>other!==p&&other.task?.type==='dismantle'&&other.task.id===b.id));
   return b?{type:'dismantle',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h}:null;
@@ -948,7 +955,7 @@ function editorWork(p,work){
   const o=b.editOrder;
   o.progress+=work*(p.role==='Engineer'?1.6:1);
   if(o.progress<editorWorkTime(b))return;
-  if(b.type==='shed')freightRemoveStore(b);
+  if(b.type==='shed'||FRONTIER_BUILDINGS[b.type]?.storage)freightRemoveStore(b);
   editorEvacuate(b);
   if(o.kind==='move'){
     const dest=o.dest;
@@ -1071,7 +1078,7 @@ function foundingIndustrySummary(b){
   return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
 }
 function productionWeight(p,b){
-  const isFarm=b.type==='garden',group=isFarm?'field':'factory',r=productionRecord(b);
+  const isFarm=b.type==='garden'||b.type==='greenhouse',group=isFarm?'field':'factory',r=productionRecord(b);
   if(r.worker&&r.worker!==p.id)return 0;
   if(r.worker===p.id)return 100;
   if(p.work==='survey')return 0;
@@ -1084,7 +1091,7 @@ function productionWeight(p,b){
 function productionCandidate(p,type){
   const choices=[];
   for(const b of S.buildings){
-    if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
+    if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b)&&b.type!=='greenhouse':type==='garden'?['garden','greenhouse'].includes(b.type):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
     const r=productionRecord(b),weight=productionWeight(p,b);
     if(!weight||productionBlock(b)||b.type==='garden'&&!cropNeedsWorker(r.stage))continue;
     if(productionWorkers(b).some(worker=>worker.id!==p.id))continue;
@@ -1215,7 +1222,8 @@ document.addEventListener('change',e=>{
    const b=S.buildings.find(b=>b.id===+(el.dataset.industryWorker||el.dataset.industryRecipe));if(!b)return;
    const r=productionRecord(b);
    if(el.dataset.industryWorker)r.worker=+el.value||null;
-   else if(industryRecipes(b).some(([id])=>id===el.value)&&!r.batch&&!b.inputOrder){r.recipe=el.value;r.elapsed=0;}
+   else if(frontierProducer(b))frontierChangeRecipe(b,el.value);
+   else if(industryRecipes(b).some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;}
  }else return;
  interruptAvailable();save();
 });
@@ -1234,7 +1242,7 @@ function commandLink(section,icon,title,detail) {
   return '<button class="command-link" data-open="'+section+'"><span>'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+detail+'</small></span></button>';
 }
 function commandStats(){
-  const powerNow=power(), people=S.colonists, homes=people.filter(p=>S.buildings.some(b=>b.id===p.home&&b.type==='shelter'&&b.finished&&!b.editOrder)).length;
+  const powerNow=power(), people=S.colonists, homes=people.filter(p=>S.buildings.some(b=>b.id===p.home&&housingPermanent(b)&&housingBeds(b)>0&&b.finished&&!b.editOrder)).length;
   const mean=key=>Math.round(people.reduce((v,p)=>v+p[key],0)/Math.max(people.length,1));
   const need=[];
   if(homes<people.length)need.push((people.length-homes)+' without a permanent bed');
@@ -1277,7 +1285,7 @@ function facilityReadout(b){
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
    lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
- if(['garden','workshop'].includes(b.type))lines.push(esc(industrySummary(b)));
+ if((['garden','workshop'].includes(b.type)||frontierProducer(b)))lines.push(esc(industrySummary(b)));
  if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}
  if(b.type==='clinic')lines.push('Nearby resting colonists within 8 tiles recover 20% faster.');
  if(b.type==='solar')lines.push('Generating '+(isNight()?'reduced nighttime':'daytime')+' power.');
@@ -1286,11 +1294,11 @@ function facilityReadout(b){
 function showBuilding(id){
  const b=S.buildings.find(item=>item.id===+id);if(!b){showCommand();return}
  inspectedFacility=b.id;sheetSection='facility';selectedBuilding=b.id;
- const housing=['shelter','camp'].includes(b.type)?housingPanel(b):'';
- const storage=['supplies','shed'].includes(b.type)?freightStorePanel(b):'';
+ const housing=housingBeds(b)?housingPanel(b):'';
+ const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
  '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
- housing+storage+industryDetails(b)+editorControls(b)+
+ housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
 }
@@ -1480,16 +1488,16 @@ function surveyResearchHTML(){
  Object.entries({...TECHS,...fieldResearch}).map(([id,t])=>{const reason=researchReason(id);return '<article class="infocard" style="margin:7px 0"><b>'+t.name+'</b><p>'+t.description+'</p><p>'+[t.requires?'After '+researchDefinition(t.requires).name:'',t.requirement||''].filter(Boolean).join(' · ')+'</p><button class="secondary" data-action="research" data-id="'+id+'" '+(reason?'disabled':'')+'>'+ (reason||'Research · '+t.cost+' knowledge')+'</button></article>'}).join('');
 }
 function surveyGrid(){
- let generation=4,used=0,banks=0;
+ let generation=4,used=0,banks=0,advancedBanks=0;
  for(const b of S.buildings){if(!b.finished||b.editOrder)continue;
-   if(b.type==='battery')banks++;
+   if(b.type==='battery')banks+=1+.5*((b.level||1)-1);if(b.type==='accumulator')advancedBanks++;
    const t=TYPES[b.type];if(!t)continue;
-   if(t.power>0)generation+=isNight()?t.power*.4:t.power+(b.type==='solar'&&S.research.includes('heliostat')?4:0);
+   if(t.power>0)generation+=b.type==='wind'?t.power*(S.weather==='wind'?1.5:.75):isNight()?t.power*.4:t.power+(b.type==='solar'?((S.research.includes('heliostat')?4:0)+2*((b.level||1)-1)):0);
    else used-=t.power;
  }
  generation=Math.floor(generation);
- const cap=banks*120,charge=clamp(Number(S.gridCharge)||0,0,cap);
- const output=charge>0?Math.min(Math.max(0,used-generation),4*banks):0;
+ const cap=banks*120+advancedBanks*480,charge=clamp(Number(S.gridCharge)||0,0,cap);
+ const output=charge>0?Math.min(Math.max(0,used-generation),4*banks+12*advancedBanks):0;
  return {supply:generation+output,used,generation,cap,charge,output};
 }
 function surveyGridTick(dt){
@@ -1731,7 +1739,11 @@ function industryDetails(b){
 let frontierInterval=0;
 function frontierTick(step){
  frontierInterval+=step;if(frontierInterval<1)return;frontierInterval%=1;
- for(const b of S.buildings)frontierRequestInputs(b);
+ for(const b of S.buildings){
+  const h=frontierHistory(b);h.ageDays=Math.max(0,S.day-h.createdDay);
+  if(['garden','greenhouse'].includes(b.type))h.harvests=productionRecord(b).cycles||0;
+  frontierRequestInputs(b);
+ }
 }
 function frontierRefreshTree(){
  if(sheetSection!=='research')return;
@@ -1742,9 +1754,135 @@ function frontierRefreshTree(){
   if(status)status.textContent=done?'Completed':studying?'Studying · '+Math.floor(100*active.progress/active.effort)+'%':researchReason(id)?'Locked':researchDefinition(id).cost+' knowledge';
  }
 }
+function frontierMealTarget(p){
+ if((S.resources.food||0)+(S.resources.meals||0)<=0){
+   const piles=S.piles.filter(q=>['food','meals'].includes(q.kind)&&q.site==null&&q.amount>0).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+   for(const pile of piles){const t={type:'eat',pileId:pile.id,x:pile.x,y:pile.y};if(setTask(p,t))return t}
+ }
+ const halls=S.buildings.filter(b=>b.finished&&!b.editOrder&&['dining','kitchen'].includes(b.type)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ for(const b of [...halls,...storageBuildings()]){
+   const t={type:'eat',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};if(setTask(p,t))return t;
+ }
+ return {type:'eat',outdoors:true,x:Math.floor(p.x),y:Math.floor(p.y)};
+}
+function frontierEat(p){
+ p.action=0;const pile=pileById(p.task.pileId);
+ let kind=(S.resources.meals||0)>=1?'meals':'food',consumed=false;
+ if(pile&&['meals','food'].includes(pile.kind)&&pile.amount>0){
+   kind=pile.kind;pile.amount--;if(!pile.amount)S.piles=S.piles.filter(q=>q!==pile);freightFlow(kind,1,'consumed');consumed=true;
+ }else consumed=freightSpend({[kind]:1});
+ if(consumed){
+   p.hunger=Math.max(0,p.hunger-(kind==='meals'?90:70));p.mood=clamp(p.mood+(kind==='meals'?3:1),0,100);
+   if(p.visit?.building===p.task?.id)frontierState().socialVisits++;
+ }
+ p.task=null;
+}
+const FRONTIER_UPGRADABLE=new Set(['shelter','cabin','dormitory','workshop','sawmill','smelter','fabricator','shed','warehouse','clinic','solar','battery','greenhouse']);
+function frontierUpgradeCost(b){
+ const n=b.level||1;return {boards:8*n,metal:4*n,...(n>1?{components:4}: {})};
+}
+function frontierUpgradeReason(b){
+ if(!b.finished||b.editOrder||b.upgradeOrder)return 'Facility already has a construction order';
+ if(!FRONTIER_UPGRADABLE.has(b.type)||(b.level||1)>=3)return 'Fully developed';
+ const tech=housingBeds(b)?'cabins':b.type==='solar'||b.type==='battery'?'windpower':'fabrication';
+ if(!S.research.includes(tech))return 'Requires '+researchDefinition(tech).name;
+ if(productionRecord(b).batch)return 'Finish current production batch first';
+ if(Object.entries(frontierUpgradeCost(b)).some(([k,n])=>freightAvailable(k)<n))return 'Needs upgrade construction materials';
+ return '';
+}
+function frontierUpgrade(b){
+ if(frontierUpgradeReason(b))return false;
+ if(b.inputOrder){freightCancel(b);b.inputOrder=false}
+ b.upgradeOrder={progress:0};
+ if(!freightReserve(frontierUpgradeCost(b),b)){delete b.upgradeOrder;return false}
+ interruptAvailable();save();return true;
+}
+function frontierUpgradeWork(p,work){
+ const b=S.buildings.find(b=>b.id===p.task?.id);if(!b?.upgradeOrder||!freightSiteReady(b)){p.task=null;return}
+ b.upgradeOrder.progress+=work;
+ if(b.upgradeOrder.progress<16*(b.level||1))return;
+ for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');
+ delete b.siteStock;delete b.reservedMaterials;delete b.upgradeOrder;b.level=(b.level||1)+1;
+ p.task=null;housingAllocate();FarwakeWorkFX.complete(b);log('',facilityName(b)+' upgraded to level '+b.level+'.');save();
+}
+function frontierUpgradeControls(b){
+ if(b.upgradeOrder)return '<div class="command-alert">Upgrade construction · '+Math.floor(100*b.upgradeOrder.progress/(16*(b.level||1)))+'% · '+(freightSiteReady(b)?'materials delivered':'awaiting materials')+'</div><button class="secondary" data-upgrade-cancel="'+b.id+'">Cancel upgrade</button>';
+ if(!FRONTIER_UPGRADABLE.has(b.type))return '';
+ const reason=frontierUpgradeReason(b);
+ return '<section class="upgrade-card"><b>Development level '+(b.level||1)+'</b><p>'+ (housingBeds(b)?'Adds a permanent bed and improves rest comfort.':b.type==='shed'||b.type==='warehouse'?'Adds ninety storage units.':b.type==='solar'?'Adds two daytime power.':b.type==='battery'?'Adds sixty energy capacity.':b.type==='clinic'?'Extends nearby rest recovery service.':'Improves equipment for 20% faster production per level.')+'</p><small>'+Object.entries(frontierUpgradeCost(b)).map(([k,n])=>n+' '+MATERIALS[k].name).join(' · ')+'</small><button class="primary" data-upgrade="'+b.id+'" '+(reason?'disabled':'')+'>'+(reason||'Order upgrade')+'</button></section>';
+}
+function frontierCommunityTarget(p){
+ if(p.energy<35||p.hunger>60||p.social>62||S.minute<600||S.minute>1260)return null;
+ const places=S.buildings.filter(b=>b.finished&&!b.editOrder&&FRONTIER_BUILDINGS[b.type]?.community&&S.colonists.filter(z=>z.task?.type==='social'&&z.task.id===b.id).length<4);
+ places.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ for(const b of places){const t={type:'social',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};if(setTask(p,t))return t}
+ return null;
+}
+function frontierSocial(p,work){
+ p.social=clamp(p.social+work*4,0,100);p.mood=clamp(p.mood+work*.4,0,100);
+ if(p.action<5)return;
+ frontierState().socialVisits++;const b=S.buildings.find(b=>b.id===p.task.id);if(b){b.history??={};b.history.visits=(b.history.visits||0)+1}
+ p.task=null;save();
+}
+function frontierArrivalReason(){
+ if(!finished('recreation').length||!finished('comms').length)return 'Requires an Assembly Hall and Signal Beacon';
+ if(S.colonists.length>=40)return 'Colony population limit reached';
+ if(housingCounts().beds<=housingCounts().permanent)return 'Provide an available permanent bed';
+ if((S.resources.food||0)+(S.resources.meals||0)<30)return 'Store thirty food or meals';
+ if(!frontierState().sites.some(s=>s.resolved))return 'Complete a planetary investigation';
+ return '';
+}
+function frontierInvite(){
+ if(frontierArrivalReason())return false;
+ const n=frontierState().arrivals,home=S.buildings.find(b=>housingPermanent(b)&&housingBeds(b)>housingResidents(b).length);
+ if(!home)return false;
+ const profile=PROFILES[n%PROFILES.length],id=Math.max(0,...S.colonists.map(p=>p.id))+1;
+ S.colonists.push({...profile,id,name:['Rin','Sera','Ari','Kian','Edda','Lio','Sage','Orla'][n%8]+' '+['Vale','Rowan','Kestrel','Hale'][Math.floor(n/8)%4],x:home.x-.5,y:home.y+home.h+.5,energy:90,hunger:25,mood:80,social:70,skill:2,work:'auto',home:null,path:[],task:null,action:0});
+ frontierState().arrivals++;housingAllocate();log('','A new settler has joined the expedition.');save();return true;
+}
+function frontierCivicPanel(b){
+ if(!FRONTIER_BUILDINGS[b.type]?.community)return '';
+ return '<section class="community-panel"><h3>Community life</h3><p>'+frontierState().socialVisits+' shared meals and social visits recorded.</p>'+
+ (b.type==='recreation'?'<p>'+frontierArrivalReason()+'</p><button class="primary" data-invite '+(frontierArrivalReason()?'disabled':'')+'>Invite one settler</button>':'<p>Residents with low social comfort take short breaks here.</p>')+'</section>';
+}
+document.addEventListener('click',e=>{
+ const button=e.target.closest('[data-upgrade],[data-upgrade-cancel],[data-invite]');if(!button)return;
+ if(button.hasAttribute('data-invite')){frontierInvite();showBuilding(inspectedFacility);return}
+ const b=S.buildings.find(b=>b.id===+(button.dataset.upgrade||button.dataset.upgradeCancel));if(!b)return;
+ if(button.hasAttribute('data-upgrade'))frontierUpgrade(b);
+ else{freightCancel(b);delete b.upgradeOrder;for(const p of S.colonists)if(p.task?.type==='upgrade'&&p.task.id===b.id){p.task=null;p.path=[]}}
+ showBuilding(b.id);save();
+});
+
+function frontierChangeRecipe(b,id){
+ const recipe=FRONTIER_RECIPES[id],r=productionRecord(b);
+ if(!recipe||!industryRecipes(b).some(([key])=>key===id)||r.batch||b.upgradeOrder)return false;
+ if(b.inputOrder){freightCancel(b);b.inputOrder=false}
+ r.recipe=id;r.elapsed=0;save();return true;
+}
+
+function frontierHistory(b){
+ const h=b.history??={};
+ for(const key of ['work','residentHours','traffic','visits','harvests'])h[key]??=0;
+ h.createdDay??=S.day;h.ageDays??=0;return h;
+}
+function frontierRecord(p,t,step){
+ const b=S.buildings.find(b=>b.id===t.id);
+ if(b){const h=frontierHistory(b);
+  if(p.visit?.stage==='inside')h.residentHours+=step*3.1/60;
+  if(!p.path.length&&['craft','farm','research','upgrade','build'].includes(t.type))h.work+=step;
+ }
+ if(p.path.length){
+  const tile=Math.floor(p.x)+','+Math.floor(p.y);
+  if(p.lastTrafficTile!==tile){p.lastTrafficTile=tile;
+   const road=buildingAt(Math.floor(p.x),Math.floor(p.y));
+   if(road?.finished&&['path','road'].includes(road.type))frontierHistory(road).traffic++;
+  }
+ }
+}
 
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

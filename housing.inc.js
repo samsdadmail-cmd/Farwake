@@ -1,10 +1,11 @@
+function housingPermanent(b){return b.type!=='camp'&&!FRONTIER_BUILDINGS[b.type]?.temporary}
 // Bed allocation is persistent (p.home). Current occupancy is driven by a visit.
 function housingBeds(b) {
   if(!b?.finished||b.editOrder)return 0;
-  return b.type==='shelter'?3:b.type==='camp'?5:0;
+  return (b.type==='shelter'?3:b.type==='camp'?5:FRONTIER_BUILDINGS[b.type]?.beds||0)+(b.level>1?b.level-1:0);
 }
 function housingName(b){
-  return b?(b.type==='camp'?'Expedition camp':'Prefab home')+' · '+b.x+', '+b.y:'No bed assigned';
+  return b?(TYPES[b.type]?.name||'Expedition camp')+' · '+b.x+', '+b.y:'No bed assigned';
 }
 function housingResidents(b){return S.colonists.filter(p=>p.home===b.id);}
 function housingAllocate(){
@@ -18,8 +19,8 @@ function housingAllocate(){
   }
   for(const p of S.colonists){
     const old=houses.find(b=>b.id===p.home);
-    if(old&&(old.type==='shelter'||p.homePinned))continue;
-    const next=houses.find(b=>b.type==='shelter'&&usage.get(b.id)<housingBeds(b))
+    if(old&&(housingPermanent(old)||p.homePinned))continue;
+    const next=houses.find(b=>housingPermanent(b)&&usage.get(b.id)<housingBeds(b))
       ||old||houses.find(b=>usage.get(b.id)<housingBeds(b));
     if(next&&next!==old){
       if(old)usage.set(old.id,usage.get(old.id)-1);
@@ -56,17 +57,17 @@ function housingRestTarget(p){
 }
 function housingRecovery(p,work){
   const b=p.visit?.stage==='inside'&&S.buildings.find(b=>b.id===p.visit.building&&b.id===p.home);
-  const permanent=b?.type==='shelter', temporary=b?.type==='camp';
+  const permanent=b&&housingPermanent(b), temporary=b&&!permanent;
   const clinic=finished('clinic').some(c=>!c.editOrder&&Math.hypot(c.x-p.x,c.y-p.y)<=8)&&power().supply>=power().used;
-  p.energy=clamp(p.energy+work*(permanent?5.8:temporary?4.5:2.1)*(clinic?1.2:1),0,100);
+  p.energy=clamp(p.energy+work*(permanent?5.8*(FRONTIER_BUILDINGS[b.type]?.comfort||1)*(1+.1*((b.level||1)-1)):temporary?4.5:2.1)*(clinic?1.2:1),0,100);
   p.mood=clamp(p.mood+work*(permanent?.035:temporary?0:-.055),0,100);
 }
 function housingCounts(){
   const residences=S.buildings.filter(b=>housingBeds(b));
-  const permanent=residences.filter(b=>b.type==='shelter');
+  const permanent=residences.filter(housingPermanent);
   const sheltered=permanent.reduce((n,b)=>n+housingResidents(b).length,0);
-  const camp=residences.filter(b=>b.type==='camp').reduce((n,b)=>n+housingResidents(b).length,0);
-  return {permanent:sheltered,camp,unhoused:S.colonists.length-sheltered-camp,beds:permanent.length*3,totalBeds:residences.reduce((n,b)=>n+housingBeds(b),0)};
+  const camp=residences.filter(b=>!housingPermanent(b)).reduce((n,b)=>n+housingResidents(b).length,0);
+  return {permanent:sheltered,camp,unhoused:S.colonists.length-sheltered-camp,beds:permanent.reduce((n,b)=>n+housingBeds(b),0),totalBeds:residences.reduce((n,b)=>n+housingBeds(b),0)};
 }
 function housingSummary(){
   const h=housingCounts();
@@ -74,7 +75,7 @@ function housingSummary(){
     (h.unhoused?'<p>Over capacity. Construct a Prefab Home for three more beds.</p>':'')+'</div>';
 }
 function housingPanel(b){
-  if(!['shelter','camp'].includes(b.type))return '';
+  if(!housingBeds(b))return '';
   const members=housingResidents(b),visitors=FarwakeDoors.occupants(S,b);
   const people=ps=>ps.map(p=>esc(p.name)).join(', ')||'None';
   return '<section class="infocard"><b>'+ (b.type==='camp'?'Temporary bunks':'Permanent beds')+'</b><p>'+members.length+' / '+housingBeds(b)+' assigned · '+visitors.length+' inside</p><p>Residents: '+people(members)+'</p><p>Inside now: '+people(visitors)+'</p><p>'+ (b.type==='camp'?'Camp rest restores energy.':'Residents recover energy faster and gain morale while resting here.')+'</p><p>Change beds from a colonist’s profile.</p></section>';

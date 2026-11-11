@@ -10,6 +10,7 @@ function editorToolbar() {
 }
 function editorControls(b) {
   if(!b||!TYPES[b.type])return '<p class="tiny">Permanent expedition infrastructure.</p>';
+  if(b.upgradeOrder)return '<p>Cancel the upgrade before dismantling or relocating.</p>';
   if(b.editOrder){
     const action=b.editOrder.kind==='move'?'Dismantling for relocation':'Dismantling';
     return '<p>'+action+' · '+Math.floor(100*b.editOrder.progress/editorWorkTime(b))+'%</p>'+editorButton('withdraw','Withdraw order',b.id);
@@ -129,12 +130,12 @@ function editorEvacuate(b) {
   }
 }
 function editorOrder(b,kind,dest=null){
-  if(!b?.finished||!TYPES[b.type]||b.editOrder)return;
+  if(!b?.finished||!TYPES[b.type]||b.editOrder||b.upgradeOrder)return;
   b.editOrder={kind,progress:0,...(dest?{dest:{...dest}}:{})};
   editorEvacuate(b);
   if(b.inputOrder||Object.values(b.siteStock||{}).some(n=>n>0)){freightCancel(b);b.inputOrder=false}
-  if(b.type==='shed')freightRemoveStore(b);
-  if(b.type==='shelter'){housingRelease(b);housingAllocate()}
+  if(b.type==='shed'||FRONTIER_BUILDINGS[b.type]?.storage)freightRemoveStore(b);
+  if(housingBeds(b)){housingRelease(b);housingAllocate()}
   // Free the dispatch queue so an indefinitely researching builder can respond.
   for(const p of S.colonists)if(['Commander','Engineer'].includes(p.role)&&p.task?.type==='research'){p.task=null;p.path=[]}
 }
@@ -145,6 +146,8 @@ function editorCancelSite(b){
   S.buildings=S.buildings.filter(v=>v!==b);selectedBuilding=null;
 }
 function editorCandidate(p) {
+  const upgrade=S.buildings.find(b=>b.upgradeOrder&&freightSiteReady(b)&&!S.colonists.some(q=>q!==p&&q.task?.type==='upgrade'&&q.task.id===b.id));
+  if(upgrade)return {type:'upgrade',id:upgrade.id,x:upgrade.x,y:upgrade.y,w:upgrade.w,h:upgrade.h};
   if(p.work==='survey'||!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))return null;
   const b=S.buildings.find(b=>b.editOrder&&!S.colonists.some(other=>other!==p&&other.task?.type==='dismantle'&&other.task.id===b.id));
   return b?{type:'dismantle',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h}:null;
@@ -155,7 +158,7 @@ function editorWork(p,work){
   const o=b.editOrder;
   o.progress+=work*(p.role==='Engineer'?1.6:1);
   if(o.progress<editorWorkTime(b))return;
-  if(b.type==='shed')freightRemoveStore(b);
+  if(b.type==='shed'||FRONTIER_BUILDINGS[b.type]?.storage)freightRemoveStore(b);
   editorEvacuate(b);
   if(o.kind==='move'){
     const dest=o.dest;

@@ -58,3 +58,7 @@ print(f"Start sites-preview at {dest.resolve()}; open /foundations.html on the r
 for name, function in [('editor','verifyEditor'),('production','verifyProduction'),('economy','verifyEconomy'),('command','verifyCommand'),('research','verifyResearch'),('integration','verifyIntegration')]:
     copy2(root/'tests'/(name+'-check.js'),static)
     (static/(name+'.html')).write_text('<!doctype html><meta charset="utf-8"><title>FARWAKE '+name+' checks</title><pre id="out">Running</pre><iframe width="390" height="844"></iframe><script src="'+name+'-check.js"></script><script>'+function+'(document.querySelector("iframe"),document.querySelector("pre"))</script>')
+
+for name, function in [('frontier-tech','verifyFrontierTech'),('frontier-industry','verifyFrontierIndustry')]:
+    copy2(root/'tests'/(name+'.js'),static)
+    (static/(name+'.html')).write_text('<pre id="out">Running</pre><iframe width="390" height="844"></iframe><script src="'+name+'.js"></script><script>'+function+'(document.querySelector("iframe"),out)</script>')

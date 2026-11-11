@@ -7,7 +7,7 @@ function commandLink(section,icon,title,detail) {
   return '<button class="command-link" data-open="'+section+'"><span>'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+detail+'</small></span></button>';
 }
 function commandStats(){
-  const powerNow=power(), people=S.colonists, homes=people.filter(p=>S.buildings.some(b=>b.id===p.home&&b.type==='shelter'&&b.finished&&!b.editOrder)).length;
+  const powerNow=power(), people=S.colonists, homes=people.filter(p=>S.buildings.some(b=>b.id===p.home&&housingPermanent(b)&&housingBeds(b)>0&&b.finished&&!b.editOrder)).length;
   const mean=key=>Math.round(people.reduce((v,p)=>v+p[key],0)/Math.max(people.length,1));
   const need=[];
   if(homes<people.length)need.push((people.length-homes)+' without a permanent bed');
@@ -50,7 +50,7 @@ function facilityReadout(b){
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
    lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
- if(['garden','workshop'].includes(b.type))lines.push(esc(industrySummary(b)));
+ if((['garden','workshop'].includes(b.type)||frontierProducer(b)))lines.push(esc(industrySummary(b)));
  if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}
  if(b.type==='clinic')lines.push('Nearby resting colonists within 8 tiles recover 20% faster.');
  if(b.type==='solar')lines.push('Generating '+(isNight()?'reduced nighttime':'daytime')+' power.');
@@ -59,11 +59,11 @@ function facilityReadout(b){
 function showBuilding(id){
  const b=S.buildings.find(item=>item.id===+id);if(!b){showCommand();return}
  inspectedFacility=b.id;sheetSection='facility';selectedBuilding=b.id;
- const housing=['shelter','camp'].includes(b.type)?housingPanel(b):'';
- const storage=['supplies','shed'].includes(b.type)?freightStorePanel(b):'';
+ const housing=housingBeds(b)?housingPanel(b):'';
+ const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
  '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
- housing+storage+industryDetails(b)+editorControls(b)+
+ housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
 }

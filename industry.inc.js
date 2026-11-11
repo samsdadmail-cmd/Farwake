@@ -54,7 +54,7 @@ function foundingIndustrySummary(b){
   return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
 }
 function productionWeight(p,b){
-  const isFarm=b.type==='garden',group=isFarm?'field':'factory',r=productionRecord(b);
+  const isFarm=b.type==='garden'||b.type==='greenhouse',group=isFarm?'field':'factory',r=productionRecord(b);
   if(r.worker&&r.worker!==p.id)return 0;
   if(r.worker===p.id)return 100;
   if(p.work==='survey')return 0;
@@ -67,7 +67,7 @@ function productionWeight(p,b){
 function productionCandidate(p,type){
   const choices=[];
   for(const b of S.buildings){
-    if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
+    if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b)&&b.type!=='greenhouse':type==='garden'?['garden','greenhouse'].includes(b.type):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
     const r=productionRecord(b),weight=productionWeight(p,b);
     if(!weight||productionBlock(b)||b.type==='garden'&&!cropNeedsWorker(r.stage))continue;
     if(productionWorkers(b).some(worker=>worker.id!==p.id))continue;
@@ -198,7 +198,8 @@ document.addEventListener('change',e=>{
    const b=S.buildings.find(b=>b.id===+(el.dataset.industryWorker||el.dataset.industryRecipe));if(!b)return;
    const r=productionRecord(b);
    if(el.dataset.industryWorker)r.worker=+el.value||null;
-   else if(industryRecipes(b).some(([id])=>id===el.value)&&!r.batch&&!b.inputOrder){r.recipe=el.value;r.elapsed=0;}
+   else if(frontierProducer(b))frontierChangeRecipe(b,el.value);
+   else if(industryRecipes(b).some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;}
  }else return;
  interruptAvailable();save();
 });

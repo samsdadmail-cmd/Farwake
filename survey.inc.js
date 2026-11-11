@@ -139,16 +139,16 @@ function surveyResearchHTML(){
  Object.entries({...TECHS,...fieldResearch}).map(([id,t])=>{const reason=researchReason(id);return '<article class="infocard" style="margin:7px 0"><b>'+t.name+'</b><p>'+t.description+'</p><p>'+[t.requires?'After '+researchDefinition(t.requires).name:'',t.requirement||''].filter(Boolean).join(' · ')+'</p><button class="secondary" data-action="research" data-id="'+id+'" '+(reason?'disabled':'')+'>'+ (reason||'Research · '+t.cost+' knowledge')+'</button></article>'}).join('');
 }
 function surveyGrid(){
- let generation=4,used=0,banks=0;
+ let generation=4,used=0,banks=0,advancedBanks=0;
  for(const b of S.buildings){if(!b.finished||b.editOrder)continue;
-   if(b.type==='battery')banks++;
+   if(b.type==='battery')banks+=1+.5*((b.level||1)-1);if(b.type==='accumulator')advancedBanks++;
    const t=TYPES[b.type];if(!t)continue;
-   if(t.power>0)generation+=isNight()?t.power*.4:t.power+(b.type==='solar'&&S.research.includes('heliostat')?4:0);
+   if(t.power>0)generation+=b.type==='wind'?t.power*(S.weather==='wind'?1.5:.75):isNight()?t.power*.4:t.power+(b.type==='solar'?((S.research.includes('heliostat')?4:0)+2*((b.level||1)-1)):0);
    else used-=t.power;
  }
  generation=Math.floor(generation);
- const cap=banks*120,charge=clamp(Number(S.gridCharge)||0,0,cap);
- const output=charge>0?Math.min(Math.max(0,used-generation),4*banks):0;
+ const cap=banks*120+advancedBanks*480,charge=clamp(Number(S.gridCharge)||0,0,cap);
+ const output=charge>0?Math.min(Math.max(0,used-generation),4*banks+12*advancedBanks):0;
  return {supply:generation+output,used,generation,cap,charge,output};
 }
 function surveyGridTick(dt){
