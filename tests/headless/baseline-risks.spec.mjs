@@ -41,7 +41,7 @@ test('records frontier door admission and technology-tree overflow', async ({pag
   console.log(`DOOR_ADMISSION ${info.project.name} ${JSON.stringify(doors)}`);
 
   await page.click('[data-nav="build"]');
-  const catalog = await page.locator('[data-build]').count();
+  const catalog = await page.locator('[data-blueprint-detail]').count();
   expect(catalog).toBeGreaterThan(0);
   console.log(`CATALOG ${info.project.name} blueprints=${catalog}`);
   await page.click('[data-sheet="close"]');

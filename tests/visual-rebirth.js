@@ -12,7 +12,7 @@ async function verifyCandidate(frame) {
    click('[data-nav="build"]');
    const frontierIds=Object.keys(game.FRONTIER_BUILDINGS);
    const foundingIds=['shelter','garden','solar','workshop','shed','path','clinic','comms','battery'];
-   const shown=[...d.querySelectorAll('[data-build]')].map(el=>el.getAttribute('data-build'));
+   const shown=[...d.querySelectorAll('[data-blueprint-detail]')].map(el=>el.getAttribute('data-blueprint-detail'));
    const sheet=d.querySelector('#sheet');
    check(new Set(shown).size===shown.length && [...foundingIds,...frontierIds].every(id=>shown.includes(id)) && sheet.scrollWidth<=sheet.clientWidth+1,'catalog lists every founding and frontier blueprint ('+shown.length+') and fits '+width+'×'+height);
    click('[data-sheet="close"]');
@@ -22,7 +22,7 @@ async function verifyCandidate(frame) {
    check(d.querySelectorAll('.ledger tbody tr').length===materialIds.length && table.getBoundingClientRect().right<=width,'inventory lists each stored material ('+materialIds.length+') and fits '+width+'×'+height);
    click('[data-sheet="close"]');
  }
- click('[data-nav="build"]');click('[data-build="shed"]');
+ click('[data-nav="build"]');click('[data-blueprint-detail="shed"]');click('[data-build="shed"]');
  const canvas=d.querySelector('#world'),r=canvas.getBoundingClientRect(), camera=game.camera;
  const point={clientX:r.left+r.width/2+(31.5*32-camera.x)*camera.z,clientY:r.top+r.height/2+(31.5*32-camera.y)*camera.z};
  for(const type of ['pointerdown','pointerup'])canvas.dispatchEvent(new w.PointerEvent(type,{...point,pointerType:'touch',pointerId:2,bubbles:true}));
@@ -30,8 +30,11 @@ async function verifyCandidate(frame) {
  check(!d.querySelector('[data-inspect="place"]').disabled,"valid site "+JSON.stringify(game.preview));
  click('[data-inspect="place"]');
  check(advance(()=>s.buildings.some(b=>b.type==='shed'&&b.finished)),'crew completes supply shed');
- const tree=game.features.find(f=>f.type==='tree'&&game.designateFeature(f.id));
+ const origin=s.buildings.find(b=>b.type==='supplies');
+ const tree=game.features.filter(f=>f.type==='tree').sort((a,b)=>Math.hypot(a.x-origin.x,a.y-origin.y)-Math.hypot(b.x-origin.x,b.y-origin.y)).find(f=>game.designateFeature(f.id));
  check(tree,'visible tree designated');
+ for(const id of Object.keys(s.designations))if(id!==tree.id)game.cancelDesignation(id);
+ check(advance(()=>s.harvested.includes(tree.id)),'designated tree is felled');
  const initialWood=s.resources.wood;
  check(advance(()=>s.piles.some(q=>q.kind==='wood')),'cut tree creates ground timber');
  check(advance(()=>s.colonists.some(p=>p.carry?.kind==='wood')),'hauler picks up timber');

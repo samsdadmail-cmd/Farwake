@@ -25,22 +25,26 @@ const REQUIRED = new Set([
   'frontier-tech.html',
   'frontier-industry.html',
   'frontier-planet.html',
+  'frontier-town.html',
+  'frontier-ui.html',
+  'frontier-geology.html',
+  'frontier-fresh.html',
+  'regression.html',
   'research.html',
   'candidate.html'
 ]);
 // A KNOWN file that starts passing fails this run so the entry is removed.
+// Issue #13 passed on the combined head (cabin rest is admitted) and is gating.
 const KNOWN = {
-  'frontier-town.html': {
-    issue: '#13',
-    title: 'Upgraded cabin residents never go inside'
-  },
   'living.html': {
     issue: '#14',
-    title: 'Living-check workshop does not produce alloy in its window'
+    title: 'Living-check workshop does not produce alloy in its window',
+    error: 'Error: occupied workshop produces alloy at living-check.js:64'
   },
   'check.html': {
     issue: '#15',
-    title: 'Chained check reaches the living-world alloy failure'
+    title: 'Chained check reaches the living-world alloy failure',
+    error: 'Error: occupied workshop produces alloy at living-check.js:64'
   }
 };
 
@@ -56,6 +60,10 @@ const SUITES = [
   ['foundations', 'frontier-industry.html', 300000],
   ['foundations', 'frontier-town.html', 300000],
   ['foundations', 'frontier-planet.html', 300000],
+  ['foundations', 'frontier-ui.html', 180000],
+  ['foundations', 'frontier-geology.html', 180000],
+  ['foundations', 'frontier-fresh.html', 300000],
+  ['foundations', 'regression.html', 300000],
   ['visual', 'candidate.html', 240000],
   ['visual', 'living.html', 240000],
   ['visual', 'check.html', 240000]
@@ -115,12 +123,16 @@ async function runSuite(page, origin, file, timeout) {
   const started = Date.now();
   try {
     await page.goto(`${origin}/${file}`, {waitUntil: 'domcontentloaded', timeout: 30000});
-    await page.waitForFunction(() => {
+    const finished = file === 'regression.html' ? 'ALL SUITES FINISHED' : null;
+    await page.waitForFunction(token => {
       const text = document.querySelector('pre')?.textContent || '';
+      if (token) return text.includes(token);
       return text.includes('COMPLETE') || text.includes('FAILED');
-    }, {timeout});
+    }, finished, {timeout});
     const text = await page.locator('pre').innerText();
-    const status = text.includes('FAILED') || !text.includes('COMPLETE') ? 'fail' : 'pass';
+    const status = finished
+      ? (text.includes('FAILED') || !text.includes(finished) ? 'fail' : 'pass')
+      : (text.includes('FAILED') || !text.includes('COMPLETE') ? 'fail' : 'pass');
     return {file, status, ms: Date.now() - started, text};
   } catch (error) {
     let text = '';
@@ -164,7 +176,7 @@ try {
   for (const result of failed) {
     const required = REQUIRED.has(result.file);
     const known = KNOWN[result.file];
-    console.log(required ? `REQUIRED ${result.file}` : known ? `KNOWN ${result.file} ${known.issue} "${known.title}"` : `UNEXPECTED ${result.file}`);
+    console.log(required ? `REQUIRED ${result.file}` : known ? `KNOWN ${result.file} ${known.issue} "${known.title}"${known.error ? ` — ${known.error}` : ''}` : `UNEXPECTED ${result.file}`);
     if (required || !known) exitCode = 1;
   }
 } finally {
