@@ -225,7 +225,7 @@ function walkable(x,y){if(!inMap(x,y)||terrain[index(x,y)].kind==='water')return
 function clearFootprint(x,y,w,h){if(editorTarget(x,y,w,h))return false;if(!inMap(x,y)||!inMap(x+w-1,y+h-1))return false;for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++){let xx=x+dx,yy=y+dy;if(terrain[index(xx,yy)].kind==='water'||terrain[index(xx,yy)].kind==='stone'||buildingAt(xx,yy)||featureAt(xx,yy)||pileAt(xx,yy))return false;}return true}
 function canAfford(type){const t=TYPES[type];return Object.entries(t.cost).every(([r,n])=>freightAvailable(r)>=n)}
 function accessible(type){const t=TYPES[type];return t.unlock||S.research.includes(t.tech)}
-function buildAt(type,x,y){const t=TYPES[type];if(!t)return false;if(!accessible(type)){notice('Research this blueprint first.');return false}if(!clearFootprint(x,y,t.w,t.h)){notice('Find an open patch of clear ground.');return false}if(!canAfford(type)){notice('Not enough supplies for this blueprint.');return false}const b={id:uid++,type,x,y,w:t.w,h:t.h,progress:0,finished:false};if(!freightReserve(t.cost,b))return false;S.buildings.push(b);FarwakeWorkFX.complete(b);localSound('build',b);log('⚒','Blueprint placed: '+t.name+'. Builders are on the way.');selectedBuilding=b.id;preview=null;selectedType=null;renderUI(true);save();return true}
+function buildAt(type,x,y){const t=TYPES[type];if(!t)return false;if(!accessible(type)){notice('Research this blueprint first.');return false}if(!clearFootprint(x,y,t.w,t.h)){notice('Find an open patch of clear ground.');return false}const entranceProblem=frontierPlacementReason(type,x,y);if(entranceProblem){notice(entranceProblem);return false}if(!canAfford(type)){notice('Not enough supplies for this blueprint.');return false}const b={id:uid++,type,x,y,w:t.w,h:t.h,progress:0,finished:false};if(!freightReserve(t.cost,b))return false;S.buildings.push(b);FarwakeWorkFX.complete(b);localSound('build',b);log('⚒','Blueprint placed: '+t.name+'. Builders are on the way.');selectedBuilding=b.id;preview=null;selectedType=null;renderUI(true);save();return true}
 function jobs(){return S.buildings.filter(b=>!b.finished)}function finished(t){return S.buildings.filter(b=>b.finished&&b.type===t)}
 function power(){return surveyGrid()}function isNight(){return S.minute<6*60||S.minute>19*60}
 function taskPosition(t){return{x:t.x,y:t.y}}
@@ -354,7 +354,7 @@ function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,
  FarwakeWorkFX.draw(ctx,time,S.minute,left,top,right,bottom);
  editorOverlay();renderWorldSelection(time);
  for(let y=top;y<bottom;y++)for(let x=left;x<right;x++)if(!fog[index(x,y)]){rect(x*TS,y*TS,32,32,'#091c23eb');if(hash(x,y,16)>.94)rect(x*TS+13,y*TS+8,2,2,'#294244')}
- if(selectedType){const step=TYPES[selectedType];if(preview){let good=clearFootprint(preview.x,preview.y,step.w,step.h);let x=preview.x*TS,y=preview.y*TS,w=step.w*TS,h=step.h*TS;rect(x,y,w,h,good?'#c0f3975d':'#f48e886a');ctx.strokeStyle=good?'#d4ffab':'#ffc0b0';ctx.lineWidth=3;ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.strokeRect(x+8,y+8,w-16,h-16);ctx.setLineDash([]);ctx.font='bold 11px system-ui';ctx.fillStyle=good?'#e2ffd2':'#ffe1d7';ctx.textAlign='center';ctx.fillText(good?'✓ BUILD SITE':'× BLOCKED',x+w/2,y-8);} }
+ if(selectedType){const step=TYPES[selectedType];if(preview){let good=clearFootprint(preview.x,preview.y,step.w,step.h)&&!frontierPlacementReason(selectedType,preview.x,preview.y);let x=preview.x*TS,y=preview.y*TS,w=step.w*TS,h=step.h*TS;rect(x,y,w,h,good?'#c0f3975d':'#f48e886a');ctx.strokeStyle=good?'#d4ffab':'#ffc0b0';ctx.lineWidth=3;ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.strokeRect(x+8,y+8,w-16,h-16);ctx.setLineDash([]);ctx.font='bold 11px system-ui';ctx.fillStyle=good?'#e2ffd2':'#ffe1d7';ctx.textAlign='center';ctx.fillText(good?'✓ BUILD SITE':'× BLOCKED',x+w/2,y-8);} }
  ctx.restore();
  FarwakeLandscape.light(ctx,cw,ch,S,camera,sx,sy,time);FarwakeMoments.draw(ctx,S,cw,ch,sx,sy,camera.z);
 }
@@ -372,7 +372,7 @@ function taskLabel(p){if(p.task?.type==='harvest')return NATURAL[featureById(p.t
 function naturalInspector(f){const spec=NATURAL[f.type],q=S.designations?.[f.id],worker=S.colonists.find(p=>p.task?.type==='harvest'&&p.task.feature===f.id),pct=q?Math.round(100*(q.progress||0)/(f.workTime||spec.workTime)):0;
  return '<div class="inspectcard inspectnatural"><div class="naturalhead"><div class="naturalicon">'+uiIcon(f.type,23)+'</div><div class="naturaltitle"><div class="label">'+(f.amount?'Dense '+spec.name:spec.name)+'</div><div class="naturalmeta">'+spec.kind+' · '+f.x+', '+f.y+(q?' · '+(worker?'In progress':'Queued'):'')+'</div></div><button class="secondary" data-inspect="cancel">Close</button></div><div class="naturedesc">'+spec.description+'</div><div class="naturalmeta">On completion: '+(f.amount?f.amount+' '+MATERIALS[spec.resource].name.toLowerCase()+' left for physical hauling':spec.yield)+(q?' · '+(worker?worker.name+' working':'Awaiting crew'):'')+'</div>'+(q?'<div class="workmeter"><i style="width:'+pct+'%"></i></div>':'')+'<div class="naturalbuttons"><button class="'+(q?'secondary':'primary')+'" data-inspect="'+(q?'cancelwork':'designate')+'" data-id="'+f.id+'">'+(q?'Cancel work order':spec.action)+'</button></div></div>';
 }
-function refreshInspect(){const el=$('inspector');if(editor){el.innerHTML=editorPanel();return}if(selectedType&&!preview){el.innerHTML='<div class="inspectcard readycard"><span class="readyglyph">'+uiIcon(selectedType,22)+'</span><div class="readytext"><div class="label">'+TYPES[selectedType].name+'</div><div class="meta">Tap the map to position your blueprint</div></div><button class="secondary" data-inspect="cancel">Cancel</button></div>';return}if(preview&&selectedType){const t=TYPES[selectedType],good=clearFootprint(preview.x,preview.y,t.w,t.h),aff=canAfford(selectedType);el.innerHTML='<div class="inspectcard inspectbuild"><div class="inspectrow"><div style="flex:1;min-width:0"><div class="label">'+uiIcon(selectedType,17)+' '+t.name+'</div><div class="meta" style="color:'+(good&&aff?'#d5f8b2':'#ffc1b3')+'">'+(good?(aff?'Clear site · '+preview.x+','+preview.y:'Not enough materials'):'Blocked · '+preview.x+','+preview.y)+'</div></div><button class="primary" data-inspect="place" '+(!good||!aff?'disabled':'')+'>Construct</button><button class="secondary" data-inspect="cancel">Cancel</button></div><div class="inspectrow nudge"><span class="dim" style="flex:1;font-size:10px">Fine-tune site</span><button class="secondary" data-inspect="nudge" data-dir="-1,0">←</button><button class="secondary" data-inspect="nudge" data-dir="0,-1">↑</button><button class="secondary" data-inspect="nudge" data-dir="0,1">↓</button><button class="secondary" data-inspect="nudge" data-dir="1,0">→</button></div></div>';
+function refreshInspect(){const el=$('inspector');if(editor){el.innerHTML=editorPanel();return}if(selectedType&&!preview){el.innerHTML='<div class="inspectcard readycard"><span class="readyglyph">'+uiIcon(selectedType,22)+'</span><div class="readytext"><div class="label">'+TYPES[selectedType].name+'</div><div class="meta">Tap the map to position your blueprint</div></div><button class="secondary" data-inspect="cancel">Cancel</button></div>';return}if(preview&&selectedType){const t=TYPES[selectedType],good=clearFootprint(preview.x,preview.y,t.w,t.h)&&!frontierPlacementReason(selectedType,preview.x,preview.y),aff=canAfford(selectedType);el.innerHTML='<div class="inspectcard inspectbuild"><div class="inspectrow"><div style="flex:1;min-width:0"><div class="label">'+uiIcon(selectedType,17)+' '+t.name+'</div><div class="meta" style="color:'+(good&&aff?'#d5f8b2':'#ffc1b3')+'">'+(good?(aff?'Clear site · '+preview.x+','+preview.y:'Not enough materials'):(frontierPlacementReason(selectedType,preview.x,preview.y)||'Blocked')+' · '+preview.x+','+preview.y)+'</div></div><button class="primary" data-inspect="place" '+(!good||!aff?'disabled':'')+'>Construct</button><button class="secondary" data-inspect="cancel">Cancel</button></div><div class="inspectrow nudge"><span class="dim" style="flex:1;font-size:10px">Fine-tune site</span><button class="secondary" data-inspect="nudge" data-dir="-1,0">←</button><button class="secondary" data-inspect="nudge" data-dir="0,-1">↑</button><button class="secondary" data-inspect="nudge" data-dir="0,1">↓</button><button class="secondary" data-inspect="nudge" data-dir="1,0">→</button></div></div>';
  }else if(selectedColonist){const p=S.colonists.find(z=>z.id===selectedColonist);if(!p){selectedColonist=null;el.innerHTML='';return}el.innerHTML='<div class="inspectcard"><div><div class="label">'+uiIcon('crew',17)+' '+p.name+'</div><div class="meta">'+p.role+' · '+taskLabel(p)+' · Energy '+Math.round(p.energy)+'%</div></div><button class="primary" data-inspect="profile">View profile</button><button class="secondary" data-inspect="cancel">Cancel</button></div>';
  }else if(selectedBuilding){const b=S.buildings.find(z=>z.id===selectedBuilding);if(!b){selectedBuilding=null;el.innerHTML='';return}el.innerHTML='<div class="inspectcard"><div><div class="label">'+uiIcon(TYPES[b.type]?b.type:'shelter',17)+' '+(TYPES[b.type]?.name||((b.type==='lander')?'Expedition Lander':(b.type==='supplies'?'Supply Cache':'Expedition Camp')) )+'</div><div class="meta">'+(b.finished?(['supplies','shed'].includes(b.type)?'Stores '+Math.floor(storedTotal())+' / '+storageCapacity()+' supplies':'Operational'):('Under construction · '+Math.round(b.progress/TYPES[b.type].time*100)+'% complete'))+FarwakeDoors.occupants(S,b).map(p=>'<br>'+esc(p.name)+' · '+taskLabel(p)).join('')+'</div></div><button class="primary" data-inspect="manage">Manage</button><button class="secondary" data-inspect="cancel">Close</button></div>';
  }else if(selectedPile){const q=pileById(selectedPile);if(!q){selectedPile=null;el.innerHTML='';return}const name=MATERIALS[q.kind]?.name||q.kind;el.innerHTML='<div class="inspectcard"><div><div class="label">'+uiIcon(q.kind,17)+' '+name+'</div><div class="meta">'+q.amount+' units on the ground · Waiting for a hauler</div></div><button class="secondary" data-inspect="cancel">Close</button></div>';
@@ -885,7 +885,7 @@ function editorPlan() {
   }
   if(mode==='move'){
     const b=S.buildings.find(b=>b.id===editor.bid),d=editor.end;
-    const valid=b&&d&&!b.editOrder&&editorClear(d.x,d.y,b.w,b.h);
+    const valid=b&&d&&!b.editOrder&&editorClear(d.x,d.y,b.w,b.h)&&!frontierPlacementReason(b.type,d.x,d.y,b.id);
     return {b,d,valid,description:d?(valid?'Clear reconstruction site':'Site obstructed'):'Tap a clear site for the new footprint'};
   }
   const a=editor.start,z=editor.end;
@@ -1042,7 +1042,7 @@ const INDUSTRY_STAGES = {
 function industryPolicy(){
   if(!S.industry) S.industry={};
   const c=S.industry;
-  c.targets??={wood:40,ore:24,scrap:150,food:180,alloy:65};
+  c.targets??={wood:40,ore:24,scrap:150,food:180,alloy:20};
   c.weights??={field:1,factory:1,gather:1};
   c.harvests??=0;c.batches??=0;
   return c;
@@ -1639,7 +1639,7 @@ function frontierTree(){
   return '<path d="M'+(a.x+188)+' '+(a.y+68)+' C'+(a.x+210)+' '+(a.y+68)+','+(b.x-24)+' '+(b.y+68)+','+b.x+' '+(b.y+68)+'" class="'+(S.research.includes(k)?'connected':'')+'"/>';
  })).join('');
  const active=frontierState().research;
- return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<span class="'+(i===frontierEra()?'current':'')+'">'+n+'</span>').join('')+'</div>'+
+ return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<button class="'+(i===frontierEra()?'current':'')+'" data-tech-era="'+i+'">'+n+'</button>').join('')+'</div>'+
  '<div class="tree-controls"><span>Drag the tree to explore · '+S.resources.knowledge+' knowledge</span><button class="secondary" data-tech-zoom="-1" aria-label="Zoom technology tree out">−</button><button class="secondary" data-tech-zoom="1" aria-label="Zoom technology tree in">+</button></div>'+
  '<div class="tree-branches">'+branches.map((id,i)=>'<button class="secondary" data-tech-branch="'+i+'">'+FRONTIER_BRANCHES[id][0]+'</button>').join('')+'</div><div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
  '<svg class="tech-links" width="'+width+'" height="'+height+'" aria-hidden="true">'+lines+'</svg>'+
@@ -1661,10 +1661,11 @@ function frontierTechDetail(id){
  '<div class="tech-prerequisites">'+(Array.isArray(t.requires)?t.requires:t.requires?[t.requires]:[]).map(k=>'<button class="secondary" data-tech-detail="'+k+'">'+(S.research.includes(k)?'Completed · ':'Requires · ')+researchDefinition(k).name+'</button>').join('')+'</div><p>'+ (t.requirement||'Founding expedition knowledge')+'</p>'+ (active?'<p>Stopping this study returns its unused knowledge budget.</p><button class="secondary" data-research-cancel>Stop study</button>':'')+'<button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
 }
 document.addEventListener('click',e=>{
+ const era=e.target.closest('[data-tech-era]');if(era){$('sheet').querySelector('.tech-viewport').scrollLeft=(110+Number(era.dataset.techEra)*230)*techZoom;return}
  const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=(70+Number(branch.dataset.techBranch)*345)*techZoom-10;return}
  const detail=e.target.closest('[data-tech-detail]');if(detail){frontierTechDetail(detail.dataset.techDetail);return}
  const start=e.target.closest('[data-tech-start]');if(start){frontierBeginResearch(start.dataset.techStart);return}
- const zoom=e.target.closest('[data-tech-zoom]');if(zoom){techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research')}
+ const zoom=e.target.closest('[data-tech-zoom]');if(zoom){const view=$('sheet').querySelector('.tech-viewport'),old=techZoom,x=view.scrollLeft+view.clientWidth/2,y=view.scrollTop+view.clientHeight/2;techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research');const next=$('sheet').querySelector('.tech-viewport');next.scrollLeft=x*techZoom/old-next.clientWidth/2;next.scrollTop=y*techZoom/old-next.clientHeight/2;}
 });
 const FRONTIER_RECIPES={
  boards:{name:'Saw structural timber',facility:'sawmill',cost:{wood:4},output:{boards:6},seconds:9},
@@ -2130,7 +2131,9 @@ function frontierSurfaceGeology(){
 
 INDUSTRY_RECIPES.refined={name:'Cast refined metal',cost:{metal:2,scrap:1},yield:2,seconds:11,tech:'refining'};
 function frontierAutoRecipe(b){
- const r=productionRecord(b);if(r.manualRecipe)return;
+ const r=productionRecord(b);if(r.manualRecipe||r.paused)return;
+ // Preserve scarce ore for dedicated smelting once that industry exists.
+ if(S.research.includes('refining')&&(S.resources.scrap||0)>=46&&(S.resources.ore||0)<30&&r.elapsed===0&&r.recipe!=='recycle'){r.recipe='recycle';r.manualRecipe=false;}
  const ready=recipe=>Object.entries(recipe.cost).every(([k,n])=>(S.resources[k]||0)>=n);
  if(ready(chosenRecipe(r)))return;
  const alternative=industryRecipes(b).find(([,recipe])=>ready(recipe));
@@ -2154,8 +2157,23 @@ function frontierPowerDispatch(){
  }
 }
 
+function frontierPlacementReason(type,x,y,ignoreId=null){
+ if(['path','road'].includes(type))return '';
+ const t=TYPES[type];if(!t)return '';
+ const inside=(px,py)=>px>=x&&px<x+t.w&&py>=y&&py<y+t.h;
+ for(const b of S.buildings){
+  if(b.id===ignoreId)continue;const door=FarwakeBuildings.entrance(b);if(!door)continue;
+  if(inside(b.x+Math.floor((door.x+door.w/2)/32),b.y+b.h))return 'Keep the existing doorway approach clear';
+ }
+ const door=FarwakeBuildings.entrance({type,x,y,w:t.w,h:t.h});
+ if(door){const xx=x+Math.floor((door.x+door.w/2)/32),yy=y+t.h;
+  if(!inMap(xx,yy)||terrain[index(xx,yy)].kind==='water'||S.buildings.some(b=>b.id!==ignoreId&&b.type!=='path'&&b.type!=='road'&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h))return 'The entrance needs a clear approach';
+ }
+ return '';
+}
+
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={frontierPlacementReason,TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

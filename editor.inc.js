@@ -84,7 +84,7 @@ function editorPlan() {
   }
   if(mode==='move'){
     const b=S.buildings.find(b=>b.id===editor.bid),d=editor.end;
-    const valid=b&&d&&!b.editOrder&&editorClear(d.x,d.y,b.w,b.h);
+    const valid=b&&d&&!b.editOrder&&editorClear(d.x,d.y,b.w,b.h)&&!frontierPlacementReason(b.type,d.x,d.y,b.id);
     return {b,d,valid,description:d?(valid?'Clear reconstruction site':'Site obstructed'):'Tap a clear site for the new footprint'};
   }
   const a=editor.start,z=editor.end;

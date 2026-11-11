@@ -116,7 +116,7 @@ function frontierTree(){
   return '<path d="M'+(a.x+188)+' '+(a.y+68)+' C'+(a.x+210)+' '+(a.y+68)+','+(b.x-24)+' '+(b.y+68)+','+b.x+' '+(b.y+68)+'" class="'+(S.research.includes(k)?'connected':'')+'"/>';
  })).join('');
  const active=frontierState().research;
- return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<span class="'+(i===frontierEra()?'current':'')+'">'+n+'</span>').join('')+'</div>'+
+ return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<button class="'+(i===frontierEra()?'current':'')+'" data-tech-era="'+i+'">'+n+'</button>').join('')+'</div>'+
  '<div class="tree-controls"><span>Drag the tree to explore · '+S.resources.knowledge+' knowledge</span><button class="secondary" data-tech-zoom="-1" aria-label="Zoom technology tree out">−</button><button class="secondary" data-tech-zoom="1" aria-label="Zoom technology tree in">+</button></div>'+
  '<div class="tree-branches">'+branches.map((id,i)=>'<button class="secondary" data-tech-branch="'+i+'">'+FRONTIER_BRANCHES[id][0]+'</button>').join('')+'</div><div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
  '<svg class="tech-links" width="'+width+'" height="'+height+'" aria-hidden="true">'+lines+'</svg>'+
@@ -138,10 +138,11 @@ function frontierTechDetail(id){
  '<div class="tech-prerequisites">'+(Array.isArray(t.requires)?t.requires:t.requires?[t.requires]:[]).map(k=>'<button class="secondary" data-tech-detail="'+k+'">'+(S.research.includes(k)?'Completed · ':'Requires · ')+researchDefinition(k).name+'</button>').join('')+'</div><p>'+ (t.requirement||'Founding expedition knowledge')+'</p>'+ (active?'<p>Stopping this study returns its unused knowledge budget.</p><button class="secondary" data-research-cancel>Stop study</button>':'')+'<button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
 }
 document.addEventListener('click',e=>{
+ const era=e.target.closest('[data-tech-era]');if(era){$('sheet').querySelector('.tech-viewport').scrollLeft=(110+Number(era.dataset.techEra)*230)*techZoom;return}
  const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=(70+Number(branch.dataset.techBranch)*345)*techZoom-10;return}
  const detail=e.target.closest('[data-tech-detail]');if(detail){frontierTechDetail(detail.dataset.techDetail);return}
  const start=e.target.closest('[data-tech-start]');if(start){frontierBeginResearch(start.dataset.techStart);return}
- const zoom=e.target.closest('[data-tech-zoom]');if(zoom){techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research')}
+ const zoom=e.target.closest('[data-tech-zoom]');if(zoom){const view=$('sheet').querySelector('.tech-viewport'),old=techZoom,x=view.scrollLeft+view.clientWidth/2,y=view.scrollTop+view.clientHeight/2;techZoom=clamp(techZoom+Number(zoom.dataset.techZoom)*.15,.55,1.3);openSection('research');const next=$('sheet').querySelector('.tech-viewport');next.scrollLeft=x*techZoom/old-next.clientWidth/2;next.scrollTop=y*techZoom/old-next.clientHeight/2;}
 });
 const FRONTIER_RECIPES={
  boards:{name:'Saw structural timber',facility:'sawmill',cost:{wood:4},output:{boards:6},seconds:9},
@@ -607,7 +608,9 @@ function frontierSurfaceGeology(){
 
 INDUSTRY_RECIPES.refined={name:'Cast refined metal',cost:{metal:2,scrap:1},yield:2,seconds:11,tech:'refining'};
 function frontierAutoRecipe(b){
- const r=productionRecord(b);if(r.manualRecipe)return;
+ const r=productionRecord(b);if(r.manualRecipe||r.paused)return;
+ // Preserve scarce ore for dedicated smelting once that industry exists.
+ if(S.research.includes('refining')&&(S.resources.scrap||0)>=46&&(S.resources.ore||0)<30&&r.elapsed===0&&r.recipe!=='recycle'){r.recipe='recycle';r.manualRecipe=false;}
  const ready=recipe=>Object.entries(recipe.cost).every(([k,n])=>(S.resources[k]||0)>=n);
  if(ready(chosenRecipe(r)))return;
  const alternative=industryRecipes(b).find(([,recipe])=>ready(recipe));
@@ -629,4 +632,19 @@ function frontierPowerDispatch(){
  for(const b of S.buildings)if(b.autoPowerHold&&b.finished&&!b.editOrder){
   grid=surveyGrid();if(grid.supply-grid.used>=-TYPES[b.type].power){productionRecord(b).paused=false;delete b.autoPowerHold;}
  }
+}
+
+function frontierPlacementReason(type,x,y,ignoreId=null){
+ if(['path','road'].includes(type))return '';
+ const t=TYPES[type];if(!t)return '';
+ const inside=(px,py)=>px>=x&&px<x+t.w&&py>=y&&py<y+t.h;
+ for(const b of S.buildings){
+  if(b.id===ignoreId)continue;const door=FarwakeBuildings.entrance(b);if(!door)continue;
+  if(inside(b.x+Math.floor((door.x+door.w/2)/32),b.y+b.h))return 'Keep the existing doorway approach clear';
+ }
+ const door=FarwakeBuildings.entrance({type,x,y,w:t.w,h:t.h});
+ if(door){const xx=x+Math.floor((door.x+door.w/2)/32),yy=y+t.h;
+  if(!inMap(xx,yy)||terrain[index(xx,yy)].kind==='water'||S.buildings.some(b=>b.id!==ignoreId&&b.type!=='path'&&b.type!=='road'&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h))return 'The entrance needs a clear approach';
+ }
+ return '';
 }

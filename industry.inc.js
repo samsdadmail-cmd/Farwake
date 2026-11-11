@@ -12,7 +12,7 @@ const INDUSTRY_STAGES = {
 function industryPolicy(){
   if(!S.industry) S.industry={};
   const c=S.industry;
-  c.targets??={wood:40,ore:24,scrap:150,food:180,alloy:65};
+  c.targets??={wood:40,ore:24,scrap:150,food:180,alloy:20};
   c.weights??={field:1,factory:1,gather:1};
   c.harvests??=0;c.batches??=0;
   return c;

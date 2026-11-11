@@ -30,6 +30,10 @@ async function verifyFrontierTech(frame,out){
  w.QA.openSection('research');
  ok(frame.contentDocument.querySelectorAll('.tech-links path').length>15,'technology prerequisites form visible connected edges');
  g.save();g.load();ok(g.state.research.includes('cabins')&&g.state.buildings.some(b=>b.type==='cabin'),'new capability and building survive a v3 save');
+ g.frontierBeginResearch('medicine');
+ ok(run(()=>g.frontierState().research?.progress>0),'another study accumulates actual researcher work');
+ const active=g.frontierState().research,beforeCancel=g.state.resources.knowledge,refund=Math.floor(g.researchDefinition(active.id).cost*(1-active.progress/active.effort));
+ ok(g.frontierCancelResearch()&&!g.frontierState().research&&!g.state.research.includes('medicine')&&g.state.resources.knowledge===beforeCancel+refund,'cancel returns only unused knowledge without granting the technology');
  out.textContent=lines.concat('COMPLETE').join('\n');
  }catch(e){out.textContent=lines.concat('FAILED '+e.stack).join('\n')}
 }

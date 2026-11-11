@@ -25,6 +25,18 @@ async function verifyFrontierIndustry(frame,out){
  // Only switch after any previously-started batch finishes and any input request is cancelled safely.
  ok(run(()=>!record.batch),'current fabrication batch completes');ok(g.frontierChangeRecipe(fabricator,'panels'),'recipe changes safely after a batch');
  ok(run(()=>g.frontierState().produced.composite>=5),'second fabrication recipe produces useful composite panels');
+ g.showBuilding(fabricator.id);const d=w.document,assigned=s.colonists[0],select=d.querySelector('[data-industry-worker]');
+ select.value=assigned.id;select.dispatchEvent(new w.Event('change',{bubbles:true}));assigned.energy=95;assigned.hunger=10;assigned.task=null;assigned.path=[];
+ ok(record.worker===assigned.id&&run(()=>assigned.task?.id===fabricator.id),'inspector assignment directs a real worker to the fabrication job');
+ ok(run(()=>record.batch&&record.elapsed>0),'assigned worker advances an actual fabrication batch');
+ g.refreshCommandReadouts();
+ ok(Math.abs(parseFloat(d.querySelector('#production-progress').style.width)-100*record.elapsed/g.FRONTIER_RECIPES[record.recipe].seconds)<.1,'live inspector progress uses actual recipe duration');
+ const recipeSelect=d.querySelector('[data-industry-recipe]'),activeRecipe=record.recipe;recipeSelect.value='components';recipeSelect.dispatchEvent(new w.Event('change',{bubbles:true}));
+ ok(record.recipe===activeRecipe&&recipeSelect.value===activeRecipe,'active-batch recipe change is rejected and UI restores the real choice');
+ const load=g.surveyGrid().used;d.querySelector('[data-industry-pause]').click();
+ ok(record.paused&&g.surveyGrid().used===load-5,'pausing production releases its real grid demand');
+ d.querySelector('[data-industry-pause]').click();ok(!record.paused,'resume control restores production');
+
  ok(s.piles.some(q=>q.site===kitchen.id)||s.colonists.some(p=>p.carry?.site===kitchen.id)||g.productionRecord(kitchen).cycles>0,'production inputs travel in physical assigned lots');
  const home=place('cabin'),lodge=place('dormitory'),depot=place('warehouse'),bank=place('accumulator'),house=place('greenhouse');
  ok(run(()=>[home,lodge,depot,bank,house].every(b=>b.finished)),'advanced residential, storage, energy and food facilities constructed');

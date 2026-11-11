@@ -27,7 +27,7 @@ async function verifyFrontierPlanet(frame,out){
  let rig;for(let y=Math.max(1,seam.y-4);y<Math.min(52,seam.y+4)&&!rig;y++)for(let x=Math.max(1,seam.x-4);x<Math.min(52,seam.x+4)&&!rig;x++)if(Math.hypot(x-seam.x,y-seam.y)<=6&&g.clearFootprint(x,y,3,3)&&g.buildAt('drill',x,y))rig=s.buildings.at(-1);
  ok(rig&&run(()=>rig.finished),'crew builds extraction rig beside the investigated seam');
  s.buildings.push({id:881,type:'wind',x:18,y:20,w:2,h:2,finished:true},{id:882,type:'wind',x:15,y:20,w:2,h:2,finished:true},{id:883,type:'wind',x:12,y:20,w:2,h:2,finished:true});
- g.industryPolicy().targets.ore=50;const before=seam.remaining;
+ g.industryPolicy().targets.ore=1000;const before=seam.remaining;
  ok(run(()=>seam.remaining<before),'operator extracts actual finite seam ore');
  ok(seam.remaining===before-5||seam.remaining<before-5,'extraction depletes underground supply');
  let obs;for(let y=30;y<50&&!obs;y++)for(let x=20;x<49&&!obs;x++)if(g.clearFootprint(x,y,5,4)&&g.buildAt('observatory',x,y))obs=s.buildings.at(-1);
