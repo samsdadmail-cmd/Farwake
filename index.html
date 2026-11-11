@@ -160,20 +160,22 @@ function log(icon,message){if(!S)return;S.events.unshift({icon,message,day:S.day
 function timeString(){let n=Math.floor(S.minute)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function notice(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.remove('show'),2400)}
 // Bounded local diagnostics without inventories or colonist records.
-const health={frames:0,ticks:0,saves:0,phase:'boot',phaseStarted:0,maxPhaseMs:{},error:null};
+const health={frames:0,ticks:0,saves:0,resizes:0,contextLosses:0,contextRestores:0,phase:'boot',phaseStarted:0,maxPhaseMs:{},error:null};
 const healthEnabled=new URLSearchParams(location.search).has('diagnostics');
 let healthLastWrite=0;
 function healthPhase(phase){
  const now=performance.now();if(health.phaseStarted)health.maxPhaseMs[health.phase]=Math.max(health.maxPhaseMs[health.phase]||0,now-health.phaseStarted);
  health.phase=phase;health.phaseStarted=now;
 }
-function healthSnapshot(){return {probe:'freeze-probe-1',...health,maxPhaseMs:{...health.maxPhaseMs},day:S?.day,minute:S?.minute,colonists:S?.colonists.length,buildings:S?.buildings.length,piles:S?.piles?.length,canvas:[canvas.width,canvas.height],audio:FarwakeAudio.status,paused,saveProtection:saveLocked,heap:performance.memory?.usedJSHeapSize||null,visibility:document.visibilityState};}
+function healthSnapshot(){return {probe:'freeze-probe-2',...health,maxPhaseMs:{...health.maxPhaseMs},day:S?.day,minute:S?.minute,colonists:S?.colonists.length,buildings:S?.buildings.length,piles:S?.piles?.length,canvas:[canvas.width,canvas.height],audio:FarwakeAudio.status,paused,saveProtection:saveLocked,heap:performance.memory?.usedJSHeapSize||null,visibility:document.visibilityState};}
 function healthRecord(error){
  if(error)health.error={message:String(error.message||error).slice(0,500),stack:String(error.stack||'').slice(0,2000),phase:health.phase};
  try{const raw=JSON.stringify(healthSnapshot());localStorage.setItem('farwake_diagnostics_v1',raw);if(error)localStorage.setItem('farwake_diagnostics_fault_v1',raw)}catch{}
 }
 window.addEventListener('error',e=>healthRecord(e.error||e.message));
 window.addEventListener('unhandledrejection',e=>healthRecord(e.reason||'Unhandled rejection'));
+canvas.addEventListener('contextlost',()=>{health.contextLosses++;healthRecord(new Error('Canvas 2D context lost'))});
+canvas.addEventListener('contextrestored',()=>{health.contextRestores++;if(healthEnabled)healthRecord()});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-diagnostics-export]'))return;
  const a=document.createElement('a'),raw=JSON.stringify({current:healthSnapshot(),previousFault:JSON.parse(localStorage.getItem('farwake_diagnostics_fault_v1')||'null'),heartbeat:JSON.parse(localStorage.getItem('farwake_diagnostics_v1')||'null')});
  const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));a.href=url;a.download='FARWAKE-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -349,7 +351,7 @@ function tick(dt){if(paused)return;health.ticks++;surveyGridTick(dt*speed);let s
  updateGoal();}
 const palettes={grass:['#537e61','#588568','#608b6a','#4c785c','#688f6f','#50775b'],sand:['#c2b18a','#ceb995','#c7ae81','#bba57e','#d0bb93'],stone:['#697777','#728080','#7d8581','#667571'],water:['#2d6979','#307486','#28677a','#327f91']};
 let cw=0,ch=0,dpr=1,lastOrientation=null;
-function resize(){const landscape=window.innerWidth>window.innerHeight&&window.innerHeight<520;if(landscape!==lastOrientation){lastOrientation=landscape;if(landscape)collapsed=true;$('panel').classList.toggle('collapsed',collapsed);$('fold').textContent=collapsed?'⌃':'⌄';}const r=canvas.getBoundingClientRect();cw=r.width;ch=r.height;dpr=Math.min(FieldPreferences.values.preset==='performance'?1:2,window.devicePixelRatio||1);canvas.width=Math.max(1,Math.round(cw*dpr));canvas.height=Math.max(1,Math.round(ch*dpr));ctx.imageSmoothingEnabled=false;}
+function resize(){health.resizes++;const landscape=window.innerWidth>window.innerHeight&&window.innerHeight<520;if(landscape!==lastOrientation){lastOrientation=landscape;if(landscape)collapsed=true;$('panel').classList.toggle('collapsed',collapsed);$('fold').textContent=collapsed?'⌃':'⌄';}const r=canvas.getBoundingClientRect();cw=r.width;ch=r.height;dpr=Math.min(FieldPreferences.values.preset==='performance'?1:2,window.devicePixelRatio||1);canvas.width=Math.max(1,Math.round(cw*dpr));canvas.height=Math.max(1,Math.round(ch*dpr));ctx.imageSmoothingEnabled=false;}
 function sx(px){return cw/2+(px-camera.x)*camera.z}function sy(py){return ch/2+(py-camera.y)*camera.z}
 function screenToWorld(x,y){return{x:(camera.x+(x-cw/2)/camera.z)/TS,y:(camera.y+(y-ch/2)/camera.z)/TS}}
 let zoomRequest=null;

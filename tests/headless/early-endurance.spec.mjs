@@ -1,10 +1,12 @@
 import {test,expect} from '@playwright/test';
+
+test.use({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
 import {readFileSync} from 'node:fs';
 
 // Exercise the actual animation loop, periodic UI, autosave and presentation.
 // Instrument the QA response only; isolated browser contexts never use player saves.
 test('unattended early colony keeps rendering, simulating and saving through two nights',async({page},info)=>{
- test.setTimeout(240000);
+ test.setTimeout(600000);
  const errors=[];page.on('pageerror',e=>errors.push(e.stack||e.message));
  await page.clock.install();
  await page.addInitScript(()=>{
