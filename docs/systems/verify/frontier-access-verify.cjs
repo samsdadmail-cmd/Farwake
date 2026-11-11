@@ -206,7 +206,7 @@ async function main() {
   const server = await serve();
   const port = server.address().port;
   const profile = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'farwake-access-'));
-  const chrome = spawn('/usr/local/bin/google-chrome', [
+  const chrome = spawn(process.env.CHROME_PATH || '/usr/local/bin/google-chrome', [
     '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
     '--user-data-dir=' + profile, '--remote-debugging-port=0', 'about:blank'
   ], {stdio: ['ignore', 'pipe', 'pipe']});

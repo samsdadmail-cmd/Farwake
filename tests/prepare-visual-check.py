@@ -6,7 +6,7 @@ from tempfile import mkdtemp
 
 root = Path(__file__).resolve().parents[1]
 dest = Path(mkdtemp(prefix="farwake-qa-"))
-for source in [root/"index.html", root/"field.css", *root.glob("*.js"),
+for source in [root/"index.html", *root.glob("*.css"), *root.glob("*.js"),
                *root.glob("*.png"), root/"manifest.webmanifest",
                *root.glob("tests/*.js"), root/"tests/check.html"]:
     copy(source, dest / source.name)

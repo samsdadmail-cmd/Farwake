@@ -169,7 +169,7 @@ function productionBlock(b){
  if(r.paused)return b.autoPowerHold?'Grid standby · needs '+(-TYPES[b.type].power)+' spare power':'Production paused';
  if(!recipe||recipe.facility!==b.type)return 'Select a facility recipe';
  if(power().supply<power().used)return 'Insufficient grid power';
- const over=Object.entries(recipe.output).some(([k,n])=>industryOwned(k)+n>industryPolicy().targets[k]);
+ const over=Object.keys(recipe.output).some(k=>industryOwned(k)>=industryTarget(k));
  if(over&&!r.batch)return 'Output target reached';
  if(b.type==='drill'&&!frontierSeam(b))return 'No investigated ore seam within six tiles';
  if(!r.batch){
@@ -210,7 +210,7 @@ function frontierRequestInputs(b){
  if(!b.finished||b.editOrder||b.upgradeOrder||!frontierProducer(b))return;
  const r=productionRecord(b),recipe=FRONTIER_RECIPES[r.recipe];
  if(r.paused||r.batch||b.inputOrder||!recipe)return;
- if(Object.entries(recipe.output).some(([k,n])=>industryOwned(k)+n>industryPolicy().targets[k]))return;
+ if(Object.keys(recipe.output).some(k=>industryOwned(k)>=industryTarget(k)))return;
  if(Object.keys(recipe.cost).length&&freightReserve(recipe.cost,b))b.inputOrder=true;
 }
 function frontierSeam(b){

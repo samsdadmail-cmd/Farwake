@@ -44,7 +44,6 @@ function foundingProductionBlock(b){
   if(industryOwned(kind)>=industryTarget(kind))return 'Colony stock target reached';
   if(b.type==='garden')return '';
   const recipe=chosenRecipe(r);
-  if(industryOwned('alloy')+recipe.yield>industryPolicy().targets.alloy)return 'Next batch would exceed target';
   const grid=power();
   if(grid.supply<grid.used)return 'Insufficient grid power';
   for(const [k,amount] of Object.entries(recipe.cost))if((S.resources[k]||0)<amount)return 'Needs '+amount+' stored '+MATERIALS[k].name.toLowerCase();
@@ -184,7 +183,7 @@ function personPriorityControls(p){
 }
 function industryPanel(){
  const c=industryPolicy();
- return '<p>Basic needs take precedence. Priorities direct available workers. Targets include stored, loose and carried supplies.</p><h3>Resource targets</h3>'+
+ return '<p>Basic needs take precedence. Priorities direct available workers. Targets include stored, loose and carried supplies. Production stops starting batches when the target is reached; complete batches may take stock above it.</p><h3>Resource targets</h3>'+
  Object.entries(c.targets).map(([k,n])=>'<label class="work-control">'+MATERIALS[k].name+'<input class="field" style="width:90px" aria-label="'+MATERIALS[k].name+' target" type="number" min="0" max="9999" step="1" value="'+n+'" data-industry-target="'+k+'"></label>').join('')+
  '<h3>Colony priorities</h3>'+Object.entries(workGroups).map(([k,n])=>'<label class="work-control">'+n+industrySelect(n,c.weights[k]??1,[[0,'Disabled'],[1,'Normal'],[2,'High'],[3,'Urgent']],'data-colony-weight="'+k+'"')+'</label>').join('')+
  '<h3>Production facilities</h3>'+S.buildings.filter(b=>['garden','workshop'].includes(b.type)||frontierProducer(b)).map(b=>'<button class="hubitem" data-facility="'+b.id+'"><span>'+uiIcon(b.type,20)+'</span><span><b>'+TYPES[b.type].name+'</b><small>'+esc(industrySummary(b))+'</small></span></button>').join('');

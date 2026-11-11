@@ -31,22 +31,13 @@ const REQUIRED = new Set([
   'frontier-fresh.html',
   'regression.html',
   'research.html',
-  'candidate.html'
+  'candidate.html',
+  'living.html',
+  'check.html'
 ]);
 // A KNOWN file that starts passing fails this run so the entry is removed.
 // Issue #13 passed on the combined head (cabin rest is admitted) and is gating.
-const KNOWN = {
-  'living.html': {
-    issue: '#14',
-    title: 'Living-check workshop does not produce alloy in its window',
-    error: 'Error: occupied workshop produces alloy at living-check.js:64'
-  },
-  'check.html': {
-    issue: '#15',
-    title: 'Chained check reaches the living-world alloy failure',
-    error: 'Error: occupied workshop produces alloy at living-check.js:64'
-  }
-};
+const KNOWN = {};
 
 const SUITES = [
   ['foundations', 'editor.html', 120000],
@@ -63,6 +54,7 @@ const SUITES = [
   ['foundations', 'frontier-ui.html', 180000],
   ['foundations', 'frontier-geology.html', 180000],
   ['foundations', 'frontier-fresh.html', 300000],
+  ['foundations', 'journey.html', 300000],
   ['foundations', 'regression.html', 300000],
   ['visual', 'candidate.html', 240000],
   ['visual', 'living.html', 240000],
@@ -143,7 +135,7 @@ async function runSuite(page, origin, file, timeout) {
 
 const directories = [];
 let exitCode = 0;
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.CHROME_PATH ? {executablePath:process.env.CHROME_PATH} : {});
 try {
   ensureHistory();
   const roots = {

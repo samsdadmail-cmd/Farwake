@@ -57,11 +57,15 @@ async function verifyLiving(frame) {
     shop={...space,type:'workshop',id:9999,w:3,h:2,progress:100,finished:true};s.buildings.push(shop);
   }
   s.minute=600;s.resources.ore=12;s.resources.scrap=140;s.resources.alloy=10;
+  g.freightInit(); // Reconcile the fixture's legacy totals with real store accounts.
   Object.assign(engineer,{work:'engineer',energy:95,hunger:5,task:null,path:[],carry:null});delete engineer.visit;
   const workshopPort=w.FarwakeDoors.portalFor(shop);
   engineer.x=workshopPort.streetX;engineer.y=workshopPort.streetY;
   expect(run(50,()=>w.FarwakeDoors.occupants(s,shop).some(p=>p.id===engineer.id&&p.task.type==='craft')),'engineer enters the workshop on a craft job');
-  expect(run(16,()=>s.resources.alloy>10),'occupied workshop produces alloy');
+  const production=g.productionRecord(shop),beforeOutput=production.output;
+  const ownedAlloy=()=>s.resources.alloy+s.piles.filter(q=>q.kind==='alloy').reduce((n,q)=>n+q.amount,0)+s.colonists.reduce((n,p)=>n+(p.carry?.kind==='alloy'?p.carry.amount:0),0);
+  const beforeAlloy=ownedAlloy();
+  expect(run(16,()=>production.output>beforeOutput&&ownedAlloy()>beforeAlloy),'occupied workshop produces physical alloy before storage delivery');
   const sender=s.colonists.find(p=>p.id!==engineer.id);
   Object.assign(sender,{x:24.5,y:29.5,task:null,path:[],carry:{kind:'ore',amount:3}});delete sender.visit;
   g.tick(.08);

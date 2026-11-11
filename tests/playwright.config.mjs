@@ -21,7 +21,7 @@ export default defineConfig({
     timeout: 30_000
   },
   projects: [
-    {name: 'chromium', use: {browserName: 'chromium'}},
+    {name: 'chromium', use: {browserName: 'chromium', ...(process.env.CHROME_PATH ? {launchOptions:{executablePath:process.env.CHROME_PATH}} : {})}},
     {name: 'webkit', use: {browserName: 'webkit'}}
   ]
 });
