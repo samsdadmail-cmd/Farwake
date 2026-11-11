@@ -28,19 +28,18 @@ const REQUIRED = new Set([
   'research.html',
   'candidate.html'
 ]);
-// Placeholder ids are not GitHub issues. Titles for Kyle are in the PR body.
 // A KNOWN file that starts passing fails this run so the entry is removed.
 const KNOWN = {
   'frontier-town.html': {
-    issue: 'QA-PLACEHOLDER-1',
+    issue: '#13',
     title: 'Upgraded cabin residents never go inside'
   },
   'living.html': {
-    issue: 'QA-PLACEHOLDER-2',
+    issue: '#14',
     title: 'Living-check workshop does not produce alloy in its window'
   },
   'check.html': {
-    issue: 'QA-PLACEHOLDER-3',
+    issue: '#15',
     title: 'Chained check reaches the living-world alloy failure'
   }
 };

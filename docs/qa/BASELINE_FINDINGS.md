@@ -61,9 +61,9 @@ The late fixture is an unseeded crew session: day 3, goal 3, finished shelter, g
 | `frontier-planet.html` | pass | Seeded sites, rig, observatory alignment |
 | `research.html` | pass | Study completion, not an instant unlock |
 | `candidate.html` | pass | Catalog and ledger counts come from the live building and resource lists |
-| `frontier-town.html` | fail | Upgraded cabin resident never goes inside. `QA-PLACEHOLDER-1` |
-| `living.html` | fail | Engineer enters the workshop; alloy does not rise. `QA-PLACEHOLDER-2` |
-| `check.html` | fail | Visual checks pass, then the same alloy failure. `QA-PLACEHOLDER-3` |
+| `frontier-town.html` | fail | Upgraded cabin resident never goes inside. [#13](https://github.com/samsdadmail-cmd/Farwake/issues/13) |
+| `living.html` | fail | Engineer enters the workshop; alloy does not rise. [#14](https://github.com/samsdadmail-cmd/Farwake/issues/14) |
+| `check.html` | fail | Visual checks pass, then the same alloy failure. [#15](https://github.com/samsdadmail-cmd/Farwake/issues/15) |
 
 `tests/visual-rebirth.js` checks that every founding blueprint and every `FRONTIER_BUILDINGS` id is in the catalog, and that the ledger has one row per resource key other than knowledge. Extra cards from a new founding blueprint do not fail that check. Energy research is started from the technology tree and finished with `frontierStudy`. The headless baseline probe only checks that the catalog and the branch list are non-empty, so a UI change on those screens does not fail the required Playwright job.
 
@@ -83,5 +83,5 @@ The versioning design no longer keeps the v3 storage key for v4 saves. A running
 These need an owner on the files from issue #4. They are not done here.
 
 1. Teach `doors.js` which jobs each frontier interior admits, using the entrances already in `frontier-art.js`.
-2. When a schema change is approved, implement the new save key, the migration list, the read-before-write guard, and the newer-expedition lock in `SAVE_VERSIONING.md`.
+2. Issue [#16](https://github.com/samsdadmail-cmd/Farwake/issues/16) tracks the new save key, the read-before-write guard, and the newer-expedition lock in `SAVE_VERSIONING.md`. That guard is not in the game yet.
 3. Decide whether `tests/living-check.js` should call `freightInit` after it pokes resources. The engineer does enter the workshop. Alloy does not rise inside that check's window. `production.html` still passes staffed alloy production.

@@ -193,6 +193,8 @@ If a step throws, do not write the live key. The v3 key and the `migrated_<stamp
 
 ### Read-before-write guard, v4 and later
 
+This guard is not in the game. Implementation is tracked as issue #16, owned with the other game files. The headless suite has an expected failure named for #16 until an already-open page stops overwriting a newer blob.
+
 This guard applies to the live key only. v4 code has no writer for `farwake_founders_alpha03_v1`.
 
 After a successful load, remember `loadedStamp`. Every attempt to save, including `pagehide`, hidden `visibilitychange`, and the 12-second autosave, does this first:
