@@ -73,7 +73,8 @@ function refreshCommandReadouts(){
    const b=S.buildings.find(item=>item.id===inspectedFacility);
    if(b){el.innerHTML=facilityReadout(b);
    const production=$('production-status');if(production)production.textContent=industrySummary(b);
-   const progress=$('production-progress');if(progress){const r=productionRecord(b);progress.style.width=Math.min(100,r.elapsed/(b.type==='garden'?cropDuration(r.stage):chosenRecipe(r).seconds)*100)+'%'}
+   const progress=$('production-progress');if(progress){const r=productionRecord(b);progress.style.width=Math.min(100,r.elapsed/(b.type==='garden'?cropDuration(r.stage):frontierProducer(b)?FRONTIER_RECIPES[r.recipe].seconds:chosenRecipe(r).seconds)*100)+'%'}
+   const facts=$('sheet').querySelector('[data-production-facts]');if(facts)facts.innerHTML=frontierProductionFacts(b);
    }else showCommand();
  }
 }

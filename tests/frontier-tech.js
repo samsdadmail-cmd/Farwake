@@ -12,6 +12,7 @@ async function verifyFrontierTech(frame,out){
  s.resources.knowledge=100;g.industryPolicy().targets.wood=40;
  ok(!g.researchReason('timbercraft'),'practical shelter achievement opens structural timber');
  g.frontierBeginResearch('timbercraft');
+ const budget=s.resources.knowledge;g.frontierBeginResearch('energy');ok(g.frontierState().research.id==='timbercraft'&&s.resources.knowledge===budget,'legacy research cannot overwrite an active frontier study');
  ok(g.frontierState().research.id==='timbercraft'&&!s.research.includes('timbercraft'),'research enters an active study state');
  ok(run(()=>s.research.includes('timbercraft')),'actual researcher completes structural timber study');
  ok(g.buildAt('sawmill',26,33),'technology unlocks a new constructible sawmill');

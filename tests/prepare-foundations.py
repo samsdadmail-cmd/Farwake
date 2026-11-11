@@ -59,6 +59,10 @@ for name, function in [('editor','verifyEditor'),('production','verifyProduction
     copy2(root/'tests'/(name+'-check.js'),static)
     (static/(name+'.html')).write_text('<!doctype html><meta charset="utf-8"><title>FARWAKE '+name+' checks</title><pre id="out">Running</pre><iframe width="390" height="844"></iframe><script src="'+name+'-check.js"></script><script>'+function+'(document.querySelector("iframe"),document.querySelector("pre"))</script>')
 
-for name, function in [('frontier-tech','verifyFrontierTech'),('frontier-industry','verifyFrontierIndustry'),('frontier-town','verifyFrontierTown'),('frontier-planet','verifyFrontierPlanet'),('frontier-ui','verifyFrontierUI')]:
+for name, function in [('frontier-tech','verifyFrontierTech'),('frontier-industry','verifyFrontierIndustry'),('frontier-town','verifyFrontierTown'),('frontier-planet','verifyFrontierPlanet'),('frontier-ui','verifyFrontierUI'),('frontier-fresh','verifyFrontierFresh'),('frontier-geology','verifyFrontierGeology')]:
     copy2(root/'tests'/(name+'.js'),static)
     (static/(name+'.html')).write_text('<style>iframe{position:fixed;top:0;right:0;border:0}pre{max-width:350px;white-space:pre-wrap}</style><pre id="out">Running</pre><iframe width="390" height="844"></iframe><script src="'+name+'.js"></script><script>'+function+'(document.querySelector("iframe"),out)</script>')
+
+copy2(root/'tests/frontier-regression.js',static)
+scripts=['foundations-check','editor-check','production-check','economy-check','command-check','research-check','integration-check','frontier-tech','frontier-industry','frontier-town','frontier-planet','frontier-ui','frontier-regression']
+(static/'regression.html').write_text('<style>iframe{position:fixed;right:0;top:0}pre{max-width:450px;white-space:pre-wrap}</style><pre id="out">Running</pre><iframe width="390" height="844"></iframe>'+''.join('<script src="'+name+'.js"></script>' for name in scripts)+'<script>verifyFrontierRegression(document.querySelector("iframe"),out)</script>')

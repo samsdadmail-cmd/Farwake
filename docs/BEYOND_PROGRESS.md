@@ -26,3 +26,12 @@ Current browser UI suite passes 375×667, 390×844, 430×932 and 844×390. The p
 GitHub issue #4 records implementation ownership and Studio QA requests. No specialist branches or overlapping proposals existed at inspection. No deployment authorized: branch-specific Vercel deployment suppression committed in d533431. Do not remove it without Kyle’s approval.
 
 Next: live inspector integration, parallel-research protection, current regression suites and fresh-colony progression. The recovered UI is a priority deliverable, not deferred work.
+
+## Recovery integration checkpoint
+Recovered UI committed as ca7ac88. The twelve-suite regression runner passed legacy export/import, editing, housing/farming/workshop, full-store conservation, Command, research, integration, new technology/industry/town/planet and mobile UI against the recovery build. Current cloud Chromium 5/20/40-agent median tick/motion/canvas submissions were 0.7/1.1/1.7 ms; these are short cloud samples, not physical iPhone FPS.
+
+A fresh expedition test grants no materials, technology, achievements or colonists. It reached component production around Day 15 after finding and fixing genuine shortages and grid lockups. New finite surface geology is generated once and persisted (frontier schema version 2 inside compatible v3 saves): sixteen nine-ore outcrops, existing harvested IDs preserved. Five seeds passed actual mining (+9 physical ore), no duplication on reload and permanent depletion. New-colony ore targets are sensible; existing targets are preserved.
+
+Workshops can choose available unlocked inputs automatically, with an explicit manual override. Dedicated smelting also unlocks casting refined metal into alloy. Manual recipe choices survive migration. Paused production releases demand; automatic frontier grid standby prioritizes food/water facilities, prevents a new factory disabling the whole economy and resumes when power permits. Research cannot overwrite an active study; stopping study refunds only its unused knowledge. New inspectors gain live production facts and real worker assignment controls. Field Guide expanded with the implemented chains and discoveries.
+
+The final combined regressions and extended fresh-colony/endgame balance remain in progress. No deployment or production merge performed.

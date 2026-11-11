@@ -41,7 +41,7 @@ const FRONTIER_TECH={
  waterworks:{name:'Water stewardship',branch:'food',era:1,cost:18,requires:['growth'],unlocks:['pump'],effort:8,requirement:'Harvest a crop',gate:()=>industryPolicy().harvests>=1},
  cooking:{name:'Shared kitchens',branch:'food',era:1,cost:24,requires:['waterworks','timbercraft'],unlocks:['kitchen'],effort:12,requirement:'Collect twelve filtered water',gate:()=>frontierProduced('water')>=12},
  commons:{name:'The common table',branch:'community',era:1,cost:26,requires:['cooking'],unlocks:['dining'],effort:12,requirement:'Prepare six meals',gate:()=>frontierProduced('meals')>=6},
- refining:{name:'Dedicated smelting',branch:'industry',era:2,cost:30,requires:['timbercraft','energy'],unlocks:['smelter'],effort:14,requirement:'Complete three workshop batches',gate:()=>industryPolicy().batches>=3},
+ refining:{description:'Unlock the Ore Smelter and the workshop recipe for casting refined metal into alloy.',name:'Dedicated smelting',branch:'industry',era:2,cost:30,requires:['timbercraft','energy'],unlocks:['smelter'],effort:14,requirement:'Complete three workshop batches',gate:()=>industryPolicy().batches>=3},
  windpower:{name:'Wind engineering',branch:'power',era:2,cost:30,requires:['refining'],unlocks:['wind'],effort:12,requirement:'Refine twelve metal',gate:()=>frontierProduced('metal')>=12},
  glasshouse:{name:'Protected cultivation',branch:'food',era:2,cost:30,requires:['waterworks','refining'],unlocks:['greenhouse'],effort:14,requirement:'Complete three crop harvests',gate:()=>industryPolicy().harvests>=3},
  fabrication:{name:'Machine fabrication',branch:'industry',era:3,cost:42,requires:['refining'],unlocks:['fabricator'],effort:18,requirement:'Refine twenty-four metal and discover a planetary site',gate:()=>frontierProduced('metal')>=24&&frontierState().sites.some(s=>s.seen)},
@@ -62,13 +62,14 @@ function frontierState(){
 function frontierMigrate(){
  const f=frontierState();
  for(const k of Object.keys(FRONTIER_MATERIALS)){S.resources[k]??=0;industryPolicy().targets[k]??=({water:60,meals:40,boards:80,metal:80,components:50,composite:60,relic:10})[k]}
- f.version=1;frontierSeedSites();
+ for(const b of S.buildings)if(b.type==='workshop'&&b.production?.manualRecipe==null&&b.production?.recipe&&b.production.recipe!=='smelt')b.production.manualRecipe=true;
+ f.version=2;frontierSeedSites();frontierSurfaceGeology();
 }
 function frontierProduced(kind){return frontierState().produced[kind]||0}
 function researchDefinition(id){return FRONTIER_TECH[id]||foundingResearchDefinition(id)}
 function researchReason(id){
  const t=FRONTIER_TECH[id];
- if(!t)return foundingResearchReason(id);
+ if(!t){const reason=foundingResearchReason(id);return reason|| (frontierState().research?'Another technology is under study':'')}
  if(S.research.includes(id))return 'Researched';
  const missing=t.requires.filter(k=>!S.research.includes(k));
  if(missing.length)return 'Requires '+missing.map(k=>researchDefinition(k).name).join(' + ');
@@ -134,7 +135,7 @@ function frontierTechDetail(id){
  showSheet(sectionHeader(t.name,FRONTIER_ERAS[t.era||0])+
  '<p>'+(t.description||'New colony capabilities and construction blueprints.')+'</p>'+
  (t.unlocks||[]).map(k=>'<div class="unlock-preview"><img alt="" src="'+FarwakeBuildings.thumbnail(k)+'"><div><h3>'+TYPES[k].name+'</h3><p>'+TYPES[k].description+'</p><small>'+Object.entries(TYPES[k].cost).map(([r,n])=>n+' '+MATERIALS[r].name).join(' · ')+'</small></div></div>').join('')+
- '<p>'+ (t.requirement||'Founding expedition knowledge')+'</p><button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
+ '<div class="tech-prerequisites">'+(Array.isArray(t.requires)?t.requires:t.requires?[t.requires]:[]).map(k=>'<button class="secondary" data-tech-detail="'+k+'">'+(S.research.includes(k)?'Completed · ':'Requires · ')+researchDefinition(k).name+'</button>').join('')+'</div><p>'+ (t.requirement||'Founding expedition knowledge')+'</p>'+ (active?'<p>Stopping this study returns its unused knowledge budget.</p><button class="secondary" data-research-cancel>Stop study</button>':'')+'<button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
 }
 document.addEventListener('click',e=>{
  const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=(70+Number(branch.dataset.techBranch)*345)*techZoom-10;return}
@@ -162,7 +163,7 @@ function productionBlock(b){
  if(!frontierProducer(b))return foundingProductionBlock(b);
  const r=productionRecord(b),recipe=FRONTIER_RECIPES[r.recipe];
  if(!b.finished||b.editOrder||b.upgradeOrder)return 'Facility is under construction';
- if(r.paused)return 'Production paused';
+ if(r.paused)return b.autoPowerHold?'Grid standby · needs '+(-TYPES[b.type].power)+' spare power':'Production paused';
  if(!recipe||recipe.facility!==b.type)return 'Select a facility recipe';
  if(power().supply<power().used)return 'Insufficient grid power';
  const over=Object.entries(recipe.output).some(([k,n])=>industryOwned(k)+n>industryPolicy().targets[k]);
@@ -215,18 +216,17 @@ function frontierSeam(b){
 function industryDetails(b){
  if(!frontierProducer(b))return foundingIndustryDetails(b);
  const r=productionRecord(b),recipe=FRONTIER_RECIPES[r.recipe],workers=productionWorkers(b);
- return '<section class="production-panel"><div class="production-title"><b>'+esc(industrySummary(b))+'</b><span>'+r.cycles+' batches</span></div>'+
- '<div class="progress"><i style="width:'+Math.min(100,r.elapsed/recipe.seconds*100)+'%"></i></div>'+
+ return '<section class="production-panel"><div class="production-title"><b id="production-status">'+esc(industrySummary(b))+'</b><span>Production</span></div>'+
+ '<div class="progress"><i id="production-progress" style="width:'+Math.min(100,r.elapsed/recipe.seconds*100)+'%"></i></div>'+
  '<p>'+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+Object.entries(recipe.output).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+'</p>'+
- '<p>Worker: '+(workers.map(p=>esc(p.name)).join(', ')||'Awaiting dispatch')+'</p>'+
- '<p>Delivered inputs: '+(Object.entries(b.siteStock||{}).filter(([,n])=>n>0).map(([k,n])=>n+' '+MATERIALS[k].name).join(', ')||'None')+'</p>'+
  '<label>Recipe'+industrySelect('Facility recipe',r.recipe,industryRecipes(b).map(([k,v])=>[k,v.name]),'data-industry-recipe="'+b.id+'"')+'</label>'+
- '<button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+'</button></section>';
+ '<label>Assigned worker'+industrySelect('Assigned worker',r.worker||'',[['','Any available specialist'],...S.colonists.map(p=>[p.id,p.name])],'data-industry-worker="'+b.id+'"')+'</label>'+
+ '<div data-production-facts>'+frontierProductionFacts(b)+'</div><button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+'</button></section>';
 }
 let frontierInterval=0;
 function frontierTick(step){
  frontierInterval+=step;if(frontierInterval<1)return;frontierInterval%=1;
- frontierDiscover();const grid=surveyGrid();
+ frontierDiscover();frontierPowerDispatch();const grid=surveyGrid();
  for(const b of S.buildings){
   if(b.type==='lamppost')b.powered=grid.supply>=grid.used;
   const h=frontierHistory(b);h.ageDays=Math.max(0,S.day-h.createdDay);
@@ -507,7 +507,7 @@ function catalogResults(){
 }
 function showCatalog(){
  sheetSection='build';const available=Object.keys(TYPES).filter(accessible).length;
- showSheet(sectionHeader('Build a civilization','FRONTIER DESIGN OFFICE')+'<div class="catalog-summary"><span>'+FRONTIER_ERAS[frontierEra()]+'</span><b>'+available+' / '+Object.keys(TYPES).length+' blueprints ready</b></div>'+editorToolbar()+
+ showSheet(sectionHeader('Build a civilization','FRONTIER DESIGN OFFICE')+'<div class="catalog-summary"><span>'+FRONTIER_ERAS[frontierEra()]+'</span><b>'+available+' / '+Object.keys(TYPES).length+' blueprints ready</b></div>'+'<details class="catalog-toolbox"><summary>Street &amp; field tools</summary>'+editorToolbar()+'</details>'+
  '<label class="searchwrap">'+uiIcon('inspect',18)+'<input id="catalogsearch" type="search" placeholder="Find a building or industry" aria-label="Search blueprints"></label>'+
  '<div class="catalogfilters">'+CATALOG_GROUPS.map(g=>'<button class="filterchip" data-filter="'+g+'">'+g+'</button>').join('')+'</div>'+
  '<div class="catalog-options"><button class="secondary" data-catalog-mode="all" aria-pressed="'+(frontierCatalogMode==='all')+'">All designs</button><button class="secondary" data-catalog-mode="ready" aria-pressed="'+(frontierCatalogMode==='ready')+'">Ready to build</button><select aria-label="Sort blueprints" data-catalog-sort><option value="era">Development order</option><option value="name" '+(frontierCatalogSort==='name'?'selected':'')+'>Name</option></select></div><div id="catalogresults" class="civil-catalog"></div>');
@@ -555,3 +555,78 @@ document.addEventListener('click',e=>{
  else{frontierCatalogMode=b.dataset.catalogMode;showCatalog()}
 });
 document.addEventListener('change',e=>{if(e.target.matches('[data-catalog-sort]')){frontierCatalogSort=e.target.value;catalogResults()}});
+
+function frontierProductionFacts(b){
+ const r=productionRecord(b);
+ return '<p>Worker: '+(productionWorkers(b).map(p=>esc(p.name)).join(', ')||'Awaiting dispatch')+'</p><p>'+r.cycles+' batches completed · '+r.output+' units produced</p><p>Delivered: '+(Object.entries(b.siteStock||{}).filter(([,n])=>n>0).map(([k,n])=>n+' '+MATERIALS[k].name).join(', ')||'None')+'</p>';
+}
+function frontierCancelResearch(){
+ const active=frontierState().research;if(!active)return false;
+ const cost=researchDefinition(active.id).cost;
+ S.resources.knowledge+=Math.floor(cost*Math.max(0,1-active.progress/active.effort));
+ delete frontierState().research;save();return true;
+}
+document.addEventListener('click',e=>{if(e.target.closest('[data-research-cancel]')){frontierCancelResearch();openSection('research')}});
+guideEntries.push(
+ ['Research','Connected technologies','Open Research from the bottom navigation. Scroll the tree horizontally through eras; branch buttons jump between subjects. Tap a future building in Build to inspect its production chain and required technology. Study needs knowledge plus actual researcher work. Only one technology can be studied at a time.'],
+ ['Manufacturing','Frontier production chains','Sawmills turn timber into boards. Smelters turn ore into metal. Component Works use metal and alloy for components, or boards and metal for composite panels. Haulers deliver inputs to each facility before a worker starts. Change recipes between completed batches.'],
+ ['Agriculture','Water, glasshouses and kitchens','Rainwater Works collect filtered water through operator labour. Glasshouses consume water to produce food. Community Kitchens cook food and water into prepared meals. Colonists prefer meals and can eat accessible loose food when stores are empty. Existing grow beds retain their planting, tending and harvest cycle.'],
+ ['Housing','Development and new settlers','Cabins have four permanent beds and Lodges eight. Inspect a suitable building to order an expansion; haulers and builders must complete it before capacity changes. The Assembly Hall can invite one settler at a time when the beacon, a free permanent bed, thirty stored provisions and a completed planetary investigation are ready.'],
+ ['Exploration','Planetary investigations and outposts','Surveying reveals finite sites. Inspect one to choose knowledge-focused study or component recovery. Both return a physical ancient core once. Distant sites require a constructed outpost within thirteen tiles. Outposts also provide temporary beds and shared storage.'],
+ ['Exploration','Seams and the listening frontier','Investigated mineral formations reveal a finite 180-ore seam. Build an Extraction Rig within six tiles and provide power and labour. The Signal Observatory requires advanced materials and recovered cores; scientific staff then align its powered array.'],
+ ['Construction','A settlement with history','Work, harvests, actual indoor time, visits, street traffic and age are saved on each structure. These real counters add restrained signs of habitation, cultivation and wear. Occupied heated homes show evening smoke and actual indoor silhouettes.']
+);
+
+// Expansion geology is generated once, persisted, and restored only while unmined.
+// The old starter outcrops and all harvested IDs retain their original meaning.
+function frontierSurfaceGeology(){
+ const f=frontierState();
+ if(!Array.isArray(f.surfaceDeposits)){
+  const reach=surveyDistances(28,29,(x,y)=>terrain[index(x,y)].kind!=='water');
+  const candidates=[];
+  for(let y=3;y<VH-3;y++)for(let x=3;x<VW-3;x++){
+   const d=Math.hypot(x-28,y-28);
+   if(d<10||d>27||reach[index(x,y)]<0||buildingAt(x,y)||featureAt(x,y))continue;
+   candidates.push({x,y,near:d<=16,rank:hash(x,y,hashStr(S.seed)+6127)});
+  }
+  candidates.sort((a,b)=>Number(b.near)-Number(a.near)||b.rank-a.rank);
+  f.surfaceDeposits=[];
+  for(const q of candidates){
+   if(f.surfaceDeposits.some(p=>Math.hypot(p.x-q.x,p.y-q.y)<3))continue;
+   f.surfaceDeposits.push({x:q.x,y:q.y,amount:9});if(f.surfaceDeposits.length>=16)break;
+  }
+ }
+ const retired=new Set(S.harvested||[]),existing=new Set(features.map(p=>p.id));
+ for(const q of f.surfaceDeposits){
+  const id='frontier-ore-'+q.x+'-'+q.y;
+  if(retired.has(id)||existing.has(id)||buildingAt(q.x,q.y))continue;
+  features.push({...q,id,type:'ore',workTime:18});existing.add(id);
+ }
+ f.surfaceVersion=1;
+}
+
+INDUSTRY_RECIPES.refined={name:'Cast refined metal',cost:{metal:2,scrap:1},yield:2,seconds:11,tech:'refining'};
+function frontierAutoRecipe(b){
+ const r=productionRecord(b);if(r.manualRecipe)return;
+ const ready=recipe=>Object.entries(recipe.cost).every(([k,n])=>(S.resources[k]||0)>=n);
+ if(ready(chosenRecipe(r)))return;
+ const alternative=industryRecipes(b).find(([,recipe])=>ready(recipe));
+ if(alternative){r.recipe=alternative[0];r.elapsed=0;r.manualRecipe=false;}
+}
+
+function frontierPowerDispatch(){
+ let grid=surveyGrid();
+ if(grid.supply<grid.used){
+  const candidates=S.buildings.filter(b=>b.finished&&!b.editOrder&&frontierProducer(b)&&!productionRecord(b).paused).sort((a,b)=>{
+   const priority=b=>['kitchen','pump','greenhouse'].includes(b.type)?1:0;
+   return priority(a)-priority(b)||b.id-a.id;
+  });
+  for(const b of candidates){
+   productionRecord(b).paused=true;b.autoPowerHold=true;grid=surveyGrid();
+   if(grid.supply>=grid.used)break;
+  }
+ }
+ for(const b of S.buildings)if(b.autoPowerHold&&b.finished&&!b.editOrder){
+  grid=surveyGrid();if(grid.supply-grid.used>=-TYPES[b.type].power){productionRecord(b).paused=false;delete b.autoPowerHold;}
+ }
+}
