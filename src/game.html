@@ -136,31 +136,8 @@ function makeMap(seed){const sd=hashStr(seed);terrain=[];features=[];fog=new Arr
  const empties=[];for(let y=4;y<VH-4;y++)for(let x=4;x<VW-4;x++)if(Math.hypot(x-28,y-28)>16&&terrain[index(x,y)].kind!=='water')empties.push({x,y});if(empties.length){const spot=empties[Math.floor(r()*empties.length)];S.ruin={...spot,name:SITES[Math.floor(r()*SITES.length)],seen:false};}
  reveal(28,28,11);
 }
-function guaranteeStartingOre(){
- if(S.oreStarterChecked)return;
- const nearby=features.filter(f=>f.type==='ore'&&Math.hypot(f.x-28,f.y-28)<=19);
- let need=Math.max(0,3-nearby.length);
- for(let y=12;y<=44&&need>0;y++)for(let x=12;x<=44&&need>0;x++){
-  const d=Math.hypot(x-28,y-28);
-  if(d<10||d>17||!inMap(x,y)||terrain[index(x,y)].kind==='water'||featureAt(x,y)||buildingAt(x,y))continue;
-  if(hash(x,y,hashStr(S.seed)+337)<.77)continue;
-  features.push({x,y,type:'ore',id:'starterore-'+x+'-'+y});need--;
- }
- S.oreStarterChecked=true;
-}
-function surveyFrontierGoal(p){
- const targets=[];
- for(let y=4;y<VH-4;y++)for(let x=4;x<VW-4;x++){
-  if(!fog[index(x,y)]||!walkable(x,y))continue;
-  const unknown=[[4,0],[-4,0],[0,4],[0,-4]].reduce((n,[dx,dy])=>n+(!fog[index(x+dx,y+dy)]?1:0),0);
-  if(unknown)targets.push({x,y,score:Math.hypot(p.x-x,p.y-y)-unknown*3});
- }
- targets.sort((a,b)=>a.score-b.score);
- for(const f of targets.slice(0,45)){
-  if(findPath(p.x,p.y,[{x:f.x,y:f.y}]).length||Math.hypot(p.x-(f.x+.5),p.y-(f.y+.5))<1.5)return{type:'survey',x:f.x,y:f.y};
- }
- return null;
-}
+function guaranteeStartingOre(){restoreStarterOre()}
+function surveyFrontierGoal(p){return planSurvey(p)}
 function focusDiscoveredOre(){
  const ores=features.filter(f=>f.type==='ore'&&fog[index(f.x,f.y)]);
  if(!ores.length){notice('No ore discovered yet. Prioritize exploration first.');return}
@@ -184,7 +161,7 @@ function timeString(){let n=Math.floor(S.minute)%1440;return String(Math.floor(n
 function notice(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.remove('show'),2400)}
 let importedNavigation=false;
 function save(){if(!S||importedNavigation)return;try{const clean={...S,colonists:S.colonists.map(p=>({...p,path:[],task:null,action:0,indoorStay:FarwakeDoors.saveVisit(p)})),fog:fog.map(x=>x?1:0),uid};localStorage.setItem(SAVE,JSON.stringify(clean));}catch(e){console.warn('Save failed',e)}}
-function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(o.v!==3||!o.colonists||!o.buildings)return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};features=features.filter(f=>!S.harvested.includes(f.id));guaranteeStartingOre();for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){
+function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(o.v!==3||!o.colonists||!o.buildings)return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};guaranteeStartingOre();features=features.filter(f=>!S.harvested.includes(f.id));for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){
  FarwakeDoors.restore(p,S.buildings,walkable);
  p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};freightInit();return true}catch(e){console.warn(e);return false}}
 function buildingAt(x,y,includeBlueprint=true){return S.buildings.find(b=>(includeBlueprint||b.finished)&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)}
@@ -250,12 +227,12 @@ function canAfford(type){const t=TYPES[type];return Object.entries(t.cost).every
 function accessible(type){const t=TYPES[type];return t.unlock||S.research.includes(t.tech)}
 function buildAt(type,x,y){const t=TYPES[type];if(!t)return false;if(!accessible(type)){notice('Research this blueprint first.');return false}if(!clearFootprint(x,y,t.w,t.h)){notice('Find an open patch of clear ground.');return false}if(!canAfford(type)){notice('Not enough supplies for this blueprint.');return false}const b={id:uid++,type,x,y,w:t.w,h:t.h,progress:0,finished:false};if(!freightReserve(t.cost,b))return false;S.buildings.push(b);FarwakeWorkFX.complete(b);localSound('build',b);log('⚒','Blueprint placed: '+t.name+'. Builders are on the way.');selectedBuilding=b.id;preview=null;selectedType=null;renderUI(true);save();return true}
 function jobs(){return S.buildings.filter(b=>!b.finished)}function finished(t){return S.buildings.filter(b=>b.finished&&b.type===t)}
-function power(){let supply=4,used=0;for(const b of S.buildings)if(b.finished){const t=TYPES[b.type];if(!t)continue;if(t.power>0)supply+=t.power*(isNight()?.4:1);else used-=t.power;}return{used,supply:Math.floor(supply)}}function isNight(){return S.minute<6*60||S.minute>19*60}
+function power(){return surveyGrid()}function isNight(){return S.minute<6*60||S.minute>19*60}
 function taskPosition(t){return{x:t.x,y:t.y}}
 function neighborGoals(x,y,w=1,h=1){const goals=[];for(let yy=y-1;yy<=y+h;yy++)for(let xx=x-1;xx<=x+w;xx++)if((xx===x-1||xx===x+w||yy===y-1||yy===y+h)&&walkable(xx,yy))goals.push({x:xx,y:yy});return goals}
 function findPath(px,py,goals){const sx=clamp(Math.floor(px),0,VW-1),sy=clamp(Math.floor(py),0,VH-1);if(!goals.length)return[];const target=new Set(goals.map(g=>index(g.x,g.y))),start=index(sx,sy);if(target.has(start))return[];const prev=new Int32Array(VW*VH).fill(-1),queue=new Int32Array(VW*VH);let front=0,back=0;queue[back++]=start;prev[start]=start;let end=-1;while(front<back){const p=queue[front++],x=p%VW,y=(p-x)/VW;const cells=[[x+1,y],[x-1,y],[x,y+1],[x,y-1]];for(const [nx,ny] of cells){if(!walkable(nx,ny))continue;let j=index(nx,ny);if(prev[j]!==-1)continue;prev[j]=p;if(target.has(j)){end=j;front=back;break}queue[back++]=j}}
 if(end<0)return[];const result=[];for(let i=end;i!==start;i=prev[i])result.push({x:i%VW+.5,y:Math.floor(i/VW)+.5});return result.reverse()}
-function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=neighborGoals(t.x,t.y,t.w||1,t.h||1);if(t.type==='survey')g.push({x:t.x,y:t.y});const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
+function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
  if(p.hunger>67)return{type:'eat',x:30,y:26,w:2,h:2};
@@ -282,7 +259,7 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  return null;
 }
 
-function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
+function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
@@ -292,7 +269,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.
  else if(t.type==='rest'&&p.action>1){housingRecovery(p,work);p.hunger=clamp(p.hunger+work*.1,0,100);if(p.energy>85&&S.minute>=6*60&&S.minute<20*60){p.task=null;}}
  else if(t.type==='eat'&&p.action>2.3){p.action=0;if(freightSpend({food:1})){p.hunger=Math.max(0,p.hunger-70);p.mood=clamp(p.mood+1,0,100)}p.task=null}
  else if(t.type==='research'&&p.action>7.5){p.action=0;p.task=null;S.resources.knowledge+=p.role==='Medic'?2:1;p.mood=clamp(p.mood+.2,0,100);}
- else if(t.type==='survey'&&p.action>2){p.action=0;reveal(p.x,p.y,4);S.resources.knowledge+=1;S.explore++;p.task=null;}
+ else if(t.type==='survey'&&p.action>2){p.action=0;reveal(p.x,p.y,surveyRadius());surveyEpoch++;S.resources.knowledge+=1;S.explore++;p.task=null;}
  else if(t.type==='harvest'){
   const f=featureById(t.feature),order=S.designations?.[t.feature];
   if(!f||!order){p.task=null;p.path=[];p.action=0;return}
@@ -303,8 +280,8 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.
  else if(t.type==='gather'&&p.action>4){const f=features.find(f=>f.id===t.feature);p.action=0;if(f)finishGather(f,p);else p.task=null;}
  else if(t.type==='forage'&&p.action>4){const f=features.find(f=>f.id===t.feature);p.action=0;if(f)finishGather(f,p);else p.task=null;}
 }
-function updateGoal(){if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
-function tick(dt){if(paused)return;let step=dt*speed;advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
+function updateGoal(){surveyAdvanceGoal();if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
+function tick(dt){if(paused)return;surveyGridTick(dt*speed);let step=dt*speed;advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
  for(const p of S.colonists){FarwakeDoors.sync(p,S.buildings);p.hunger=clamp(p.hunger+step*.045,0,100);p.social=clamp(p.social-step*.008,5,100);p.mood=clamp(p.mood+(p.energy>40&&p.hunger<70?.004:-.12)*step,0,100);if(p.hunger>=100){p.mood=Math.max(5,p.mood-step*.1);p.energy=Math.max(0,p.energy-step*.07);}if(p.task&&p.task.type==='rest'&&p.energy>80&&S.minute>6*60&&S.minute<20*60)p.task=null;
  if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
  if(S.piles.some(q=>q.site!=null))for(const p of S.colonists)if(p.task?.type==='research'){p.task=null;p.path=[]}
@@ -376,14 +353,13 @@ function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,
  ctx.restore();
  FarwakeLandscape.light(ctx,cw,ch,S,camera,sx,sy,time);FarwakeMoments.draw(ctx,S,cw,ch,sx,sy,camera.z);
 }
-function paintHUD(){if(!S)return;const r=S.resources,p=power();$('clock').innerHTML='DAY '+String(S.day).padStart(2,'0')+'<br>'+timeString();$('pause').innerHTML=uiIcon(paused?'play':'pause',16);$('pause').setAttribute('aria-label',paused?'Resume simulation':'Pause simulation');$('pause').classList.toggle('on',paused);$('speed').textContent=speed+'×';const data=[['food','FOOD',r.food],['wood','WOOD',r.wood||0],['energy','POWER',p.supply-p.used]];$('resbar').innerHTML=data.map(([icon,name,num])=>'<button class="resource" type="button" data-resource-open="true" aria-label="'+name+' '+Math.floor(num)+', open inventory"><span class="resicon">'+uiIcon(icon,14)+'</span><span class="k">'+name+'</span><span class="v">'+Math.floor(num)+'</span></button>').join('')+'<button class="resource-expand" type="button" data-resource-open="true" aria-label="View all resources">'+uiIcon('more',16)+'</button>'; const goals=['Construct a permanent home','Establish a food-producing garden','Power a workshop with solar energy','Build the long-range Signal Beacon','Establish a thriving frontier settlement'];$('missionline').textContent=goals[Math.min(S.goal,4)];$('missionlabel').textContent='EXPEDITION DIRECTIVE '+String(Math.min(S.goal+1,5)).padStart(2,'0');$('weather').textContent=S.weather==='rain'?'RAIN':S.weather==='wind'?'WIND':'CLEAR';const hint=preview?'Confirm or adjust the building site below.':selectedType?'Tap the map to choose a construction site.':selectedColonist?'Crew member selected · Tap to inspect':'Inspect trees, deposits and supply piles · Drag to explore';$('maphint').textContent=hint;refreshInspect();}
+function paintHUD(){if(!S)return;const r=S.resources,p=power();$('clock').innerHTML='DAY '+String(S.day).padStart(2,'0')+'<br>'+timeString();$('pause').innerHTML=uiIcon(paused?'play':'pause',16);$('pause').setAttribute('aria-label',paused?'Resume simulation':'Pause simulation');$('pause').classList.toggle('on',paused);$('speed').textContent=speed+'×';const data=[['food','FOOD',r.food],['wood','WOOD',r.wood||0],['energy','POWER',p.supply-p.used]];$('resbar').innerHTML=data.map(([icon,name,num])=>'<button class="resource" type="button" data-resource-open="true" aria-label="'+name+' '+Math.floor(num)+', open inventory"><span class="resicon">'+uiIcon(icon,14)+'</span><span class="k">'+name+'</span><span class="v">'+Math.floor(num)+'</span></button>').join('')+'<button class="resource-expand" type="button" data-resource-open="true" aria-label="View all resources">'+uiIcon('more',16)+'</button>'; const goals=['Construct a permanent home','Establish a food-producing garden','Power a workshop with solar energy','Build the long-range Signal Beacon','Establish a thriving frontier settlement'];$('missionline').textContent=surveyObjective();$('missionlabel').textContent='EXPEDITION DIRECTIVE '+String(Math.min(S.goal+1,7)).padStart(2,'0');$('weather').textContent=S.weather==='rain'?'RAIN':S.weather==='wind'?'WIND':'CLEAR';const hint=preview?'Confirm or adjust the building site below.':selectedType?'Tap the map to choose a construction site.':selectedColonist?'Crew member selected · Tap to inspect':'Inspect trees, deposits and supply piles · Drag to explore';$('maphint').textContent=hint;refreshInspect();}
 function setTab(to){tab=to;renderUI(true)}
 function renderUI(force=false){if(!S)return;const nav=$('nav');nav.innerHTML=NAV.map(([id,icon,name])=>'<button class="navbutton '+(sheetSection===id?'active':'')+'" data-nav="'+id+'" aria-label="Open '+name+'" aria-expanded="'+(sheetSection===id)+'"><span class="sym">'+uiIcon(icon,20)+'</span><span class="word">'+name+'</span></button>').join('');$('paneltitle').textContent=({build:'Construction · Blueprints',crew:'Crew · Five specialists',colony:'Settlement · Operations',research:'Research · Technologies',world:'Planet · Survey Data'})[tab];const body=$('panelbody'),st=body.scrollTop,sl=body.scrollLeft,builderScroll=body.querySelector('.builder')?.scrollLeft||0;
  if(tab==='build'){body.innerHTML='<div class="sectioncap">Select blueprint · Tap map · Confirm</div><div class="builder">'+Object.entries(TYPES).map(([id,t])=>'<button class="tilecard '+(selectedType===id?'chosen':'')+'" data-action="type" data-type="'+id+'" '+(!accessible(id)?'disabled':'')+'><div class="pic">'+uiIcon(id,27)+'</div><div class="name">'+t.name+'</div><div class="cost">'+(accessible(id)?Object.entries(t.cost).map(([r,n])=>n+' '+r[0].toUpperCase()).join(' · '):'Requires '+t.tech)+'</div></button>').join('')+'</div><div class="tiny" style="margin-top:7px">'+(selectedType?TYPES[selectedType].description+' Choose a clear location on the map.':'Buildings are built by your colonists, not instantly. Select one to begin.')+'</div>';
  }else if(tab==='crew'){body.innerHTML='<div class="sectioncap">Tap to follow or manage a colonist</div>'+S.colonists.map(p=>'<button class="crewrow" data-action="crew" data-id="'+p.id+'"><span class="avatar" style="background:'+p.coat+'33">'+uiIcon('crew',20)+'</span><span style="flex:1"><b>'+p.name+'</b><div class="sub">'+p.role+' · '+taskLabel(p)+'</div></span><span class="statpill">'+Math.round(p.mood)+'% mood</span></button>').join('');
  }else if(tab==='colony'){const p=power(),built=S.buildings.filter(b=>b.finished).length,unbuilt=jobs().length;body.innerHTML='<div class="splitgrid"><div class="infocard"><b>Settlement</b><p>'+S.colonists.length+' colonists · '+built+' structures · '+unbuilt+' building</p></div><div class="infocard"><b>Infrastructure</b><p>'+p.used+'/'+p.supply+' power used · '+finished('shelter').length*3+' permanent beds</p></div><div class="infocard"><b>Food supply</b><p>'+S.resources.food+' rations · '+finished('garden').length+' active gardens</p></div><div class="infocard"><b>Expedition day</b><p>Day '+S.day+' · '+timeString()+' · '+S.weather+' weather</p></div></div><div class="sectioncap" style="margin-top:11px">Field operations</div><div class="infocard"><b>Active resource orders: '+queuedWork()+'</b><p>Tap trees, mineral outcrops, debris or wild plants on the map to assign field work. Orders stay queued until completed or cancelled.</p></div><div class="sectioncap" style="margin-top:11px">Recent colony history</div>'+S.events.slice(0,9).map(e=>'<div class="event"><span class="eventdot"></span><span><b>Day '+e.day+'</b> '+e.message+'</span></div>').join('');
- }else if(tab==='research'){body.innerHTML='<div class="sectioncap">Earn knowledge through exploration and research work</div>'+Object.entries(TECHS).map(([id,t])=>{const unlocked=S.research.includes(id),blocked=t.requires&&!S.research.includes(t.requires);return '<div class="crewrow" style="cursor:default"><span class="avatar">'+uiIcon('research',21)+'</span><span style="flex:1"><b>'+t.name+'</b><div class="sub">'+t.description+(blocked?' · Requires '+TECHS[t.requires].name:'')+'</div></span><button class="secondary" style="min-width:70px" '+(unlocked||blocked||S.resources.knowledge<t.cost?'disabled':'')+' data-action="research" data-id="'+id+'">'+(unlocked?'Done':t.cost+' knowledge')+'</button></div>'}).join('');
- }else if(tab==='world'){const tiles=fog.filter(Boolean).length;body.innerHTML='<div class="splitgrid"><div class="infocard"><b>Planet seed</b><p>'+S.seed+'</p></div><div class="infocard"><b>Survey progress</b><p>'+Math.round(tiles/fog.length*100)+'% mapped · '+S.explore+' expeditions</p></div></div><div class="sectioncap" style="margin-top:9px">Exploration &amp; minerals</div><div class="infocard"><b>'+features.filter(f=>f.type==='ore'&&fog[index(f.x,f.y)]).length+' mineral outcrops mapped</b><p>Survey the frontier to reveal ore. Each outcrop yields three raw ore.</p><div class="buttongroup"><button class="primary" data-survey-command="true">Prioritize exploring</button><button class="secondary" data-ore-focus="true">Locate mapped ore</button></div></div><div class="sectioncap" style="margin-top:9px">Points of interest</div><div class="infocard"><b>'+(S.ruin?.seen?S.ruin.name:'Unidentified signals')+'</b><p>'+(S.ruin?.seen?'An unusual site discovered beyond the colony. Future exploration systems will expand on it.':'Send your surveyor out to reveal the surrounding wilderness.')+'</p></div><div class="tiny" style="margin-top:8px">New worlds generate different terrain, resources, ruins and paths. The same seed reproduces the starting map.</div>'}
+ }else if(tab==='research'){body.innerHTML=surveyResearchHTML()}else if(tab==='world'){body.innerHTML=surveyWorldHTML()}
  body.scrollTop=st;body.scrollLeft=sl;if(tab==='build'&&body.querySelector('.builder'))body.querySelector('.builder').scrollLeft=builderScroll;
  $('headextra').textContent=tab==='crew'?'5 aboard':tab==='research'?S.resources.knowledge+' ✦ available':tab==='build'?jobs().length+' under construction':tab==='world'?'SEED '+S.seed:S.buildings.length+' structures';
  paintHUD();}
@@ -447,7 +423,7 @@ function selectTap(clientX,clientY){if(editor&&!editor.pan)return;const r=canvas
  if(selectedType){const t=TYPES[selectedType];selectedFeature=null;selectedTerrain=null;selectedPile=null;preview={x:clamp(x-Math.floor((t.w-1)/2),0,VW-t.w),y:clamp(y-Math.floor((t.h-1)/2),0,VH-t.h)};selectedBuilding=null;selectedColonist=null;paintHUD();return}
  let person=S.colonists.find(p=>FarwakeDoors.visible(p)>.4&&Math.hypot(pos.x-FarwakePeople.pose(p).x,pos.y-FarwakePeople.pose(p).y)<.58);if(person){selectedColonist=person.id;selectedBuilding=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}let b=buildingAt(x,y);if(b){selectedBuilding=b.id;selectedColonist=null;selectedFeature=null;selectedTerrain=null;paintHUD();return}const pile=pileAt(x,y);if(pile){selectedPile=pile.id;selectedFeature=null;selectedTerrain=null;selectedColonist=null;selectedBuilding=null;paintHUD();return}selectedPile=null;const f=featureFromPoint(pos);selectedFeature=f?.id||null;selectedTerrain=f?null:{x,y};selectedColonist=null;selectedBuilding=null;paintHUD();}
 function centerCamera(){camera.x=28*TS;camera.y=28*TS;camera.z=1;}
-function research(id){const t=TECHS[id];if(!t||S.research.includes(id)||S.resources.knowledge<t.cost||t.requires&&!S.research.includes(t.requires))return;S.resources.knowledge-=t.cost;S.research.push(id);if(id==='growth')log('❀','Cultivation breakthrough: farms now produce more food.');else log('✦','Research unlocked: '+t.name+'.');renderUI(true);save()}
+function research(id){if(researchReason(id))return;const t=researchDefinition(id);S.resources.knowledge-=t.cost;S.research.push(id);log('','Research unlocked: '+t.name+'.');renderUI(true);save()}
 /* FARWAKE Interface Reboot: all interaction stays local and save data stays unchanged. */
 let sheetSection=null, catalogGroup='All', catalogQuery='';
 const CATALOG_GROUPS=['All','Living','Food','Industry','Infrastructure'];
@@ -468,7 +444,25 @@ function showCatalog(){sheetSection='build';showSheet(sectionHeader('Blueprint l
 function openSection(kind){sheetSection=kind;
  if(kind==='guide'){showGuide();return}
  if(kind==='colony'){showCommand();return}
- if(kind==='preferences'){showSheet(sectionHeader('World settings','EXPEDITION'WAKE';
+ if(kind==='preferences'){showSheet(sectionHeader('World settings','EXPEDITION')+FieldPreferences.panel());return}
+ if(kind==='industry'){showIndustry();return}
+ if(kind==='build'){showCatalog();return}
+ if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['guide','inspect','Field guide','Colony reference and help'],['industry','workshop','Work & production','Targets and priorities'],['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['preferences','energy','World settings','Sound, visual detail and dialogue'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
+ if(kind==='resources'){const r=S.resources,p=power(),cap=storageCapacity(),used=storedTotal();
+ const rows=Object.entries(MATERIALS).map(([id,m])=>
+   '<tr><th>'+uiIcon(id,16)+' '+m.name+'</th><td>'+Math.floor(r[id]||0)+'</td><td>'+looseTotal(id)+'</td><td>'+transitTotal(id)+'</td><td><button class="secondary" style="padding:6px;font-size:11px" data-unstore="'+id+'" '+(!(r[id]>0)?'disabled':'')+' aria-label="Move up to ten '+m.name+' outside">Move 10 out</button></td></tr>').join('');
+ showSheet(sectionHeader('Stores & supplies','LOGISTICS')+
+   '<div class="capacityline"><b>Warehouse occupancy</b><strong>'+Math.floor(used)+' / '+cap+'</strong></div><div class="capacitytrack"><i style="width:'+Math.min(100,used/cap*100)+'%"></i></div>'+
+   '<table class="ledger"><thead><tr><th>Material</th><th>Stored</th><th>Ground</th><th>Carried</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   freightRulesHTML()+'<p>Haulers take loose materials to storage. Each finished shed adds 180 storage. Use Move 10 out to free space; reserved piles stay outside until released.</p>'+ '<div class="sectioncap">Outdoor reserves</div>' + ((S.piles||[]).filter(p=>p.hold).map(p=>'<div class="service"><span>'+MATERIALS[p.kind].name+': '+p.amount+' outside</span><button class="secondary" data-release="'+p.id+'">Allow hauling</button></div>').join('')||'<p class="tiny">No held outdoor reserves.</p>')+
+   '<div class="service"><span>Power</span><b>'+p.used+' used / '+p.supply+' produced</b></div><div class="service"><span>Research</span><b>'+Math.floor(r.knowledge)+' knowledge</b></div>');
+ renderNavState();return;
+ }
+ if(kind==='operations'){openMenu();renderNavState();return;}
+ const section=kind==='crew'?'crew':kind;
+ setTab(section);
+ const title=({crew:'Your people',colony:'Colony overview',research:'Research',world:'Planet & survey'})[section]||'Expedition';
+ const eyebrow=({crew:'FIVE FOUNDING SPECIALISTS',colony:'SETTLEMENT MANAGEMENT',research:'ADVANCE THE FRONTIER',world:'EXPLORATION'})[section]||'FARWAKE';
  showSheet(sectionHeader(title,eyebrow)+'<div class="sectionview" id="sectionview">'+$('panelbody').innerHTML+'</div>');renderNavState();
 }
 function chooseBlueprint(id){editor=null;if(id==='path'){editorBegin('path');return}if(!TYPES[id]||!accessible(id))return;selectedType=id;preview=null;selectedBuilding=null;selectedColonist=null;selectedFeature=null;selectedTerrain=null;closeSheet();paintHUD();notice('Tap a clear location to preview '+TYPES[id].name+'.');}
