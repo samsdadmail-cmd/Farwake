@@ -1,4 +1,4 @@
-"""Prepare an isolated browser fixture. Serve the output on a disposable local origin."""
+"""Make a disposable, self-contained web directory for both browser checks."""
 from pathlib import Path
 from shutil import copy
 from subprocess import check_output
@@ -6,9 +6,10 @@ from tempfile import mkdtemp
 
 root = Path(__file__).resolve().parents[1]
 dest = Path(mkdtemp(prefix="farwake-qa-"))
-for name in ["index.html", "buildings.js", "people.js", "landscape.js", "field.css",
-             "tests/visual-rebirth.js", "tests/check.html"]:
-    copy(root / name, dest / Path(name).name)
+for source in [root/"index.html", root/"field.css", *root.glob("*.js"),
+               *root.glob("*.png"), root/"manifest.webmanifest",
+               *root.glob("tests/*.js"), root/"tests/check.html"]:
+    copy(source, dest / source.name)
 baseline = "db55e5c0824ff71392de01939fb07f5d10d35426:index.html"
 (dest / "before.html").write_bytes(check_output(["git", "show", baseline], cwd=root))
-print(f"Serve {dest} on a disposable origin and open /check.html")
+print(f"Serve {dest} on a fresh local origin and open /check.html")
