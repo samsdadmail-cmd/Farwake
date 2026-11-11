@@ -67,8 +67,10 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, JSON.stringify(save));
     await openGame(page);
     const state = await loadedState(page);
-    expect(state.frontier.version).toBe(1);
+    expect(state.frontier.version).toBe(2);
     expect(state.frontier.worldVersion).toBe(1);
+    expect(state.frontier.surfaceVersion).toBe(1);
+    expect(state.frontier.surfaceDeposits.length).toBeGreaterThan(0);
     expect(state.frontier.sites.length).toBeGreaterThan(0);
     expect(state.resources.boards).toBe(0);
     expect(state.resources.metal).toBe(0);
@@ -115,7 +117,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, JSON.stringify(fresh));
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     page.once('dialog', dialog => dialog.accept());
@@ -143,7 +145,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, fresh);
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     await page.setInputFiles('#import-expedition-file', {
@@ -247,7 +249,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, fresh);
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     await page.setInputFiles('#import-expedition-file', {
@@ -266,7 +268,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, fresh);
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     await page.setInputFiles('#import-expedition-file', {
@@ -283,7 +285,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, fresh);
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     await page.setInputFiles('#import-expedition-file', {
@@ -301,7 +303,7 @@ test.describe('v3 save fixtures', () => {
     await installSave(page, JSON.stringify(fresh));
     await openGame(page);
     await loadedState(page);
-    await page.click('[data-nav="more"]');
+    await page.click('#menu');
     await page.click('[data-open="operations"]');
     await page.locator('#import-expedition-file').waitFor({state: 'attached'});
     page.once('dialog', dialog => dialog.dismiss());

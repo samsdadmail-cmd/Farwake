@@ -37,7 +37,7 @@ async function verifyCandidate(frame) {
  check(advance(()=>s.colonists.some(p=>p.carry?.kind==='wood')),'hauler picks up timber');
  check(advance(()=>s.resources.wood===initialWood+6),'timber delivered into storage');
  s.resources.knowledge=40;
- click('[data-nav="more"]');click('[data-open="research"]');click('#sectionview [data-tech-detail="energy"]');
+ click('[data-nav="research"]');click('#sectionview [data-tech-detail="energy"]');
  click('[data-tech-start="energy"]');
  check(game.frontierState().research?.id==='energy'&&!s.research.includes('energy'),'energy research enters a study');
  game.frontierStudy(game.frontierState().research.effort);

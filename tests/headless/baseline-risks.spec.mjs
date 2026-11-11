@@ -46,8 +46,7 @@ test('records frontier door admission and technology-tree overflow', async ({pag
   console.log(`CATALOG ${info.project.name} blueprints=${catalog}`);
   await page.click('[data-sheet="close"]');
 
-  await page.click('[data-nav="more"]');
-  await page.click('[data-open="research"]');
+  await page.click('[data-nav="research"]');
   await page.waitForSelector('#sheet .tech-viewport', {timeout: 10000});
   const tree = await page.evaluate(() => {
     const sheet = document.querySelector('#sheet');
