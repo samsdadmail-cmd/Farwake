@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FARWAKE performance harness</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { height: 100%; margin: 0; background: #111315; color: #f1efe9; font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body { padding: 20px 18px 32px; }
+  body.running { padding: 0; overflow: hidden; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; margin: 0 0 8px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; }
+  p, li { color: #d9d4c8; }
+  a { color: #e4c492; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #f3ead7; }
+  .warn { border: 1px solid #d4aa72; background: #2a2418; border-radius: 12px; padding: 12px 14px; margin: 12px 0 18px; }
+  .warn strong { color: #f0d7a4; }
+  .card { border: 1px solid #3c3e3e; background: #1b1d1e; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+  .card a { display: inline-block; margin: 4px 8px 4px 0; }
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #111315; }
+  .hud { position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 5; display: flex; gap: 8px; align-items: flex-end; pointer-events: none; }
+  .hud .panel { pointer-events: auto; max-height: 42vh; overflow: auto; background: #141617f2; border: 1px solid #d4aa7288; border-radius: 12px; padding: 10px 12px; flex: 1; }
+  .hud pre { margin: 6px 0 0; white-space: pre-wrap; font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; color: #f4efe4; }
+  button { font: inherit; color: #1b140c; background: #d4aa72; border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 650; }
+  .error h1 { color: #f0b2a4; }
+</style>
+</head>
+<body>
+<div id="screen"></div>
+<script src="scenes.js"></script>
+<script>
+'use strict';
+(function () {
+  // Dedicated harness origin. The game save key is fixed, so this page must
+  // never boot the game on a player's origin. Port 47321 is the contract.
+  const PORT = '47321';
+  const SAVE_KEY = 'farwake_founders_alpha03_v1';
+  const MARKER_KEY = 'farwake_perf_harness';
+  const PREFS_KEY = 'farwake_living_preferences';
+  const screen = document.getElementById('screen');
+
+  function allowedHost(hostname) {
+    const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+    if (host === '127.0.0.1' || host === 'localhost' || host === '::1') return true;
+    const parts = host.split('.').map(Number);
+    if (parts.length !== 4 || parts.some(function (n) { return !Number.isInteger(n) || n < 0 || n > 255; })) return false;
+    const a = parts[0], b = parts[1];
+    if (a === 10) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 169 && b === 254) return true;
+    return false;
+  }
+
+  function originAllowed() {
+    return location.protocol === 'http:' && String(location.port) === PORT && allowedHost(location.hostname);
+  }
+
+  function show(html, className) {
+    document.body.className = className || '';
+    screen.innerHTML = html;
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function fail(title, message) {
+    const frame = document.querySelector('iframe');
+    if (frame) frame.remove();
+    const hud = document.querySelector('.hud');
+    if (hud) hud.remove();
+    show('<div class="error"><h1>' + escapeHtml(title) + '</h1><p>' + escapeHtml(message) + '</p></div>');
+    window.__PERF_REPORT__ = { error: title + ' ' + message };
+  }
+
+  function inert() {
+    show(
+      '<h1>FARWAKE performance harness</h1>' +
+      '<div class="warn"><strong>Recording is off.</strong> This page does not load the game, does not wrap <code>requestAnimationFrame</code>, and does not read or write storage. Add <code>?perf=1</code> to run a benchmark.</div>' +
+      '<div class="warn"><strong>Save safety.</strong> The game stores the colony under a fixed key, <code>' + SAVE_KEY + '</code>, for the whole origin. Automated runs use a fresh browser profile on <code>http://127.0.0.1:' + PORT + '</code> only. Never open this harness on the production or preview origin, and never point it at a host where a real expedition is saved.</div>' +
+      '<h2>Scenes</h2>' +
+      '<div class="card">' +
+      '<a href="?perf=1&amp;scene=day2&amp;seconds=8">Day 2 early game</a>' +
+      '<a href="?perf=1&amp;scene=late&amp;seconds=8">Late colony</a>' +
+      '<a href="?perf=1&amp;scene=idle&amp;seconds=8">Idle paused</a>' +
+      '</div>' +
+      '<p>On an iPhone, serve the repo on port ' + PORT + ' and open the same URL over the Mac’s LAN address. Results stay on screen and can be downloaded as JSON. Headless Chromium emulation is only a proxy for iPhone Safari; a phone run is the one that measures Safari.</p>' +
+      '<p>See <code>perf/README.md</code>.</p>'
+    );
+  }
+
+  function roundMs(value) {
+    if (value == null || !Number.isFinite(value)) return '—';
+    return (Math.round(value * 10) / 10).toFixed(1);
+  }
+
+  function summaryText(report) {
+    const frame = report.recording && report.recording.frame;
+    const heap = report.recording && report.recording.heap;
+    const canvas = report.meta && report.meta.canvas;
+    const lines = [
+      report.meta.label + (report.repeat ? '  (repeat ' + report.repeat + ')' : ''),
+      'Frame JS ms   median ' + roundMs(frame && frame.median) + '   p95 ' + roundMs(frame && frame.p95) + '   max ' + roundMs(frame && frame.max),
+      'Long frames   >16.7ms ' + report.recording.longFrames.over16ms + '   >33ms ' + report.recording.longFrames.over33ms + '   of ' + frame.count,
+      'Heap          ' + (heap && heap.supported ? (heap.usedJSHeapSize / 1048576).toFixed(2) + ' MB used' : 'not exposed in this browser'),
+      'Canvas        ' + canvas.cssWidth.toFixed(0) + '×' + canvas.cssHeight.toFixed(0) + ' CSS, backing ' + canvas.backingWidth + '×' + canvas.backingHeight + ', DPR ' + report.meta.devicePixelRatio,
+      'Scene         day ' + report.meta.day + '  ' + report.meta.buildings + ' buildings  ' + report.meta.colonists + ' colonists  zoom ' + report.meta.zoom.toFixed(2) + '  ' + report.meta.preset + (report.meta.paused ? '  paused' : '  simulating')
+    ];
+    return lines.join('\n');
+  }
+
+  function showReport(report) {
+    const pre = document.createElement('pre');
+    pre.textContent = summaryText(report);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Download JSON';
+    button.addEventListener('click', function () {
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'farwake-perf-' + (report.meta && report.meta.id || 'run') + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    });
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    const title = document.createElement('strong');
+    title.textContent = 'Performance';
+    panel.appendChild(title);
+    panel.appendChild(pre);
+    panel.appendChild(button);
+    const hud = document.createElement('div');
+    hud.className = 'hud';
+    hud.appendChild(panel);
+    document.body.appendChild(hud);
+  }
+
+  function status(text) {
+    let hud = document.querySelector('.hud');
+    if (!hud) {
+      hud = document.createElement('div');
+      hud.className = 'hud';
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      hud.appendChild(panel);
+      document.body.appendChild(hud);
+    }
+    hud.querySelector('.panel').textContent = text;
+  }
+
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  async function waitForStart() {
+    if (!window.__PERF_EXTERNAL__) return;
+    window.__PERF_READY__ = true;
+    const deadline = performance.now() + 20000;
+    while (!window.__PERF_START_RECORDING__ && performance.now() < deadline) {
+      await sleep(20);
+    }
+  }
+
+  async function boot() {
+    if (!originAllowed()) {
+      fail('Harness refused to start.', 'This page only runs on the dedicated local port ' + PORT + ' (http://127.0.0.1:' + PORT + ', or a private LAN address on that same port for an iPhone). The current origin is ' + location.origin + '. The game was not loaded and nothing was written. Never open the harness on a production or preview origin.');
+      return;
+    }
+    const params = new URLSearchParams(location.search);
+    if (params.get('perf') !== '1') {
+      inert();
+      return;
+    }
+    if (!window.FarwakePerfScenes) {
+      fail('Harness refused to start.', 'perf/scenes.js did not load.');
+      return;
+    }
+    let existing = null;
+    let marker = null;
+    try {
+      existing = localStorage.getItem(SAVE_KEY);
+      marker = localStorage.getItem(MARKER_KEY);
+    } catch (error) {
+      fail('Harness refused to start.', 'localStorage is not available (' + error.message + ').');
+      return;
+    }
+    if (existing && marker !== '1') {
+      fail('Harness refused to start.', 'A save already exists on this origin that was not created by the performance harness. The game was not loaded, so that save was not handed to the game and was not overwritten. Use a fresh browser profile on http://127.0.0.1:' + PORT + '.');
+      return;
+    }
+    const sceneId = params.get('scene') || 'day2';
+    const spec = window.FarwakePerfScenes.resolve(sceneId, params);
+    if (!spec) {
+      fail('Harness refused to start.', 'Unknown scene "' + sceneId + '".');
+      return;
+    }
+    let fixtureSave = null;
+    if (spec.layout === 'fixture') {
+      const name = spec.fixture;
+      if (!name || !/^[A-Za-z0-9._-]+$/.test(name) || name.indexOf('..') !== -1) {
+        fail('Harness refused to start.', 'A fixture scene needs fixture=<filename> pointing at a file in perf/fixtures/. See perf/fixtures/README.md.');
+        return;
+      }
+      let response;
+      try {
+        response = await fetch(new URL('fixtures/' + name, location.href), { cache: 'no-store' });
+      } catch (error) {
+        fail('Harness refused to start.', 'Could not fetch the fixture (' + error.message + ').');
+        return;
+      }
+      if (!response.ok) {
+        fail('Harness refused to start.', 'Fixture perf/fixtures/' + name + ' was not found (' + response.status + ').');
+        return;
+      }
+      let parsed;
+      try { parsed = await response.json(); }
+      catch (error) {
+        fail('Harness refused to start.', 'Fixture is not JSON (' + error.message + ').');
+        return;
+      }
+      fixtureSave = parsed && parsed.format === 'farwake-expedition-backup' ? parsed.save : parsed;
+      if (!fixtureSave || fixtureSave.v !== 3 || typeof fixtureSave.seed !== 'string' || !Array.isArray(fixtureSave.buildings)) {
+        fail('Harness refused to start.', 'Fixture is not a FARWAKE version-3 expedition save. Nothing was written over the harness slot.');
+        return;
+      }
+    }
+
+    try {
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(PREFS_KEY);
+      localStorage.setItem(MARKER_KEY, '1');
+      if (fixtureSave) localStorage.setItem(SAVE_KEY, JSON.stringify(fixtureSave));
+    } catch (error) {
+      fail('Harness refused to start.', 'Could not prepare the harness save slot (' + error.message + ').');
+      return;
+    }
+
+    document.body.className = 'running';
+    screen.textContent = '';
+    status('Loading the built game…');
+    let html;
+    try {
+      const response = await fetch(new URL('../index.html', location.href), { cache: 'no-store' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      html = await response.text();
+    } catch (error) {
+      fail('Harness refused to start.', 'Could not read the built index.html (' + error.message + '). Serve the repository root, not the perf/ directory.');
+      return;
+    }
+    const head = html.indexOf('<head>');
+    if (head < 0) {
+      fail('Harness refused to start.', 'The built index.html has no <head>, so the recorder cannot be injected.');
+      return;
+    }
+    const baseHref = new URL('../', location.href).href;
+    const recorderSrc = new URL('recorder.js', location.href).href;
+    const closeScript = '</' + 'script>';
+    const prelude = '<head><base href="' + baseHref + '"><script>window.FARWAKE_PERF_OPTS=' +
+      JSON.stringify({ ops: params.get('ops') === '1' }) +
+      ';' + closeScript + '<script src="' + recorderSrc + '">' + closeScript;
+    const iframe = document.createElement('iframe');
+    iframe.title = 'FARWAKE';
+    iframe.srcdoc = html.slice(0, head) + prelude + html.slice(head + '<head>'.length);
+    document.body.appendChild(iframe);
+    try {
+      await new Promise(function (resolve, reject) {
+        const timer = setTimeout(function () { reject(new Error('timed out waiting for the game')); }, 30000);
+        iframe.addEventListener('load', function () { clearTimeout(timer); resolve(); }, { once: true });
+      });
+      const win = iframe.contentWindow;
+      if (!win.FARWAKE_PERF) throw new Error('The recorder did not load before the game.');
+      status('Preparing ' + spec.label + '…');
+      await window.FarwakePerfScenes.apply(win, spec);
+      status('Warming up…');
+      await sleep(spec.warmupMs);
+      await waitForStart();
+      const heapBefore = win.FARWAKE_PERF.snapshot().heap;
+      win.FARWAKE_PERF.start();
+      status('Recording ' + spec.seconds + 's…');
+      await sleep(spec.seconds * 1000);
+      const recording = win.FARWAKE_PERF.stop();
+      const report = {
+        harness: 'farwake-perf',
+        commit: params.get('commit') || null,
+        scene: spec.id,
+        meta: window.FarwakePerfScenes.meta(win, spec),
+        recording: recording,
+        heapBefore: heapBefore,
+        recordedAt: new Date().toISOString(),
+        note: 'Frame time is JavaScript in the animation callback. Headless Chromium emulation is only a proxy for iPhone Safari.'
+      };
+      window.__PERF_REPORT__ = report;
+      status('');
+      document.querySelector('.hud').remove();
+      showReport(report);
+    } catch (error) {
+      fail('Benchmark failed.', String(error && error.stack || error));
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
