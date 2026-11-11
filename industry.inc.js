@@ -12,7 +12,7 @@ const INDUSTRY_STAGES = {
 function industryPolicy(){
   if(!S.industry) S.industry={};
   const c=S.industry;
-  c.targets??={wood:40,ore:0,scrap:150,food:180,alloy:65};
+  c.targets??={wood:40,ore:24,scrap:150,food:180,alloy:20};
   c.weights??={field:1,factory:1,gather:1};
   c.harvests??=0;c.batches??=0;
   return c;
@@ -23,6 +23,12 @@ function foundingProductionRecord(b){
     : {recipe:'smelt',elapsed:0,cycles:0,output:0});
 }
 function industryOwned(kind){return (S.resources[kind]||0)+looseTotal(kind)+transitTotal(kind)}
+function industryFoodEmergency(){return industryOwned('food')+industryOwned('meals')<1&&S.colonists.some(p=>p.hunger>67)}
+function industryTarget(kind){
+  const target=industryPolicy().targets[kind]||0;
+  // A temporary survival floor never overwrites the player's saved stock target.
+  return kind==='food'&&industryFoodEmergency()?Math.max(target,S.colonists.length*2):target;
+}
 function foundingIndustryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
 function chosenRecipe(r){return INDUSTRY_RECIPES[r.recipe]||INDUSTRY_RECIPES.smelt}
 function cropYield(){return S.research.includes('growth')?11:7}
@@ -35,7 +41,7 @@ function foundingProductionBlock(b){
   if(!b.finished||b.editOrder)return 'Unavailable during construction or dismantling';
   const r=productionRecord(b),kind=b.type==='garden'?'food':'alloy';
   if(r.paused)return 'Paused by colony order';
-  if(industryOwned(kind)>=industryPolicy().targets[kind])return 'Colony stock target reached';
+  if(industryOwned(kind)>=industryTarget(kind))return 'Colony stock target reached';
   if(b.type==='garden')return '';
   const recipe=chosenRecipe(r);
   if(industryOwned('alloy')+recipe.yield>industryPolicy().targets.alloy)return 'Next batch would exceed target';
@@ -49,6 +55,7 @@ function foundingIndustrySummary(b){
   if(!['garden','workshop'].includes(b.type)&&!frontierProducer(b))return '';
   const blocked=productionBlock(b);if(blocked)return blocked;
   const r=productionRecord(b),worker=productionWorkers(b)[0];
+  if(b.type==='garden'&&industryFoodEmergency())return 'Emergency food recovery · '+INDUSTRY_STAGES[r.stage].label;
   if(b.type==='garden'&&!cropNeedsWorker(r.stage))return INDUSTRY_STAGES[r.stage].label;
   if(!worker)return 'Waiting for '+(r.worker?S.colonists.find(p=>p.id===r.worker)?.name||'assigned worker':'an available worker');
   return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
@@ -57,6 +64,7 @@ function productionWeight(p,b){
   const isFarm=b.type==='garden'||b.type==='greenhouse',group=isFarm?'field':'factory',r=productionRecord(b);
   if(r.worker&&r.worker!==p.id)return 0;
   if(r.worker===p.id)return 100;
+  if(b.type==='garden'&&industryFoodEmergency())return 3;
   if(p.work==='survey')return 0;
   const personal=p.workWeights?.[group]??1,colony=industryPolicy().weights[group]??1;
   if(!personal||!colony)return 0;
@@ -68,6 +76,7 @@ function productionCandidate(p,type){
   const choices=[];
   for(const b of S.buildings){
     if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b)&&b.type!=='greenhouse':type==='garden'?['garden','greenhouse'].includes(b.type):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
+    if(b.type==='workshop')frontierAutoRecipe(b);
     const r=productionRecord(b),weight=productionWeight(p,b);
     if(!weight||productionBlock(b)||b.type==='garden'&&!cropNeedsWorker(r.stage))continue;
     if(productionWorkers(b).some(worker=>worker.id!==p.id))continue;
@@ -103,7 +112,7 @@ function foundingProduction(p,t,work){
     else{
       // Ripe food waits on the bed if there is less demand than a full harvest.
       r.ripe??=cropYield();
-      const n=Math.min(r.ripe,Math.max(0,industryPolicy().targets.food-industryOwned('food')));
+      const n=Math.min(r.ripe,Math.max(0,industryTarget('food')-industryOwned('food')));
       if(n){freightOutput('food',n,b);r.output+=n;r.ripe-=n}
       if(!r.ripe){delete r.ripe;nextCrop(r,'plant');r.cycles++;industryPolicy().harvests++}
     }
@@ -124,7 +133,7 @@ function advanceGatherTargets(step){
   const anchor=S.buildings.find(b=>b.type==='supplies')||S.colonists[0];
   if(!anchor)return;
   for(const [kind,type] of [['wood','tree'],['ore','ore'],['scrap','scrap'],['food','bush']]){
-    const committed=Object.keys(S.designations||{}).filter(id=>featureById(id)?.type===type).length*NATURAL[type].amount;
+    const committed=Object.keys(S.designations||{}).reduce((n,id)=>{const f=featureById(id);return n+(f?.type===type?(f.amount??NATURAL[type].amount):0)},0);
     if(industryOwned(kind)+committed>=c.targets[kind])continue;
     const candidates=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]&&!S.designations[f.id]).sort((a,b)=>Math.hypot(a.x-anchor.x,a.y-anchor.y)-Math.hypot(b.x-anchor.x,b.y-anchor.y));
     for(const f of candidates.slice(0,18)){
@@ -166,6 +175,7 @@ function foundingIndustryDetails(b){
  '<p>'+r.cycles+' cycles completed · '+r.output+' units produced</p>'+
  '<button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+' production</button>'+
  (b.type==='workshop'?'<label>Recipe'+industrySelect('Workshop recipe',r.recipe,industryRecipes().map(([k,v])=>[k,v.name]),'data-industry-recipe="'+b.id+'"')+'</label>':'')+
+ (b.type==='workshop'?'<label><input type="checkbox" data-auto-recipe="'+b.id+'" '+(!r.manualRecipe?'checked':'')+'> Choose available inputs automatically</label>':'')+
  '<label>Assigned worker'+industrySelect('Assigned worker',r.worker||'', [['','Any available specialist'],...S.colonists.map(p=>[p.id,p.name])],'data-industry-worker="'+b.id+'"')+'</label></section>';
 }
 const workGroups={build:'Construction',haul:'Hauling',gather:'Field resources',field:'Agriculture',factory:'Manufacturing',research:'Research',survey:'Survey'};
@@ -190,7 +200,7 @@ function interruptAvailable(){
 }
 document.addEventListener('change',e=>{
  const el=e.target, c=industryPolicy();
- if(el.dataset.industryTarget){
+ if(el.dataset.autoRecipe){const b=S.buildings.find(b=>b.id===+el.dataset.autoRecipe);if(b)productionRecord(b).manualRecipe=!el.checked;}else if(el.dataset.industryTarget){
    const n=Number(el.value);if(Number.isFinite(n))c.targets[el.dataset.industryTarget]=clamp(Math.floor(n),0,9999);
  }else if(el.dataset.colonyWeight)c.weights[el.dataset.colonyWeight]=clamp(+el.value,0,3);
  else if(el.dataset.workPerson){const p=S.colonists.find(p=>p.id===+el.dataset.workPerson);if(p){p.workWeights??={};p.workWeights[el.dataset.workGroup]=clamp(+el.value,0,3)}}
@@ -198,13 +208,13 @@ document.addEventListener('change',e=>{
    const b=S.buildings.find(b=>b.id===+(el.dataset.industryWorker||el.dataset.industryRecipe));if(!b)return;
    const r=productionRecord(b);
    if(el.dataset.industryWorker)r.worker=+el.value||null;
-   else if(frontierProducer(b))frontierChangeRecipe(b,el.value);
-   else if(industryRecipes(b).some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;}
+   else if(frontierProducer(b)){if(!frontierChangeRecipe(b,el.value))notice('Finish the active batch before changing recipes.');el.value=r.recipe;}
+   else if(industryRecipes(b).some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;r.manualRecipe=true;}
  }else return;
  interruptAvailable();save();
 });
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-industry-pause]');if(!el)return;
  const b=S.buildings.find(b=>b.id===+el.dataset.industryPause);if(!b)return;
- const r=productionRecord(b);r.paused=!r.paused;interruptAvailable();save();showBuilding(b.id);
+ const r=productionRecord(b);delete b.autoPowerHold;r.paused=!r.paused;interruptAvailable();save();showBuilding(b.id);
 });

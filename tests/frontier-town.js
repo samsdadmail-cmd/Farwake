@@ -10,6 +10,9 @@ async function verifyFrontierTown(frame,out){
  function place(type){const t=g.FRONTIER_BUILDINGS[type];for(let y=28;y<56;y+=4)for(let x=20;x<56;x+=5)if(g.clearFootprint(x,y,t.w,t.h)&&g.buildAt(type,x,y))return s.buildings.at(-1);throw Error('Site '+type)}
  const home=place('cabin'),hall=place('recreation');
  ok(run(()=>home.finished&&hall.finished),'workers build a home and community hall');
+ const port=w.FarwakeBuildings.entrance(home),frontX=home.x+Math.floor((port.x+port.w/2)/32),frontY=home.y+home.h;
+ ok(g.frontierPlacementReason('lamppost',frontX,frontY).includes('doorway'),'placement protects an authored doorway approach');
+ const beforeLamp=g.freightAvailable('metal');ok(!g.buildAt('lamppost',frontX,frontY)&&g.freightAvailable('metal')===beforeLamp,'rejected door-blocking placement reserves no materials');
  const beds=g.housingCounts().beds;ok(g.frontierUpgrade(home),'fund an actual home expansion order');
  ok(home.level!==2&&home.upgradeOrder,'upgrade does not instantly add beds');
  ok(run(()=>home.level===2),'haulers deliver materials and builder completes expansion');

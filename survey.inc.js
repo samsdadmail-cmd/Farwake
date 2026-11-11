@@ -140,7 +140,7 @@ function surveyResearchHTML(){
 }
 function surveyGrid(){
  let generation=4,used=0,banks=0,advancedBanks=0;
- for(const b of S.buildings){if(!b.finished||b.editOrder)continue;
+ for(const b of S.buildings){if(!b.finished||b.editOrder||b.production?.paused)continue;
    if(b.type==='battery')banks+=1+.5*((b.level||1)-1);if(b.type==='accumulator')advancedBanks++;
    const t=TYPES[b.type];if(!t)continue;
    if(t.power>0)generation+=b.type==='wind'?t.power*(S.weather==='wind'?1.5:.75):isNight()?t.power*.4:t.power+(b.type==='solar'?((S.research.includes('heliostat')?4:0)+2*((b.level||1)-1)):0);
