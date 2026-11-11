@@ -96,6 +96,7 @@ function freightCandidateStores(p,k){return storageBuildings().filter(b=>freight
 function freightClaim(p,q){
  if(!q||q.hold||S.colonists.some(z=>z!==p&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id))return false;
  const site=freightSite(q.site);
+ if(site&&!frontierMarkAccess(site))return false;
  const dest=site||freightCandidateStores(p,q.kind).find(b=>freightFree(b)>0);
  if(!dest)return false;
  const amount=Math.min(12,q.amount,site?Infinity:freightFree(dest));
@@ -104,20 +105,30 @@ function freightClaim(p,q){
 function freightPlan(p){
  if(p.carry){
   const c=p.carry,site=freightSite(c.site);
+  if(site&&!frontierMarkAccess(site)){
+   freightOutside(c.kind,c.amount,p,{site:site.id});
+   p.carry=null;p.task=null;p.path=[];return null;
+  }
   for(const b of site?[site]:freightCandidateStores(p,c.kind)){
    const room=freightFree(b)+(c.dest===b.id?c.amount:0);
    if(!site&&room<c.amount)continue;
    const t={type:'haul_dropoff',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
    if(setTask(p,t)){c.dest=b.id;return p.task}
   }
-  freightOutside(c.kind,c.amount,p,site?{site:site.id}:{});
+  // A failed site drop stays reserved. Do not hand the same load straight back to this hauler.
+  if(site){p.task=null;p.path=[];return null}
+  freightOutside(c.kind,c.amount,p,{});
   p.carry=null;p.task=null;p.path=[];return null;
  }
  if(!['auto','gather','build','haul'].includes(p.work))return null;
  const urgent=S.freightUrgent||'';
  const rank=q=>q.site!=null?3:q.kind===urgent?2:1;
  const ordered=S.piles.filter(q=>!q.hold).sort((a,b)=>rank(b)-rank(a)||Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));
- for(const q of ordered)if(freightClaim(p,q))return p.task;
+ for(const q of ordered){
+  const site=q.site!=null&&freightSite(q.site);
+  if(site&&!frontierMarkAccess(site))continue;
+  if(freightClaim(p,q))return p.task;
+ }
  return null;
 }
 function freightPickup(p,t){
@@ -150,7 +161,7 @@ function freightStatus(){
 }
 function freightStorePanel(b){
  if(!storageBuildings().includes(b))return '';
- return '<details><summary>'+esc(b.type==='supplies'?'Landing cache':'Supply shed')+' · '+b.x+', '+b.y+' · '+freightUsed(b)+' / '+freightCap(b)+'</summary><div class="buttongroup"><button class="secondary" data-freight-priority="'+b.id+'">Routing: '+(b.priority?'preferred':'normal')+'</button></div><p>Accept incoming materials</p><div class="buttongroup">'+Object.entries(MATERIALS).map(([k,m])=>'<button class="pill '+(freightAccepts(b,k)?'active':'')+'" aria-pressed="'+freightAccepts(b,k)+'" data-store-id="'+b.id+'" data-freight-filter="'+k+'">'+m.name+' · '+(b.stock?.[k]||0)+'</button>').join('')+'</div></details>';
+ return '<details><summary>'+esc(facilityName(b))+' · '+b.x+', '+b.y+' · '+freightUsed(b)+' / '+freightCap(b)+'</summary><div class="buttongroup"><button class="secondary" data-freight-priority="'+b.id+'">Routing: '+(b.priority?'preferred':'normal')+'</button></div><p>Accept incoming materials</p><div class="buttongroup">'+Object.entries(MATERIALS).map(([k,m])=>'<button class="pill '+(freightAccepts(b,k)?'active':'')+'" aria-pressed="'+freightAccepts(b,k)+'" data-store-id="'+b.id+'" data-freight-filter="'+k+'">'+m.name+' · '+(b.stock?.[k]||0)+'</button>').join('')+'</div></details>';
 }
 function freightRulesHTML(){
  return freightFlowTable()+'<p>'+esc(freightStatus())+'</p><div class="sectioncap">Hauling order</div><p>Site deliveries go first, followed by the selected material.</p><div class="buttongroup">'+[['','Nearest'],...Object.entries(MATERIALS).map(([k,m])=>[k,m.name])].map(([k,label])=>'<button class="pill '+((S.freightUrgent||'')===k?'active':'')+'" data-freight-urgent="'+k+'">'+label+'</button>').join('')+'</div><div class="sectioncap">Store routing &amp; filters</div>'+storageBuildings().map(freightStorePanel).join('');

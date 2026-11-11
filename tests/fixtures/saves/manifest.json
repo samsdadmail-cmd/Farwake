@@ -1,0 +1,152 @@
+{
+  "storageKey": "farwake_founders_alpha03_v1",
+  "version": 3,
+  "generatedFromCommit": "88eae30ff94b7dd7bfbf526c5e1adb2095749e7d",
+  "generator": "tests/generate-save-fixtures.mjs",
+  "fixtures": {
+    "fresh": {
+      "file": "fresh.json",
+      "notes": "save() immediately after the default FW-10402 landing, then reloaded once so load() migrations have already run.",
+      "seed": "FW-10402",
+      "day": 1,
+      "minute": 440.56760380000003,
+      "colonists": 5,
+      "research": [],
+      "finished": [
+        "camp",
+        "lander",
+        "supplies"
+      ],
+      "blueprints": [],
+      "materialTotal": 258,
+      "materials": {
+        "scrap": 125,
+        "wood": 42,
+        "ore": 0,
+        "alloy": 16,
+        "food": 75,
+        "boards": 0,
+        "metal": 0,
+        "components": 0,
+        "composite": 0,
+        "water": 0,
+        "meals": 0,
+        "relic": 0
+      },
+      "knowledge": 0,
+      "piles": 0,
+      "carry": null,
+      "carries": [],
+      "frontierSites": 8,
+      "sitesSeen": 0,
+      "worldVersion": 1
+    },
+    "mid": {
+      "file": "mid.json",
+      "notes": "Crew finished a player-placed prefab home. A surveyor is carrying timber when save() runs.",
+      "seed": "FW-10402",
+      "day": 1,
+      "minute": 741.9654138000041,
+      "colonists": 5,
+      "research": [],
+      "finished": [
+        "camp",
+        "lander",
+        "shelter",
+        "supplies"
+      ],
+      "blueprints": [],
+      "materialTotal": 324,
+      "materials": {
+        "scrap": 153,
+        "wood": 40,
+        "ore": 27,
+        "alloy": 14,
+        "food": 90,
+        "boards": 0,
+        "metal": 0,
+        "components": 0,
+        "composite": 0,
+        "water": 0,
+        "meals": 0,
+        "relic": 0
+      },
+      "knowledge": 12,
+      "piles": 0,
+      "carry": {
+        "id": 5,
+        "kind": "wood",
+        "amount": 6
+      },
+      "carries": [
+        {
+          "id": 2,
+          "kind": "food",
+          "amount": 5
+        },
+        {
+          "id": 5,
+          "kind": "wood",
+          "amount": 6
+        }
+      ],
+      "frontierSites": 8,
+      "sitesSeen": 0,
+      "worldVersion": 1
+    },
+    "late": {
+      "file": "late.json",
+      "notes": "Crew finished a home, grow beds, solar array and workshop, and studied cultivation and grid storage. Stores were then filled through freightInit to capacity, with alloy left in an engineer’s hands.",
+      "seed": "FW-10402",
+      "day": 3,
+      "minute": 438.0802938000328,
+      "colonists": 5,
+      "research": [
+        "growth",
+        "energy"
+      ],
+      "finished": [
+        "camp",
+        "garden",
+        "lander",
+        "shelter",
+        "solar",
+        "supplies",
+        "workshop"
+      ],
+      "blueprints": [],
+      "materialTotal": 340,
+      "materials": {
+        "scrap": 170,
+        "wood": 0,
+        "ore": 0,
+        "alloy": 0,
+        "food": 170,
+        "boards": 0,
+        "metal": 0,
+        "components": 0,
+        "composite": 0,
+        "water": 0,
+        "meals": 0,
+        "relic": 0
+      },
+      "knowledge": 154,
+      "piles": 6,
+      "carry": {
+        "id": 2,
+        "kind": "alloy",
+        "amount": 4
+      },
+      "carries": [
+        {
+          "id": 2,
+          "kind": "alloy",
+          "amount": 4
+        }
+      ],
+      "frontierSites": 8,
+      "sitesSeen": 3,
+      "worldVersion": 1
+    }
+  }
+}

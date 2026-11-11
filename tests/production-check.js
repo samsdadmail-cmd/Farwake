@@ -23,7 +23,7 @@ async function verifyProduction(frame,out){
  ok(g.productionRecord(farm).output===7,'harvest produces seven physical food');
  // Stage ample workshop inputs as legacy stores, reconcile to its ledger, then use real dispatch.
  s.resources.scrap+=50;s.resources.ore=12;g.freightInit();
- ok(g.buildAt('workshop',30,33),'workshop placed');let shop=s.buildings.find(b=>b.type==='workshop');
+ let shop;for(let y=23;y<40&&!shop;y++)for(let x=20;x<42&&!shop;x++)if(g.clearFootprint(x,y,3,2)&&g.buildAt('workshop',x,y))shop=s.buildings.at(-1);ok(shop,'workshop placed with a clear doorway approach');
  // Supply one solar array as a fixture so this test isolates production from construction funding.
  s.buildings.push({id:999,type:'solar',x:23,y:26,w:2,h:2,finished:true,progress:100});
  ok(run(()=>shop.finished),'workshop supplied and completed');

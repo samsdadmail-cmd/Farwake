@@ -3,7 +3,7 @@
 window.FarwakeDoors = (() => {
   const assignments = new WeakMap(), doors = new WeakMap();
   // Only a finished, authored interior can host its listed activities.
-  const activities = {shelter:['rest'], camp:['rest'], shed:['haul_dropoff','eat'],
+  const activities = {cabin:['rest'],dormitory:['rest'],greenhouse:['craft'],kitchen:['craft','eat'],sawmill:['craft'],smelter:['craft'],fabricator:['craft'],dining:['eat','social'],recreation:['social'],warehouse:['haul_dropoff','eat'],outpost:['rest','haul_dropoff','research','investigate'],observatory:['research','align'],shelter:['rest'], camp:['rest'], shed:['haul_dropoff','eat'],
     workshop:['craft'], lander:['research'], clinic:['treat']};
   function admits(b,job){return !!(b?.finished && FarwakeBuildings.entrance(b) && activities[b.type]?.includes(job));}
 

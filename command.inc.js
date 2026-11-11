@@ -13,11 +13,12 @@ function commandStats(){
   if(homes<people.length)need.push((people.length-homes)+' without a permanent bed');
   if(powerNow.used>powerNow.supply)need.push('Power demand exceeds supply');
   if(storedTotal()>=storageCapacity())need.push('Stores at capacity');
-  if(S.resources.food<people.length)need.push('Less than one stored meal per colonist');
+  if((S.resources.food||0)+(S.resources.meals||0)<people.length)need.push('Less than one stored meal per colonist');
+  if(industryFoodEmergency())need.push('Emergency food recovery: foraging and unpaused grow beds take priority; food target temporarily lifted');
   const cards=[
     ['Population',people.length,homes+' permanently housed'],
     ['Wellbeing',mean('mood')+'%',mean('energy')+'% average energy'],
-    ['Provisions',Math.floor(S.resources.food),finished('garden').length+' grow beds'],
+    ['Provisions',Math.floor((S.resources.food||0)+(S.resources.meals||0)),(S.resources.meals||0)+' prepared meals'],
     ['Power',powerNow.supply-powerNow.used,powerNow.supply+' supply / '+powerNow.used+' demand'],
     ['Construction',jobs().length,'unfinished blueprints'],
     ['Survey',Math.round(100*fog.filter(Boolean).length/fog.length)+'%',S.explore+' expeditions']
@@ -27,7 +28,7 @@ function commandStats(){
 }
 function showCommand(){
   sheetSection='colony';
-  showSheet(sectionHeader('Command Center','SETTLEMENT • DAY '+S.day)+
+  showSheet(sectionHeader('Command Center','SETTLEMENT • DAY '+S.day)+frontierCommandHero()+
     '<div id="command-stats">'+commandStats()+'</div><div class="command-links">'+
     commandLink('resources','storage','Logistics','Stores, reserves & hauling')+
     commandLink('industry','workshop','Work & production','Assignments and targets')+
@@ -36,19 +37,21 @@ function showCommand(){
     commandLink('world','world','Survey','Resources & expeditions')+
     commandLink('guide','inspect','Field guide','Search colony mechanics')+
     '</div><h3 class="sectioncap">Settlement facilities</h3><div class="facility-list">'+
-    S.buildings.filter(b=>b.type!=='path').map(b=>'<button data-facility="'+b.id+'">'+uiIcon(TYPES[b.type]?b.type:'storage',17)+'<span>'+facilityName(b)+'</span><small>'+b.x+', '+b.y+'</small></button>').join('')+
+    frontierFacilityRows()+
     '</div><h3 class="sectioncap">Field log</h3>'+S.events.slice(0,6).map(e=>'<div class="event"><b>Day '+e.day+'</b> '+esc(e.message)+'</div>').join(''));
   renderNavState();
 }
 let inspectedFacility=null;
 function facilityReadout(b){
  const occupants=FarwakeDoors.occupants(S,b),workers=S.colonists.filter(p=>p.task&&(p.task.id===b.id||(p.task.x===b.x&&p.task.y===b.y)));
- const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':'Operational')+'</b>'];
+ const lines=['<b>'+(!b.finished?'Blueprint · '+Math.floor(100*b.progress/(TYPES[b.type]?.time||100))+'%':b.editOrder?'Settlement edit queued':b.autoPowerHold?'Grid standby':b.production?.paused?'Production paused':((frontierProducer(b)||['garden','workshop'].includes(b.type))&&productionBlock(b)?'Idle':'Operational'))+'</b>'];
  if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
  if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
  if(!b.finished){
+   const access=b.accessBlocked||frontierPlacementReason(b.type,b.x,b.y,b.id);
+   if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint. <button type="button" class="secondary" data-editor="apply-cancel-site" data-building="'+b.id+'">Cancel and refund</button>');
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
-   lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
+   lines.push(b.accessBlocked?'Access blocked':b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
  if((['garden','workshop'].includes(b.type)||frontierProducer(b)))lines.push(esc(industrySummary(b)));
  if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}
@@ -62,18 +65,26 @@ function showBuilding(id){
  const housing=housingBeds(b)?housingPanel(b):'';
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
- '<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
+ frontierFacilityHero(b)+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
  frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
 }
 function refreshCommandReadouts(){
- const stats=$('command-stats');if(stats&&sheetSection==='colony')stats.innerHTML=commandStats();
+ const stats=$('command-stats');if(stats&&sheetSection==='colony'){
+  stats.innerHTML=commandStats();
+  const overview=$('sheet').querySelector('.civilization-hero p');if(overview)overview.textContent=S.buildings.filter(b=>b.finished).length+' established structures · '+frontierState().sites.filter(s=>s.resolved).length+' planetary investigations';
+  for(const button of $('sheet').querySelectorAll('.facility-list [data-facility]')){
+   const b=S.buildings.find(b=>b.id===+button.dataset.facility);if(!b){button.remove();continue}
+   const line=button.querySelector('small');if(line)line.textContent=!b.finished?'Under construction':b.upgradeOrder?'Expanding':frontierProducer(b)||['garden','workshop'].includes(b.type)?industrySummary(b):housingBeds(b)?housingResidents(b).length+' / '+housingBeds(b)+' residents':S.colonists.filter(p=>p.task?.id===b.id).length+' active workers';
+  }
+ }
  const el=$('facility-readout');if(el&&sheetSection==='facility'){
    const b=S.buildings.find(item=>item.id===inspectedFacility);
    if(b){el.innerHTML=facilityReadout(b);
    const production=$('production-status');if(production)production.textContent=industrySummary(b);
-   const progress=$('production-progress');if(progress){const r=productionRecord(b);progress.style.width=Math.min(100,r.elapsed/(b.type==='garden'?cropDuration(r.stage):chosenRecipe(r).seconds)*100)+'%'}
+   const progress=$('production-progress');if(progress){const r=productionRecord(b);progress.style.width=Math.min(100,r.elapsed/(b.type==='garden'?cropDuration(r.stage):frontierProducer(b)?FRONTIER_RECIPES[r.recipe].seconds:chosenRecipe(r).seconds)*100)+'%'}
+   const facts=$('sheet').querySelector('[data-production-facts]');if(facts)facts.innerHTML=frontierProductionFacts(b);
    }else showCommand();
  }
 }

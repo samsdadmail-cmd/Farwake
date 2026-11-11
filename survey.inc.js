@@ -53,8 +53,9 @@ function surveyUnknown(x,y){
  return false;
 }
 function planSurvey(p){
+ const surveyTime=(S.day*1440+S.minute)/3.1;
  const sector=S.surveySector, origin=p.visit?.stage==='inside'?p.visit:null;
- if(surveyLastPlan?.state===S&&surveyLastPlan.empty&&surveyLastPlan.sector===sector&&surveyLastPlan.epoch===surveyEpoch&&performance.now()-surveyLastPlan.time<1400)return null;
+ if(surveyLastPlan?.state===S&&surveyLastPlan.empty&&surveyLastPlan.sector===sector&&surveyLastPlan.epoch===surveyEpoch&&surveyTime-surveyLastPlan.time<1.4)return null;
  const dist=surveyDistances(origin?.streetX??p.x,origin?.streetY??p.y,walkable);
  let best=null,score=Infinity;
  for(let i=0;i<dist.length;i++){
@@ -65,7 +66,7 @@ function planSurvey(p){
    const weight=dist[i]+(fog[i]?0:5);
    if(weight<score){score=weight;best={type:'survey',x,y}}
  }
- surveyLastPlan={state:S,sector,empty:!best,epoch:surveyEpoch,time:performance.now()};
+ surveyLastPlan={state:S,sector,empty:!best,epoch:surveyEpoch,time:surveyTime};
  return best;
 }
 function surveyMapped(kind=surveyFilter){return features.filter(f=>f.type===kind&&fog[index(f.x,f.y)])}
@@ -140,7 +141,7 @@ function surveyResearchHTML(){
 }
 function surveyGrid(){
  let generation=4,used=0,banks=0,advancedBanks=0;
- for(const b of S.buildings){if(!b.finished||b.editOrder)continue;
+ for(const b of S.buildings){if(!b.finished||b.editOrder||b.production?.paused)continue;
    if(b.type==='battery')banks+=1+.5*((b.level||1)-1);if(b.type==='accumulator')advancedBanks++;
    const t=TYPES[b.type];if(!t)continue;
    if(t.power>0)generation+=b.type==='wind'?t.power*(S.weather==='wind'?1.5:.75):isNight()?t.power*.4:t.power+(b.type==='solar'?((S.research.includes('heliostat')?4:0)+2*((b.level||1)-1)):0);

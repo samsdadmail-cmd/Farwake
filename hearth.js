@@ -188,9 +188,11 @@ window.FarwakeHearth = (() => {
         }
         const shift = reduced || asleep ? .5 : .5 + .3 * Math.sin(t * .45 + seed + i * 2);
         const px = pane.x + 1 + shift * Math.max(1,pane.w-5);
-        c.globalAlpha = asleep ? .32 : .46;
-        box(c,px,pane.y+1,2,2,'#3b3933');
-        box(c,px-1,pane.y+3,4,3,'#3b3933');
+        if(!asleep){
+          c.globalAlpha=.46;
+          box(c,px,pane.y+1,2,2,'#3b3933');
+          box(c,px-1,pane.y+3,4,3,'#3b3933');
+        }
         c.restore();
       }
       const aperture = window.FarwakeBuildings?.entrance?.(b);
