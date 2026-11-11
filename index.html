@@ -163,7 +163,7 @@ let importedNavigation=false;
 function save(){if(!S||importedNavigation)return;try{const clean={...S,colonists:S.colonists.map(p=>({...p,path:[],task:null,action:0,indoorStay:FarwakeDoors.saveVisit(p)})),fog:fog.map(x=>x?1:0),uid};localStorage.setItem(SAVE,JSON.stringify(clean));}catch(e){console.warn('Save failed',e)}}
 function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(!validExpeditionSave(o))return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};guaranteeStartingOre();features=features.filter(f=>!S.harvested.includes(f.id));for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){
  FarwakeDoors.restore(p,S.buildings,walkable);
- p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();return true}catch(e){console.warn(e);return false}}
+ p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();frontierRestoreAccess();return true}catch(e){console.warn(e);return false}}
 function buildingAt(x,y,includeBlueprint=true){return S.buildings.find(b=>(includeBlueprint||b.finished)&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)}
 function featureAt(x,y){return features.find(f=>f.x===x&&f.y===y)}
 const NATURAL={
@@ -238,9 +238,10 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  if(p.hunger>67){const meal=frontierMealTarget(p);if(meal)return meal;}
  if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
-  ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
-    const q=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress)[0];
-    return q?{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}:null;
+  ['build',()=>{const edit=editorCandidate(p);if(edit&&setTask(p,edit))return p.task;
+    const ranked=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&frontierMarkAccess(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress);
+    for(const q of ranked){const task={type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h};if(setTask(p,task))return p.task}
+    return null;
   }],
   ['haul',()=>freightPlan(p)],
   ['gather',()=>harvestTaskFor(p)],
@@ -255,7 +256,7 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  for(const [group,pick] of lanes){
    if(!workWeight(p,group))continue;
    if(group==='build'&&!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))continue;
-   const task=pick();if(task)return task;
+   const task=pick();if(task&&(p.task===task||setTask(p,task)))return p.task;
  }
  return null;
 }
@@ -270,7 +271,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
  if(t.type==='upgrade'){frontierUpgradeWork(p,work);return}
  if(t.type==='social'){frontierSocial(p,work);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
- if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
+ if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.accessBlocked||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;delete b.accessBlocked;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
  else if(t.type==='farm'||t.type==='craft'){performProduction(p,t,work);}
  else if(t.type==='rest'&&p.action>1){housingRecovery(p,work);p.hunger=clamp(p.hunger+work*.1,0,100);if(p.energy>85&&S.minute>=6*60&&S.minute<20*60){p.task=null;}}
  else if(t.type==='eat'&&p.action>2.3){frontierEat(p);}
@@ -289,7 +290,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
 function updateGoal(){surveyAdvanceGoal();if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
 function tick(dt){if(paused)return;surveyGridTick(dt*speed);let step=dt*speed;frontierTick(step);advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
  for(const p of S.colonists){FarwakeDoors.sync(p,S.buildings);p.hunger=clamp(p.hunger+step*.045,0,100);p.social=clamp(p.social-step*.008,5,100);p.mood=clamp(p.mood+(p.energy>40&&p.hunger<70?.004:-.12)*step,0,100);if(p.hunger>=100){p.mood=Math.max(5,p.mood-step*.1);p.energy=Math.max(0,p.energy-step*.07);}if(p.task&&p.task.type==='rest'&&p.energy>80&&S.minute>6*60&&S.minute<20*60)p.task=null;
- if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
+ if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished&&!b.accessBlocked)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
  if(S.piles.some(q=>q.site!=null))for(const p of S.colonists)if(p.task?.type==='research'){p.task=null;p.path=[]}
  if(queuedWork()&&Math.floor(performance.now()/900)%3===0)dispatchFieldWork();
  FarwakeDoors.update(S,step,(k,b)=>localSound(k==='doorOpen'?'open':'close',b));
@@ -727,6 +728,7 @@ function freightCandidateStores(p,k){return storageBuildings().filter(b=>freight
 function freightClaim(p,q){
  if(!q||q.hold||S.colonists.some(z=>z!==p&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id))return false;
  const site=freightSite(q.site);
+ if(site&&!frontierMarkAccess(site))return false;
  const dest=site||freightCandidateStores(p,q.kind).find(b=>freightFree(b)>0);
  if(!dest)return false;
  const amount=Math.min(12,q.amount,site?Infinity:freightFree(dest));
@@ -735,20 +737,30 @@ function freightClaim(p,q){
 function freightPlan(p){
  if(p.carry){
   const c=p.carry,site=freightSite(c.site);
+  if(site&&!frontierMarkAccess(site)){
+   freightOutside(c.kind,c.amount,p,{site:site.id});
+   p.carry=null;p.task=null;p.path=[];return null;
+  }
   for(const b of site?[site]:freightCandidateStores(p,c.kind)){
    const room=freightFree(b)+(c.dest===b.id?c.amount:0);
    if(!site&&room<c.amount)continue;
    const t={type:'haul_dropoff',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
    if(setTask(p,t)){c.dest=b.id;return p.task}
   }
-  freightOutside(c.kind,c.amount,p,site?{site:site.id}:{});
+  // A failed site drop stays reserved. Do not hand the same load straight back to this hauler.
+  if(site){p.task=null;p.path=[];return null}
+  freightOutside(c.kind,c.amount,p,{});
   p.carry=null;p.task=null;p.path=[];return null;
  }
  if(!['auto','gather','build','haul'].includes(p.work))return null;
  const urgent=S.freightUrgent||'';
  const rank=q=>q.site!=null?3:q.kind===urgent?2:1;
  const ordered=S.piles.filter(q=>!q.hold).sort((a,b)=>rank(b)-rank(a)||Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));
- for(const q of ordered)if(freightClaim(p,q))return p.task;
+ for(const q of ordered){
+  const site=q.site!=null&&freightSite(q.site);
+  if(site&&!frontierMarkAccess(site))continue;
+  if(freightClaim(p,q))return p.task;
+ }
  return null;
 }
 function freightPickup(p,t){
@@ -1301,9 +1313,10 @@ function facilityReadout(b){
  if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
  if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
  if(!b.finished){
-   const access=frontierPlacementReason(b.type,b.x,b.y,b.id);if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint.');
+   const access=b.accessBlocked||frontierPlacementReason(b.type,b.x,b.y,b.id);
+   if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint. <button type="button" class="secondary" data-editor="apply-cancel-site" data-building="'+b.id+'">Cancel and refund</button>');
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
-   lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
+   lines.push(b.accessBlocked?'Access blocked':b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
  if((['garden','workshop'].includes(b.type)||frontierProducer(b)))lines.push(esc(industrySummary(b)));
  if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}
@@ -2255,14 +2268,55 @@ function frontierRefreshDiscovery(){
  if(s&&el)el.textContent=frontierFieldExtractionStatus(s);
 }
 
-let frontierAccessCache=null;
+let frontierAccessCache=null,approachCache=null;
+function approachStamp(){
+ let sig=S.buildings.length>>>0;
+ for(const b of S.buildings)if(!['path','road'].includes(b.type))sig=(Math.imul(sig,33)^(b.id+b.x+1+((b.y+1)<<8)+(b.w<<16)+(b.h<<20)))>>>0;
+ return sig;
+}
+function waterCount(){let n=0;for(let i=0;i<terrain.length;i++)if(terrain[i].kind==='water')n++;return n}
+// Crews stand on any adjacent walkable tile. Doorless sites (turbine, solar, battery) use the same rule as doorways.
+function siteApproachOpen(b){
+ if(!b)return false;
+ const stamp=approachStamp();
+ if(approachCache?.state!==S||approachCache.stamp!==stamp)approachCache={state:S,stamp,map:new Map()};
+ if(approachCache.map.has(b.id))return approachCache.map.get(b.id);
+ const anchor=S.buildings.find(q=>q.type==='lander');
+ let open=true;
+ if(anchor){
+  const door=FarwakeBuildings.entrance(anchor);
+  if(door){
+   const sx=anchor.x+Math.floor((door.x+door.w/2)/32),sy=anchor.y+anchor.h;
+   const dist=surveyDistances(sx,sy,walkable);
+   open=neighborGoals(b.x,b.y,b.w,b.h).some(q=>dist[index(q.x,q.y)]>=0);
+  }
+ }
+ approachCache.map.set(b.id,open);return open;
+}
+function frontierMarkAccess(b){
+ if(!b||b.finished||['path','road'].includes(b.type)){if(b?.accessBlocked)delete b.accessBlocked;return true}
+ if(siteApproachOpen(b)){if(b.accessBlocked)delete b.accessBlocked;return true}
+ b.accessBlocked='Access blocked';return false;
+}
+function frontierRestoreAccess(){
+ approachCache=null;
+ for(const b of S.buildings)frontierMarkAccess(b);
+ for(const p of S.colonists){
+  if(p.carry?.site==null)continue;
+  const site=S.buildings.find(b=>b.id===p.carry.site);
+  if(!site||frontierMarkAccess(site))continue;
+  freightOutside(p.carry.kind,p.carry.amount,p,{site:site.id});
+  p.carry=null;p.task=null;p.path=[];
+ }
+}
 function frontierAccessReason(type,x,y,ignoreId){
- const key=[type,x,y,ignoreId,S.buildings.length,uid].join(':');
+ const key=[type,x,y,ignoreId,approachStamp(),waterCount(),uid].join(':');
  if(frontierAccessCache?.state===S&&frontierAccessCache.key===key)return frontierAccessCache.reason;
  const t=TYPES[type],anchor=S.buildings.find(b=>b.type==='lander');
- if(!anchor)return '';
+ if(!anchor||!t)return '';
  const port=b=>{const d=FarwakeBuildings.entrance(b);return d?{x:b.x+Math.floor((d.x+d.w/2)/32),y:b.y+b.h}:null};
- const start=port(anchor),blocked=(xx,yy)=>xx>=x&&xx<x+t.w&&yy>=y&&yy<y+t.h;
+ const start=port(anchor);if(!start)return '';
+ const blocked=(xx,yy)=>xx>=x&&xx<x+t.w&&yy>=y&&yy<y+t.h;
  const pass=(xx,yy)=>inMap(xx,yy)&&terrain[index(xx,yy)].kind!=='water'&&!S.buildings.some(b=>b.id!==ignoreId&&!['path','road'].includes(b.type)&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h);
  const before=surveyDistances(start.x,start.y,pass),after=surveyDistances(start.x,start.y,(xx,yy)=>!blocked(xx,yy)&&pass(xx,yy));
  let reason='';const next=port({type,x,y,w:t.w,h:t.h});
@@ -2271,7 +2325,11 @@ function frontierAccessReason(type,x,y,ignoreId){
  for(const b of S.buildings){
   if(reason||b.id===ignoreId)continue;const d=port(b);
   if(d&&before[index(d.x,d.y)]>=0&&after[index(d.x,d.y)]<0)reason='This would cut off '+facilityName(b)+'. Leave a connected route.';
-  if(b.type==='supplies'){
+  if(!reason&&!b.finished&&!['path','road'].includes(b.type)){
+   const around=neighborGoals(b.x,b.y,b.w,b.h);
+   if(around.some(q=>before[index(q.x,q.y)]>=0)&&!around.some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='This would cut off '+facilityName(b)+'. Leave a connected route.';
+  }
+  if(!reason&&b.type==='supplies'){
    const around=neighborGoals(b.x,b.y,b.w,b.h);
    if(around.some(q=>before[index(q.x,q.y)]>=0)&&!around.some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='This would cut off the supply pallet. Leave a hauling route.';
   }

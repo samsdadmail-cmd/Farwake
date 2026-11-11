@@ -48,9 +48,10 @@ function facilityReadout(b){
  if(workers.length)lines.push(workers.map(p=>esc(p.name)+' · '+esc(taskLabel(p))).join('<br>'));
  if(FarwakeBuildings.entrance(b))lines.push('Inside: '+(occupants.map(p=>esc(p.name)).join(', ')||'Nobody'));
  if(!b.finished){
-   const access=frontierPlacementReason(b.type,b.x,b.y,b.id);if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint.');
+   const access=b.accessBlocked||frontierPlacementReason(b.type,b.x,b.y,b.id);
+   if(access)lines.push('Access: '+esc(access)+'. Open a route or cancel this blueprint. <button type="button" class="secondary" data-editor="apply-cancel-site" data-building="'+b.id+'">Cancel and refund</button>');
    const missing=Object.entries(b.reservedMaterials||{}).filter(([k,n])=>(b.siteStock?.[k]||0)<n).map(([k,n])=>(n-(b.siteStock?.[k]||0))+' '+MATERIALS[k].name);
-   lines.push(b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
+   lines.push(b.accessBlocked?'Access blocked':b.buildPaused?'Construction paused':missing.length?'Awaiting site deliveries: '+missing.join(', '):'Materials delivered · waiting for a builder');
  }
  if((['garden','workshop'].includes(b.type)||frontierProducer(b)))lines.push(esc(industrySummary(b)));
  if(b.type==='battery'){const grid=power();lines.push('Grid reserve: '+Math.floor(grid.charge)+' / '+grid.cap+' · '+grid.output+' discharge')}

@@ -713,14 +713,55 @@ function frontierRefreshDiscovery(){
  if(s&&el)el.textContent=frontierFieldExtractionStatus(s);
 }
 
-let frontierAccessCache=null;
+let frontierAccessCache=null,approachCache=null;
+function approachStamp(){
+ let sig=S.buildings.length>>>0;
+ for(const b of S.buildings)if(!['path','road'].includes(b.type))sig=(Math.imul(sig,33)^(b.id+b.x+1+((b.y+1)<<8)+(b.w<<16)+(b.h<<20)))>>>0;
+ return sig;
+}
+function waterCount(){let n=0;for(let i=0;i<terrain.length;i++)if(terrain[i].kind==='water')n++;return n}
+// Crews stand on any adjacent walkable tile. Doorless sites (turbine, solar, battery) use the same rule as doorways.
+function siteApproachOpen(b){
+ if(!b)return false;
+ const stamp=approachStamp();
+ if(approachCache?.state!==S||approachCache.stamp!==stamp)approachCache={state:S,stamp,map:new Map()};
+ if(approachCache.map.has(b.id))return approachCache.map.get(b.id);
+ const anchor=S.buildings.find(q=>q.type==='lander');
+ let open=true;
+ if(anchor){
+  const door=FarwakeBuildings.entrance(anchor);
+  if(door){
+   const sx=anchor.x+Math.floor((door.x+door.w/2)/32),sy=anchor.y+anchor.h;
+   const dist=surveyDistances(sx,sy,walkable);
+   open=neighborGoals(b.x,b.y,b.w,b.h).some(q=>dist[index(q.x,q.y)]>=0);
+  }
+ }
+ approachCache.map.set(b.id,open);return open;
+}
+function frontierMarkAccess(b){
+ if(!b||b.finished||['path','road'].includes(b.type)){if(b?.accessBlocked)delete b.accessBlocked;return true}
+ if(siteApproachOpen(b)){if(b.accessBlocked)delete b.accessBlocked;return true}
+ b.accessBlocked='Access blocked';return false;
+}
+function frontierRestoreAccess(){
+ approachCache=null;
+ for(const b of S.buildings)frontierMarkAccess(b);
+ for(const p of S.colonists){
+  if(p.carry?.site==null)continue;
+  const site=S.buildings.find(b=>b.id===p.carry.site);
+  if(!site||frontierMarkAccess(site))continue;
+  freightOutside(p.carry.kind,p.carry.amount,p,{site:site.id});
+  p.carry=null;p.task=null;p.path=[];
+ }
+}
 function frontierAccessReason(type,x,y,ignoreId){
- const key=[type,x,y,ignoreId,S.buildings.length,uid].join(':');
+ const key=[type,x,y,ignoreId,approachStamp(),waterCount(),uid].join(':');
  if(frontierAccessCache?.state===S&&frontierAccessCache.key===key)return frontierAccessCache.reason;
  const t=TYPES[type],anchor=S.buildings.find(b=>b.type==='lander');
- if(!anchor)return '';
+ if(!anchor||!t)return '';
  const port=b=>{const d=FarwakeBuildings.entrance(b);return d?{x:b.x+Math.floor((d.x+d.w/2)/32),y:b.y+b.h}:null};
- const start=port(anchor),blocked=(xx,yy)=>xx>=x&&xx<x+t.w&&yy>=y&&yy<y+t.h;
+ const start=port(anchor);if(!start)return '';
+ const blocked=(xx,yy)=>xx>=x&&xx<x+t.w&&yy>=y&&yy<y+t.h;
  const pass=(xx,yy)=>inMap(xx,yy)&&terrain[index(xx,yy)].kind!=='water'&&!S.buildings.some(b=>b.id!==ignoreId&&!['path','road'].includes(b.type)&&xx>=b.x&&xx<b.x+b.w&&yy>=b.y&&yy<b.y+b.h);
  const before=surveyDistances(start.x,start.y,pass),after=surveyDistances(start.x,start.y,(xx,yy)=>!blocked(xx,yy)&&pass(xx,yy));
  let reason='';const next=port({type,x,y,w:t.w,h:t.h});
@@ -729,7 +770,11 @@ function frontierAccessReason(type,x,y,ignoreId){
  for(const b of S.buildings){
   if(reason||b.id===ignoreId)continue;const d=port(b);
   if(d&&before[index(d.x,d.y)]>=0&&after[index(d.x,d.y)]<0)reason='This would cut off '+facilityName(b)+'. Leave a connected route.';
-  if(b.type==='supplies'){
+  if(!reason&&!b.finished&&!['path','road'].includes(b.type)){
+   const around=neighborGoals(b.x,b.y,b.w,b.h);
+   if(around.some(q=>before[index(q.x,q.y)]>=0)&&!around.some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='This would cut off '+facilityName(b)+'. Leave a connected route.';
+  }
+  if(!reason&&b.type==='supplies'){
    const around=neighborGoals(b.x,b.y,b.w,b.h);
    if(around.some(q=>before[index(q.x,q.y)]>=0)&&!around.some(q=>!blocked(q.x,q.y)&&after[index(q.x,q.y)]>=0))reason='This would cut off the supply pallet. Leave a hauling route.';
   }
