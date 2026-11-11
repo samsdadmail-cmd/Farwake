@@ -1,13 +1,15 @@
 // node tests/housing.cjs
 const vm=require('node:vm'), fs=require('node:fs'), assert=require('node:assert/strict');
-// housing.inc.js reads FRONTIER_BUILDINGS, which frontier.inc.js installs on the
-// real page. This harness only evaluates buildings.js, doors.js and housing.inc.js.
-// On foundations-command-center, housingBeds still used a shelter/camp ternary and
-// this file passed. On integration, housingPermanent throws
-// ReferenceError: FRONTIER_BUILDINGS is not defined before any assertion runs.
-// An empty table keeps those founding-structure assertions on shelter and camp.
-const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),FRONTIER_BUILDINGS:{}});
+// housing.inc.js reads FRONTIER_BUILDINGS from the page global. frontier.inc.js
+// defines that table and then touches TYPES, MATERIALS, and other page state, so
+// this sandbox evaluates only the object literal.
+const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
 const read=file=>fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8');
+const frontier=read('frontier.inc.js');
+const tableStart=frontier.indexOf('const FRONTIER_BUILDINGS=');
+const tableEnd=frontier.indexOf('const FRONTIER_MATERIALS=');
+if(tableStart<0||tableEnd<tableStart) throw new Error('FRONTIER_BUILDINGS table not found');
+vm.runInContext(frontier.slice(tableStart,tableEnd)+'\nglobalThis.FRONTIER_BUILDINGS=FRONTIER_BUILDINGS;',context);
 for(const file of ['buildings.js','doors.js']){vm.runInContext(read(file),context);Object.assign(context,context.window)}
 vm.runInContext(read('housing.inc.js'),context);
 const {FarwakeBuildings:art,FarwakeDoors:doors}=context;
@@ -48,4 +50,15 @@ home.editOrder={kind:'demolish'};context.housingRelease(home);context.housingAll
 const unsecured=context.S.colonists.find(c=>!c.home);
 assert.ok(context.housingRestTarget(unsecured).outdoors);
 context.housingRecovery(unsecured,1);assert.equal(unsecured.energy,2.1);assert.ok(unsecured.mood<50);
-console.log('15 structure classifications, shared indoor routing, pallet cargo migration, capacity, swaps, decommissioning and outdoor recovery passed.');
+const cabin={type:'cabin',id:11,x:4,y:4,w:3,h:2,finished:true};
+const outpost={type:'outpost',id:12,x:8,y:4,w:3,h:2,finished:true,level:1};
+assert.equal(context.FRONTIER_BUILDINGS.cabin.beds,4);
+assert.equal(context.FRONTIER_BUILDINGS.cabin.comfort,1.2);
+assert.equal(context.FRONTIER_BUILDINGS.outpost.temporary,true);
+assert.equal(context.housingBeds(cabin),4);
+assert.equal(context.housingPermanent(cabin),true);
+assert.equal(context.housingBeds(outpost),4);
+assert.equal(context.housingPermanent(outpost),false);
+outpost.level=2;
+assert.equal(context.housingBeds(outpost),5);
+console.log('15 structure classifications, shared indoor routing, pallet cargo migration, capacity, swaps, decommissioning, outdoor recovery, and cabin/outpost beds passed.');

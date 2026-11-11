@@ -24,14 +24,25 @@ const REQUIRED = new Set([
   'foundations.html',
   'frontier-tech.html',
   'frontier-industry.html',
-  'frontier-planet.html'
+  'frontier-planet.html',
+  'research.html',
+  'candidate.html'
 ]);
+// Placeholder ids are not GitHub issues. Titles for Kyle are in the PR body.
+// A KNOWN file that starts passing fails this run so the entry is removed.
 const KNOWN = {
-  'research.html': 'research("energy") starts a study and does not insert the id immediately. frontier-tech.html covers the study path and passed.',
-  'frontier-town.html': 'An upgraded cabin resident never reaches an indoor rest visit. doors.js has no cabin activity, so this matches the missing frontier door admission.',
-  'candidate.html': 'The stores ledger now includes frontier materials, so the five-row inventory fit check fails at 375×667.',
-  'living.html': 'The engineer enters the workshop, then alloy does not rise inside this check\'s window. production.html still passes staffed alloy production.',
-  'check.html': 'Stops inside verifyCandidate on the inventory fit check, so the chained verifyLiving call never starts. living.html runs that check on its own.'
+  'frontier-town.html': {
+    issue: 'QA-PLACEHOLDER-1',
+    title: 'Upgraded cabin residents never go inside'
+  },
+  'living.html': {
+    issue: 'QA-PLACEHOLDER-2',
+    title: 'Living-check workshop does not produce alloy in its window'
+  },
+  'check.html': {
+    issue: 'QA-PLACEHOLDER-3',
+    title: 'Chained check reaches the living-world alloy failure'
+  }
 };
 
 const SUITES = [
@@ -128,10 +139,15 @@ try {
   const passed = results.filter(result => result.status === 'pass').map(result => result.file);
   const failed = results.filter(result => result.status === 'fail');
   console.log(`SUMMARY pass ${passed.length} fail ${failed.length}`);
+  for (const file of passed) {
+    if (!Object.prototype.hasOwnProperty.call(KNOWN, file)) continue;
+    console.log(`UNEXPECTED PASS ${file} ${KNOWN[file].issue} "${KNOWN[file].title}". Remove it from KNOWN.`);
+    exitCode = 1;
+  }
   for (const result of failed) {
     const required = REQUIRED.has(result.file);
-    const known = Object.prototype.hasOwnProperty.call(KNOWN, result.file);
-    console.log(`${required ? 'REQUIRED' : known ? 'KNOWN' : 'UNEXPECTED'} ${result.file}`);
+    const known = KNOWN[result.file];
+    console.log(required ? `REQUIRED ${result.file}` : known ? `KNOWN ${result.file} ${known.issue} "${known.title}"` : `UNEXPECTED ${result.file}`);
     if (required || !known) exitCode = 1;
   }
 } finally {

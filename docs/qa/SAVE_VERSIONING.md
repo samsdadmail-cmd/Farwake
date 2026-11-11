@@ -144,7 +144,33 @@ The same hole exists for two copies that both claim `v: 3`. Frontier goods, site
 
 ## Proposed design
 
-Keep the storage key. Bump the integer `v` only when a future build needs older builds to refuse the blob. Today's binary already refuses anything other than `3` and will not save after that refusal, so the first approved schema change should be `v: 4`. Further additions go through the migration list below rather than another silent extension of `v: 3`.
+A stamp on the same key does not protect a newer save. This build, and every older build, only refuses `v !== 3` when the page is opening. QA reproduced the rest of the hole on the current binary: after a v3 page is already running, `save()`, a `visibilitychange` while hidden, `pagehide`, and the 12-second autosave each replace a `v: 4` blob that was written into `farwake_founders_alpha03_v1`. Those writers never read the key first. Shipping `v: 4` on that same key would still lose the newer expedition to any v3 tab that was already open.
+
+v4 therefore writes a new key and does not write the old one again.
+
+| Key | Who writes it |
+| --- | --- |
+| `farwake_founders_alpha03_v1` | v3 builds only. A v4 build reads it once, during migration, and then never writes it. That string stays as the automatic v3 backup. |
+| `farwake_expedition_v4` | The v4 build's live expedition. Later schemas use `farwake_expedition_vN` for that build's `SAVE_VERSION`, or keep this key and rely on the read-before-write guard below. The guard is required either way. |
+| `farwake_founders_alpha03_v1_migrated_<stamp>` | A second copy of the pre-migration string, made because an already-open v3 tab can still overwrite the original key. Old code does not know this name, so that tab cannot reach it. |
+
+Preferences stay on `farwake_living_preferences`.
+
+### Startup
+
+Read the live key for this build (`farwake_expedition_v4` once that is the current schema).
+
+1. Missing key, and no v3 key either: start a new expedition and write only the live key.
+2. Missing live key, v3 key present: migrate that string in memory (below), write the result to the live key, and leave `farwake_founders_alpha03_v1` byte-for-byte as it was. Also copy that raw string to the `migrated_<stamp>` key before any in-memory change.
+3. Live key present: classify it before any write.
+
+Classification of a stored string:
+
+- **Unparseable.** `JSON.parse` throws, the value is empty, or the result is not a plain object. This is corruption, not a newer save. Do not write the key. Do not call `initial()`. Show the existing recovery sheet, with the download button, and set the do-not-save flag. The raw string stays so the player can export it.
+- **Parseable, `v` not a finite number, or `v` less than 3, or the document fails validation after a migration step.** Same corrupt recovery. Do not guess a version and do not overwrite.
+- **Parseable, `v` a finite number greater than `SAVE_VERSION`.** Newer expedition. Do not write. Enter the lock below. This is not the corrupt-save sheet: the file is readable and belongs to a newer build.
+- **Parseable, `v` equal to `SAVE_VERSION`, and validation passes.** Load it.
+- **Parseable, `v` less than `SAVE_VERSION` but at least 3.** Run the ordered migrations, then write only the live key.
 
 ### Ordered migrations
 
@@ -161,40 +187,49 @@ Rules:
 3. Unknown fields are copied through. A migration may rename or default a field. It may not drop a key it does not recognize.
 4. `frontierMigrate` and the "unfinished blueprint counts as paid" rule become explicit steps, or stay as idempotent load normalization that does not change totals. `freightInit` spilling surplus out of a store is a behavior change and has to be a numbered step the first time it ships, with the pre-step blob backed up.
 5. Seeding sites stays inside the step that introduced them, and it must keep the current `worldVersion` guard so a second load does not move sites.
+6. The v3 to v4 step copies the current fields and sets `v` to 4. That stamp is not what stops old builds. The new key is what stops them. Old builds never look at `farwake_expedition_v4`.
 
-The v3 to v4 step can be a stamp only: set `v` to `4` and leave the current fields in place. That is enough to make this build, and the foundations build, stop overwriting newer saves. Later steps do the real transforms.
+If a step throws, do not write the live key. The v3 key and the `migrated_<stamp>` copy are already the pre-step text. Set the do-not-save flag and show recovery. Do not autosave a half-migrated object.
 
-### Backup before any rewrite
+### Read-before-write guard, v4 and later
 
-Before the first step, copy the raw string to `farwake_founders_alpha03_v1_before_migration_<from>_to_<SAVE_VERSION>_<stamp>`. If a step throws, write that raw string back to the main key, set the same do-not-save flag recovery uses, and show recovery. Do not autosave a half-migrated object.
+This guard applies to the live key only. v4 code has no writer for `farwake_founders_alpha03_v1`.
 
-This is the same idea as the import backup, applied to ordinary loads. Today's load can change stock and add frontier fields and then autosave with no copy of the previous text.
+After a successful load, remember `loadedStamp`. Every attempt to save, including `pagehide`, hidden `visibilitychange`, and the 12-second autosave, does this first:
 
-### Downgrade guard
+1. Read the live key.
+2. Unparseable, empty, or not a plain object: do not write. Enter the corrupt recovery lock.
+3. `stored.v` is a finite number greater than `SAVE_VERSION`: do not write. Enter the newer-expedition lock.
+4. `stored.stamp` is present and is neither `loadedStamp` nor the stamp this page last wrote: another tab owns the key. Do not write. Enter the newer-expedition lock. The other document may be the same version; the player still has progress that this tab must not discard.
+5. Otherwise write the live key with `v: SAVE_VERSION` and a new `stamp`.
 
-Hold two values in memory after a successful load: `loadedVersion` and `loadedStamp`. Every `save()`, including `pagehide` and the 12-second autosave, does this first:
+### Newer-expedition lock
 
-1. Read the current key. If it is missing, write as usual.
-2. If it parses and `stored.v > SAVE_VERSION`, return without writing.
-3. If it parses and `stored.stamp` is present and is neither `loadedStamp` nor the stamp this page last wrote, return without writing. Another tab owns the key.
-4. Write the new blob with `v: SAVE_VERSION` and a new `stamp`.
+The lock is a sheet titled "Newer expedition", separate from "Expedition needs recovery". It names the stored version and this build's version, offers the download button for the stored string, and has no "start a new world" action.
 
-Startup already covers "the key was newer when we opened." The read-before-write covers "the key became newer while we were open." A failed comparison must not clear the key and must not show a new world over it. Show a distinct "newer expedition" sheet rather than the corrupt-save recovery sheet, and keep the download button.
+Entering the lock:
 
-`importedNavigation` remains the flag for "this page must not save," including recovery, a rejected import reload, and a refused downgrade.
+- Sets the do-not-save flag checked by `save()`, `pagehide`, `visibilitychange`, and the frame autosave.
+- Stops the frame loop. The colony on screen is paused. Further ticks do not run, because those ticks would be progress the game can no longer keep.
+- Leaves both keys unchanged.
+
+`window` listens for `storage`. That event fires in the other tabs when one tab writes `localStorage`. If `event.key` is the live key, or the v3 key while a migration is in progress, the listener re-reads that string and runs the same classification. A newer version, a foreign stamp, or an unparseable write enters the matching lock immediately. The tab does not wait for the next autosave and then drop the player's work on the floor.
+
+The same listener is how a v4 tab notices a second v4 tab. It is not how a v3 tab is stopped. A v3 tab has no listener and no new-key writer. Its saves can still replace `farwake_founders_alpha03_v1`. They cannot replace `farwake_expedition_v4` or the `migrated_<stamp>` copy.
 
 ### What this design does not do
 
-It does not make builds that are already in players' hands refuse a current v3 blob. Those builds only learn about the guard when a future file uses `v >= 4`. Until that bump ships, a foundations-era page can still open and resave a frontier colony.
+It does not change builds that are already installed. Those builds keep writing the v3 key only. A v3 tab that is open during migration can still overwrite that one key. The live expedition and the `migrated_<stamp>` copy are the records it cannot reach.
 
-It does not add a one-click restore for `_before_import_` or `_before_migration_` keys. That can be a separate UI change. The backups have to exist first.
+It does not add a one-click restore. The player re-imports a downloaded backup. The keys have to exist first.
 
 It does not change `farwake_living_preferences`.
 
 ## Suggested tests once Kyle approves an implementation
 
-- A v3 fixture migrates to the current `v` in order, and a second load does not move sites or change stock totals.
-- A blob with `v` above the build opens the newer-save sheet and is byte-for-byte unchanged after `pagehide`.
-- After a successful load, replacing the key with a higher `v` and then calling `save()` leaves the higher blob in place.
-- A thrown migration restores the backup key and does not autosave.
+- A v3 fixture is migrated onto `farwake_expedition_v4`, and `farwake_founders_alpha03_v1` is byte-for-byte unchanged. A second load does not move sites or change stock totals.
+- An unparseable live key opens corrupt recovery, and `pagehide` leaves the raw string in place.
+- A live key with `v` above this build opens the newer-expedition sheet, the frame loop is stopped, and `save()`, hidden `visibilitychange`, and `pagehide` leave the string in place.
+- A `storage` event for the live key with a higher `v` enters that same lock without a reload.
+- A thrown migration does not write the live key.
 - The full-store and carried-alloy fixtures in `tests/fixtures/saves/` still reload without recovery.

@@ -10,10 +10,10 @@ async function verifyCandidate(frame) {
    frame.width=width;frame.height=height;
    await new Promise(resolve=>setTimeout(resolve,120));
    click('[data-nav="build"]');
-   check(d.querySelectorAll('[data-build]').length>=9&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalog fits '+width+'×'+height);
+   check(d.querySelectorAll('[data-build]').length===27&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalog lists 27 blueprints (9 founding + 18 frontier) and fits '+width+'×'+height);
    click('[data-sheet="close"]');
    click('[data-resource-open]');
-   check(d.querySelectorAll('.ledger tbody tr').length===5&&d.querySelector('table').getBoundingClientRect().right<=width,'inventory fits '+width+'×'+height);
+   check(d.querySelectorAll('.ledger tbody tr').length===12&&d.querySelector('table').getBoundingClientRect().right<=width,'inventory lists 12 materials (5 founding + 7 frontier) and fits '+width+'×'+height);
    click('[data-sheet="close"]');
  }
  click('[data-nav="build"]');click('[data-build="shed"]');
@@ -31,8 +31,11 @@ async function verifyCandidate(frame) {
  check(advance(()=>s.colonists.some(p=>p.carry?.kind==='wood')),'hauler picks up timber');
  check(advance(()=>s.resources.wood===initialWood+6),'timber delivered into storage');
  s.resources.knowledge=40;
- click('[data-nav="more"]');click('[data-open="research"]');click('#sectionview [data-id="energy"]');
- check(s.research.includes('energy'),'research unlocks grid storage');
+ click('[data-nav="more"]');click('[data-open="research"]');click('#sectionview [data-tech-detail="energy"]');
+ click('[data-tech-start="energy"]');
+ check(game.frontierState().research?.id==='energy'&&!s.research.includes('energy'),'energy research enters a study');
+ game.frontierStudy(game.frontierState().research.effort);
+ check(s.research.includes('energy'),'completed energy study unlocks grid storage');
  game.save();
  const saved=JSON.parse(w.localStorage.getItem('farwake_founders_alpha03_v1'));
  check(saved.buildings.some(b=>b.type==='shed'&&b.finished)&&saved.harvested.includes(tree.id)&&saved.research.includes('energy'),'save retains building, harvest and research');

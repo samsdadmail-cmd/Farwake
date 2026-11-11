@@ -4,7 +4,12 @@ test('boots, exposes FARWAKE_TEST, and advances 600 ticks without console errors
   const errors = [];
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
   page.on('console', message => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    const text = message.text();
+    if (message.type() === 'error') errors.push(`console: ${text}`);
+    // save() warns "Save failed", import warns "Import failed", and load() warns the
+    // exception object. The game has no other console.warn, so any warning is a
+    // save/load failure.
+    if (message.type() === 'warning') errors.push(`warn: ${text}`);
   });
   await page.goto('/index.html');
   await page.waitForFunction(() => window.FARWAKE_TEST && window.FARWAKE_TEST.state && window.FARWAKE_TEST.state.v === 3);

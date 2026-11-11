@@ -158,6 +158,136 @@ test.describe('v3 save fixtures', () => {
     await expect(recoveryVisible(page)).toHaveCount(0);
   });
 
+  for (const name of ['fresh', 'mid', 'late']) {
+    test(`${name} round-trips through save()`, async ({page}) => {
+      const raw = readFixture(name);
+      await installSave(page, raw);
+      await openGame(page);
+      await loadedState(page);
+      const first = await page.evaluate(key => {
+        window.FARWAKE_TEST.save();
+        return JSON.parse(localStorage.getItem(key));
+      }, SAVE_KEY);
+      const next = await page.context().newPage();
+      await next.goto('/index.html');
+      await loadedState(next);
+      const second = await next.evaluate(key => {
+        window.FARWAKE_TEST.save();
+        return JSON.parse(localStorage.getItem(key));
+      }, SAVE_KEY);
+      // load() prepends "Expedition resumed" and keeps at most 50 log lines.
+      // Every other field must survive the second load unchanged.
+      const {events: firstEvents, ...firstRest} = first;
+      const {events: secondEvents, ...secondRest} = second;
+      expect(secondRest).toEqual(firstRest);
+      expect(secondEvents[0]).toMatchObject({icon: '✦', message: 'Expedition resumed. Welcome back, Commander.'});
+      expect(secondEvents.slice(1)).toEqual(firstEvents.slice(0, secondEvents.length - 1));
+    });
+  }
+
+  test('autosave, hidden visibility, and pagehide write the expedition', async ({page}) => {
+    await page.clock.install();
+    await page.goto('/index.html');
+    await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+    await page.evaluate(() => { window.FARWAKE_TEST.state.day = 11; });
+    await page.clock.runFor(15000);
+    expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)).day, SAVE_KEY)).toBe(11);
+
+    await page.evaluate(() => { window.FARWAKE_TEST.state.day = 12; });
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)).day, SAVE_KEY)).toBe(12);
+
+    await page.evaluate(() => { window.FARWAKE_TEST.state.day = 13; });
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)).day, SAVE_KEY)).toBe(13);
+  });
+
+  test('corrupt JSON at startup opens recovery and is left in place', async ({page}) => {
+    const raw = '{not json';
+    await installSave(page, raw);
+    await openGame(page);
+    await expect(recoveryVisible(page)).toBeVisible();
+    expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(raw);
+    expect(await page.evaluate(() => window.FARWAKE_TEST.state)).toBeNull();
+  });
+
+  test('an unparseable import does not replace the colony', async ({page}) => {
+    const fresh = readFixture('fresh');
+    await installSave(page, fresh);
+    await openGame(page);
+    await loadedState(page);
+    await page.click('[data-nav="more"]');
+    await page.click('[data-open="operations"]');
+    await page.locator('#import-expedition-file').waitFor({state: 'attached'});
+    await page.setInputFiles('#import-expedition-file', {
+      name: 'broken.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from('{')
+    });
+    await expect(page.locator('#toast')).toBeVisible();
+    const stored = await page.evaluate(key => localStorage.getItem(key), SAVE_KEY);
+    expect(stored).toBe(fresh);
+    await expect(recoveryVisible(page)).toHaveCount(0);
+  });
+
+  test('an import larger than 5 MiB does not replace the colony', async ({page}) => {
+    const fresh = readFixture('fresh');
+    await installSave(page, fresh);
+    await openGame(page);
+    await loadedState(page);
+    await page.click('[data-nav="more"]');
+    await page.click('[data-open="operations"]');
+    await page.locator('#import-expedition-file').waitFor({state: 'attached'});
+    await page.setInputFiles('#import-expedition-file', {
+      name: 'huge.json',
+      mimeType: 'application/json',
+      buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 0x20)
+    });
+    await expect(page.locator('#toast')).toContainText('Backup file is too large.');
+    expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(fresh);
+  });
+
+  test('a v4 import file does not replace the colony', async ({page}) => {
+    const fresh = readFixture('fresh');
+    await installSave(page, fresh);
+    await openGame(page);
+    await loadedState(page);
+    await page.click('[data-nav="more"]');
+    await page.click('[data-open="operations"]');
+    await page.locator('#import-expedition-file').waitFor({state: 'attached'});
+    await page.setInputFiles('#import-expedition-file', {
+      name: 'future.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify({format: 'farwake-expedition-backup', formatVersion: 1, save: {v: 4, seed: 'LATER', day: 2, minute: 10, resources: {}, colonists: [{name: 'N', x: 1, y: 1}], buildings: [], fog: []}}))
+    });
+    await expect(page.locator('#toast')).toContainText('not a compatible FARWAKE Founders save');
+    expect(JSON.parse(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).seed).toBe(JSON.parse(fresh).seed);
+  });
+
+  test('cancelling import confirm leaves the colony in place', async ({page}) => {
+    const fresh = JSON.parse(readFixture('fresh'));
+    const mid = JSON.parse(readFixture('mid'));
+    await installSave(page, JSON.stringify(fresh));
+    await openGame(page);
+    await loadedState(page);
+    await page.click('[data-nav="more"]');
+    await page.click('[data-open="operations"]');
+    await page.locator('#import-expedition-file').waitFor({state: 'attached'});
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.setInputFiles('#import-expedition-file', {
+      name: 'FARWAKE-mid.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify({format: 'farwake-expedition-backup', formatVersion: 1, exportedAt: '2026-11-11T16:00:00.000Z', save: mid}))
+    });
+    const state = await page.evaluate(() => window.FARWAKE_TEST.state);
+    expect(state.buildings.some(building => building.type === 'shelter' && building.finished)).toBe(false);
+    expect(state.day).toBe(fresh.day);
+    expect(await page.evaluate(key => Object.keys(localStorage).some(item => item.includes('_before_import_')), SAVE_KEY)).toBe(false);
+  });
+
   test('a newer version opens recovery and is not overwritten', async ({page}) => {
     const newer = JSON.stringify({
       v: 4,
