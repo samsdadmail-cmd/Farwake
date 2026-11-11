@@ -150,6 +150,12 @@ window.FarwakeHearth = (() => {
     const seed = hash(Number(b.id) || 0) * 11;
     c.save();c.translate(x,y);
     c.drawImage(historyPlate(b, tier),0,0);
+    if(b.type==='lamppost'&&night&&b.powered!==false){
+      const glow=c.createRadialGradient(w*.5,h*.3,1,w*.5,h*.3,42);
+      glow.addColorStop(0,'#ffdb8750');glow.addColorStop(1,'#ffdb8700');
+      c.fillStyle=glow;c.fillRect(-30,-34,w+60,h+60);
+      box(c,w*.5-2,h*.3-2,4,4,'#ffe7ac');
+    }
     if (heating) {
       const stack = window.FarwakeFrontierArt?.chimney?.(b);
       const shelterStyle = Math.abs(b.id || 0) % 4;

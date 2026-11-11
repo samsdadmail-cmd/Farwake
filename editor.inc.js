@@ -198,6 +198,7 @@ function editorPaths(time,left,top,right,bottom){
       ctx.fillRect(x+(dx<0?0:dx>0?20:7),y+(dy<0?0:dy>0?20:7),dx?12:17,dy?12:17);
     }
     if(b.type==='road'){ctx.fillStyle='#bbab79';ctx.fillRect(x+14,y+12,2,7)}
+    FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,{},FieldPreferences.reduced);
     for(let i=0;i<3;i++){ctx.fillStyle=i%2?'#897e69':'#c4b9a0';ctx.fillRect(x+7+Math.floor(hash(b.x,b.y,i)*12),y+9+i*5,4,1);}
   }
 }

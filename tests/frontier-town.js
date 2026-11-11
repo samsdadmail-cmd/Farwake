@@ -33,6 +33,16 @@ async function verifyFrontierTown(frame,out){
  ok(loaded.level===2&&loaded.history.work>0,'upgrade and actual activity history persist');
  g.draw(1000);g.state.minute=1300;g.draw(3000);
  ok(true,'day and night settlement rendering succeeds');
+ const resident=g.state.colonists.find(p=>p.home===home.id);g.state.minute=1300;resident.energy=10;resident.hunger=10;resident.task=null;resident.path=[];
+ for(let n=0;n<3000&&resident.visit?.stage!=='inside';n++){g.tick(.1);g.advanceWorld(.1)}
+ ok(resident.visit?.stage==='inside','nighttime resident physically enters their expanded home');
+ g.advanceWorld(.1);const occupied=w.FarwakeDoors.state(loaded);
+ ok(occupied.occupied>0&&occupied.actions.includes('rest'),'hearth and silhouettes receive real resting occupancy');
+ const hours=loaded.history.residentHours;
+ for(let n=0;n<10;n++){g.tick(.1);g.advanceWorld(.1)}
+ ok(loaded.history.residentHours>hours,'only actual indoor time accumulates residential history');
+ g.state.weather='rain';g.draw(4000);g.save();g.load();
+ ok(g.state.buildings.find(b=>b.id===home.id).history.residentHours>hours,'occupied home history survives rainy-night save/load');
  out.textContent=lines.concat('COMPLETE').join('\n');
  }catch(e){out.textContent=lines.concat('FAILED '+e.stack).join('\n')}
 }

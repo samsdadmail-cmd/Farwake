@@ -225,7 +225,9 @@ function industryDetails(b){
 let frontierInterval=0;
 function frontierTick(step){
  frontierInterval+=step;if(frontierInterval<1)return;frontierInterval%=1;
+ const grid=surveyGrid();
  for(const b of S.buildings){
+  if(b.type==='lamppost')b.powered=grid.supply>=grid.used;
   const h=frontierHistory(b);h.ageDays=Math.max(0,S.day-h.createdDay);
   if(['garden','greenhouse'].includes(b.type))h.harvests=productionRecord(b).cycles||0;
   frontierRequestInputs(b);
@@ -298,7 +300,7 @@ function frontierUpgradeControls(b){
  return '<section class="upgrade-card"><b>Development level '+(b.level||1)+'</b><p>'+ (housingBeds(b)?'Adds a permanent bed and improves rest comfort.':b.type==='shed'||b.type==='warehouse'?'Adds ninety storage units.':b.type==='solar'?'Adds two daytime power.':b.type==='battery'?'Adds sixty energy capacity.':b.type==='clinic'?'Extends nearby rest recovery service.':'Improves equipment for 20% faster production per level.')+'</p><small>'+Object.entries(frontierUpgradeCost(b)).map(([k,n])=>n+' '+MATERIALS[k].name).join(' · ')+'</small><button class="primary" data-upgrade="'+b.id+'" '+(reason?'disabled':'')+'>'+(reason||'Order upgrade')+'</button></section>';
 }
 function frontierCommunityTarget(p){
- if(p.energy<35||p.hunger>60||p.social>62||S.minute<600||S.minute>1260)return null;
+ if(p.energy<35||p.hunger>60||(p.social>62&&!(S.minute>=1110&&p.breakDay!==S.day))||S.minute<600||S.minute>1260)return null;
  const places=S.buildings.filter(b=>b.finished&&!b.editOrder&&FRONTIER_BUILDINGS[b.type]?.community&&S.colonists.filter(z=>z.task?.type==='social'&&z.task.id===b.id).length<4);
  places.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  for(const b of places){const t={type:'social',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};if(setTask(p,t))return t}
@@ -307,7 +309,7 @@ function frontierCommunityTarget(p){
 function frontierSocial(p,work){
  p.social=clamp(p.social+work*4,0,100);p.mood=clamp(p.mood+work*.4,0,100);
  if(p.action<5)return;
- frontierState().socialVisits++;const b=S.buildings.find(b=>b.id===p.task.id);if(b){b.history??={};b.history.visits=(b.history.visits||0)+1}
+ frontierState().socialVisits++;p.breakDay=S.day;const b=S.buildings.find(b=>b.id===p.task.id);if(b){b.history??={};b.history.visits=(b.history.visits||0)+1}
  p.task=null;save();
 }
 function frontierArrivalReason(){
@@ -365,4 +367,17 @@ function frontierRecord(p,t,step){
    if(road?.finished&&['path','road'].includes(road.type))frontierHistory(road).traffic++;
   }
  }
+}
+
+function frontierDistrict(b){
+ const counts={};
+ for(const q of S.buildings)if(q.finished&&Math.hypot(q.x-b.x,q.y-b.y)<8){
+  const kind=housingBeds(q)?'Residential':frontierProducer(q)||q.type==='workshop'?'Industrial':q.type==='garden'?'Agricultural':FRONTIER_BUILDINGS[q.type]?.community?'Community':FRONTIER_BUILDINGS[q.type]?.storage?'Logistics':null;
+  if(kind)counts[kind]=(counts[kind]||0)+1;
+ }
+ const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];return top&&top[1]>=2?top[0]+' neighbourhood':'Frontier settlement';
+}
+function frontierHistoryPanel(b){
+ const h=frontierHistory(b);
+ return '<section class="settlement-history"><span class="smallcaps">'+frontierDistrict(b)+'</span><p>Established Day '+h.createdDay+' · '+h.ageDays+' days in service</p><small>'+Math.floor(h.work)+' work seconds · '+h.residentHours.toFixed(1)+' indoor hours · '+h.harvests+' harvests · '+h.visits+' social visits</small></section>';
 }
