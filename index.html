@@ -237,8 +237,8 @@ function finishGather(f,p){const spec=NATURAL[f.type];if(!spec)return;FarwakeWor
 function queuedWork(){return Object.keys(S.designations||{}).filter(id=>!!featureById(id)).length}
 function cancelDesignation(id){if(!S.designations?.[id])return false;delete S.designations[id];for(const p of S.colonists)if(p.task?.type==='harvest'&&p.task.feature===id){p.task=null;p.path=[];p.action=0;}save();return true}
 function designateFeature(id){const f=featureById(id);if(!f||!fog[index(f.x,f.y)])return false;S.designations??={};if(S.designations[id])return false;S.designations[id]={progress:0};for(const p of S.colonists)if(p.task?.feature===id&&p.task.type!=='harvest'){p.task=null;p.path=[];p.action=0;}dispatchFieldWork();save();return true}
-function harvestTaskFor(p){if(!['auto','gather','build'].includes(p.work))return null;const candidates=features.filter(f=>S.designations?.[f.id]&&fog[index(f.x,f.y)]&&!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='harvest'&&z.task.feature===f.id));candidates.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));for(const f of candidates.slice(0,30)){if(setTask(p,{type:'harvest',feature:f.id,x:f.x,y:f.y}))return p.task;}return null}
-function dispatchFieldWork(){if(!queuedWork())return;const pool=[...S.colonists].filter(p=>p.energy>=32&&p.hunger<67&&!['rest','eat','build','harvest','haul_pickup','haul_dropoff'].includes(p.task?.type)&&['auto','gather','build'].includes(p.work));pool.sort((a,b)=>(a.work==='gather'?-2:0)-(b.work==='gather'?-2:0));for(const p of pool){if(!queuedWork())break;if(harvestTaskFor(p))break}}
+function harvestTaskFor(p){if(!workWeight(p,'gather')||!['auto','gather','build'].includes(p.work))return null;const candidates=features.filter(f=>S.designations?.[f.id]&&fog[index(f.x,f.y)]&&!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='harvest'&&z.task.feature===f.id));candidates.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));for(const f of candidates.slice(0,30)){if(setTask(p,{type:'harvest',feature:f.id,x:f.x,y:f.y}))return p.task;}return null}
+function dispatchFieldWork(){if(!queuedWork())return;const pool=[...S.colonists].filter(p=>workWeight(p,'gather')>0&&p.energy>=32&&p.hunger<67&&!['rest','eat','build','harvest','haul_pickup','haul_dropoff'].includes(p.task?.type)&&['auto','gather','build'].includes(p.work));pool.sort((a,b)=>(a.work==='gather'?-2:0)-(b.work==='gather'?-2:0));for(const p of pool){if(!queuedWork())break;if(harvestTaskFor(p))break}}
 // Include the full illustrated tree canopy above its ground tile in touch targeting.
 function featureFromPoint(pos){const x=Math.floor(pos.x),y=Math.floor(pos.y);let exact=featureAt(x,y);if(exact&&fog[index(exact.x,exact.y)])return exact;
  let best=null,score=Infinity;for(const fy of [y,y+1])for(const fx of [x-1,x,x+1]){const f=featureAt(fx,fy);if(!f||f.type!=='tree'||!fog[index(f.x,f.y)])continue;const dx=pos.x-(f.x+.5),dy=pos.y-(f.y+.10);if(Math.abs(dx)<.48&&dy>-.65&&dy<.47){const s=dx*dx+dy*dy;if(s<score){score=s;best=f}}}return best;
@@ -259,28 +259,39 @@ function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=neighborGoals(
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
  if(p.hunger>67)return{type:'eat',x:30,y:26,w:2,h:2};
- const edit=editorCandidate(p);if(edit)return edit;const construction=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress);if(p.work!=='survey'&&construction.length&&(p.role==='Engineer'||p.role==='Commander'||p.role==='Medic'||p.work==='build')){const q=construction.find(b=>!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='build'&&z.task.id===b.id));if(q)return{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}}
- if(p.work!=='survey'&&harvestTaskFor(p))return p.task;
- if(p.work!=='survey'&&haulTaskFor(p))return p.task;
- const garden=finished('garden');if(garden.length&&(p.role==='Biologist'||p.work==='farm')&&S.resources.food<180)return{type:'farm',id:garden[0].id,x:garden[0].x,y:garden[0].y,w:garden[0].w,h:garden[0].h};
- const workshop=finished('workshop');if(workshop.length&&(p.role==='Engineer'||p.work==='engineer')&&S.resources.ore>=2&&S.resources.scrap>=1&&S.resources.alloy<65)return{type:'craft',id:workshop[0].id,x:workshop[0].x,y:workshop[0].y,w:workshop[0].w,h:workshop[0].h};
- if(p.role==='Surveyor'||p.work==='survey'){const destination=surveyFrontierGoal(p);if(destination)return destination;}
- if(S.resources.scrap<150||p.role==='Commander'||p.work==='gather'){for(const f of nearFeature('scrap',p).filter(f=>!S.designations?.[f.id])){if(!S.colonists.some(z=>z.id!==p.id&&z.task?.feature===f.id))return{type:'gather',feature:f.id,x:f.x,y:f.y}}}
- if(p.role==='Medic')return{type:'research',x:26,y:26,w:3,h:3};
- if(p.role==='Biologist'){for(const f of nearFeature('bush',p).filter(f=>!S.designations?.[f.id]))return{type:'forage',feature:f.id,x:f.x,y:f.y}}
- return{type:'research',x:26,y:26,w:3,h:3};
+ const lanes=[
+  ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
+    const q=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress)[0];
+    return q?{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}:null;
+  }],
+  ['haul',()=>freightPlan(p)],
+  ['gather',()=>harvestTaskFor(p)],
+  ['field',()=>productionCandidate(p,'garden')],
+  ['factory',()=>productionCandidate(p,'workshop')],
+  ['survey',()=>p.role==='Surveyor'||p.work==='survey'?surveyFrontierGoal(p):null],
+  ['research',()=>({type:'research',x:26,y:26,w:3,h:3})]
+ ];
+ const buildFirst=jobs().some(b=>b.buildPriority&&!b.buildPaused)||S.buildings.some(b=>b.editOrder);
+ const ranks={build:6,haul:5,gather:4,field:3,factory:3,survey:2,research:1};
+ lanes.sort((a,b)=>(workWeight(p,b[0])*100+(ranks[b[0]]||0)+(buildFirst&&b[0]==='build'?150:0))-(workWeight(p,a[0])*100+(ranks[a[0]]||0)+(buildFirst&&a[0]==='build'?150:0)));
+ for(const [group,pick] of lanes){
+   if(!workWeight(p,group))continue;
+   if(group==='build'&&!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))continue;
+   const task=pick();if(task)return task;
+ }
+ return null;
 }
+
 function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(p.role==='Surveyor'?2:1.65);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
  if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
- else if(t.type==='farm'&&p.action>7){p.action=0;S.resources.food+=S.research.includes('growth')?11:7;S.resources.food=Math.min(S.resources.food,299);p.mood=Math.min(100,p.mood+.3)}
- else if(t.type==='craft'&&p.action>9){p.action=0;if(S.resources.ore>=2&&S.resources.scrap>=1&&power().supply>=power().used){S.resources.ore-=2;S.resources.scrap-=1;S.resources.alloy+=1;}}
+ else if(t.type==='farm'||t.type==='craft'){performProduction(p,t,work);}
  else if(t.type==='rest'&&p.action>1){housingRecovery(p,work);p.hunger=clamp(p.hunger+work*.1,0,100);if(p.energy>85&&S.minute>=6*60&&S.minute<20*60){p.task=null;}}
  else if(t.type==='eat'&&p.action>2.3){p.action=0;if(freightSpend({food:1})){p.hunger=Math.max(0,p.hunger-70);p.mood=clamp(p.mood+1,0,100)}p.task=null}
- else if(t.type==='research'&&p.action>7.5){p.action=0;S.resources.knowledge+=p.role==='Medic'?2:1;p.mood=clamp(p.mood+.2,0,100);}
+ else if(t.type==='research'&&p.action>7.5){p.action=0;p.task=null;S.resources.knowledge+=p.role==='Medic'?2:1;p.mood=clamp(p.mood+.2,0,100);}
  else if(t.type==='survey'&&p.action>2){p.action=0;reveal(p.x,p.y,4);S.resources.knowledge+=1;S.explore++;p.task=null;}
  else if(t.type==='harvest'){
   const f=featureById(t.feature),order=S.designations?.[t.feature];
@@ -293,7 +304,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed;if(p.path.
  else if(t.type==='forage'&&p.action>4){const f=features.find(f=>f.id===t.feature);p.action=0;if(f)finishGather(f,p);else p.task=null;}
 }
 function updateGoal(){if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
-function tick(dt){if(paused)return;let step=dt*speed;S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
+function tick(dt){if(paused)return;let step=dt*speed;advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
  for(const p of S.colonists){FarwakeDoors.sync(p,S.buildings);p.hunger=clamp(p.hunger+step*.045,0,100);p.social=clamp(p.social-step*.008,5,100);p.mood=clamp(p.mood+(p.energy>40&&p.hunger<70?.004:-.12)*step,0,100);if(p.hunger>=100){p.mood=Math.max(5,p.mood-step*.1);p.energy=Math.max(0,p.energy-step*.07);}if(p.task&&p.task.type==='rest'&&p.energy>80&&S.minute>6*60&&S.minute<20*60)p.task=null;
  if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
  if(S.piles.some(q=>q.site!=null))for(const p of S.colonists)if(p.task?.type==='research'){p.task=null;p.path=[]}
@@ -316,7 +327,7 @@ function disk(x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r,r*.
 function renderBuilding(b,time){
  const x=b.x*TS,y=b.y*TS,w=b.w*TS,h=b.h*TS;
  if(b.finished){
-   FarwakeBuildings.draw(ctx,b.type,x,y,w,h,isNight(),b,FarwakeDoors.state(b));
+   FarwakeBuildings.draw(ctx,b.type,x,y,w,h,isNight(),b,FarwakeDoors.state(b));drawProduction(b,x,y);
    return;
  }
  const progress=clamp(b.progress/TYPES[b.type].time,0,1);
@@ -389,7 +400,7 @@ function refreshInspect(){const el=$('inspector');if(editor){el.innerHTML=editor
  }else el.innerHTML='';}
 function showSheet(html){$('sheet').innerHTML=html;$('sheetbg').classList.add('open')}
 function closeSheet(){$('sheetbg').classList.remove('open');sheetSection=null;renderNavState()}
-function profile(id){const p=S.colonists.find(z=>z.id===id);if(!p)return;const focusOptions=[['auto','Self-direct'],['build','Construction'],['farm','Agriculture'],['engineer','Manufacturing'],['survey','Exploration'],['gather','Salvaging']];showSheet('<div class="row"><div class="smallcaps">EXPEDITION PERSONNEL</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>'+p.name+'</h2><p>'+p.role+' · '+p.trait+' · '+p.ambition+'</p><div class="splitgrid"><div class="infocard"><b>Energy</b><div class="progress"><i style="width:'+Math.round(p.energy)+'%"></i></div><p>'+Math.round(p.energy)+'%</p></div><div class="infocard"><b>Hunger</b><div class="progress"><i style="width:'+(100-Math.round(p.hunger))+'%"></i></div><p>'+Math.round(p.hunger)+'% hungry</p></div><div class="infocard"><b>Morale</b><div class="progress"><i style="width:'+Math.round(p.mood)+'%"></i></div><p>'+Math.round(p.mood)+'%</p></div><div class="infocard"><b>Social comfort</b><div class="progress"><i style="width:'+Math.round(p.social)+'%"></i></div><p>'+Math.round(p.social)+'%</p></div></div><div class="sectioncap" style="margin-top:14px">Work preference (optional)</div><div class="buttongroup">'+focusOptions.map(([k,n])=>'<button class="pill '+(p.work===k?'active':'')+'" data-sheet="work" data-id="'+id+'" data-work="'+k+'">'+n+'</button>').join('')+'</div>'+FarwakeMoments.profile(p)+'<p>Currently: <b>'+taskLabel(p)+'</b>. Your guidance influences priorities, but basic needs still come first. Personality and deeper relationships arrive in the next milestone.</p><button class="primary" style="width:100%" data-sheet="follow" data-id="'+id+'">Follow '+p.name.split(' ')[0]+'</button>')}
+function profile(id){const p=S.colonists.find(z=>z.id===id);if(!p)return;const focusOptions=[['auto','Self-direct'],['build','Construction'],['farm','Agriculture'],['engineer','Manufacturing'],['survey','Exploration'],['gather','Salvaging']];showSheet('<div class="row"><div class="smallcaps">EXPEDITION PERSONNEL</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>'+p.name+'</h2><p>'+p.role+' · '+p.trait+' · '+p.ambition+'</p><div class="splitgrid"><div class="infocard"><b>Energy</b><div class="progress"><i style="width:'+Math.round(p.energy)+'%"></i></div><p>'+Math.round(p.energy)+'%</p></div><div class="infocard"><b>Hunger</b><div class="progress"><i style="width:'+(100-Math.round(p.hunger))+'%"></i></div><p>'+Math.round(p.hunger)+'% hungry</p></div><div class="infocard"><b>Morale</b><div class="progress"><i style="width:'+Math.round(p.mood)+'%"></i></div><p>'+Math.round(p.mood)+'%</p></div><div class="infocard"><b>Social comfort</b><div class="progress"><i style="width:'+Math.round(p.social)+'%"></i></div><p>'+Math.round(p.social)+'%</p></div></div><div class="sectioncap" style="margin-top:14px">Work preference (optional)</div><div class="buttongroup">'+focusOptions.map(([k,n])=>'<button class="pill '+(p.work===k?'active':'')+'" data-sheet="work" data-id="'+id+'" data-work="'+k+'">'+n+'</button>').join('')+'</div>'+housingPerson(p)+personPriorityControls(p)+FarwakeMoments.profile(p)+'<p>Currently: <b>'+taskLabel(p)+'</b>. Your guidance influences priorities, but basic needs still come first. Personality and deeper relationships arrive in the next milestone.</p><button class="primary" style="width:100%" data-sheet="follow" data-id="'+id+'">Follow '+p.name.split(' ')[0]+'</button>')}
 
 function validExpeditionSave(o){
  if(!o||typeof o!=='object'||Array.isArray(o)||o.v!==3||typeof o.seed!=='string'||o.seed.length<1||o.seed.length>100)return false;
@@ -456,8 +467,9 @@ function catalogResults(){const list=$('catalogresults');if(!list)return;const q
 function showCatalog(){sheetSection='build';showSheet(sectionHeader('Blueprint library','CONSTRUCTION')+editorToolbar()+'<p class="screenlede">Select a structure, then place its blueprint directly on the world.</p><label class="searchwrap">'+uiIcon('inspect',17)+'<input id="catalogsearch" type="search" placeholder="Search buildings" autocomplete="off" aria-label="Search blueprints"></label><div class="catalogfilters">'+CATALOG_GROUPS.map(g=>'<button type="button" class="filterchip" data-filter="'+g+'">'+g+'</button>').join('')+'</div><div class="cataloggrid" id="catalogresults"></div><div class="drawerfoot">Colonists construct buildings after you confirm their location.</div>');$('catalogsearch').value=catalogQuery;catalogResults();renderNavState()}
 function openSection(kind){sheetSection=kind;
  if(kind==='preferences'){showSheet(sectionHeader('World settings','EXPEDITION')+FieldPreferences.panel());return}
+ if(kind==='industry'){showIndustry();return}
  if(kind==='build'){showCatalog();return}
- if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['preferences','energy','World settings','Sound, visual detail and dialogue'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
+ if(kind==='more'){showSheet(sectionHeader('More','FARWAKE OPERATIONS')+'<p class="screenlede">Survey records, technology and expedition settings.</p><div class="hublist">'+[['industry','workshop','Work & production','Targets and priorities'],['research','research','Research','Technologies and discoveries'],['world','world','Planet & Survey','World seed and exploration'],['resources','scrap','Resources','Stockpiles, production and power'],['preferences','energy','World settings','Sound, visual detail and dialogue'],['operations','colony','Game & Save','Save, camera and world settings']].map(([k,icon,title,description])=>'<button class="hubitem" data-open="'+k+'"><span class="hubicon">'+uiIcon(icon,20)+'</span><span><b>'+title+'</b><small>'+description+'</small></span><span class="chevron">›</span></button>').join('')+'</div>');renderNavState();return;}
  if(kind==='resources'){const r=S.resources,p=power(),cap=storageCapacity(),used=storedTotal();
  const rows=Object.entries(MATERIALS).map(([id,m])=>
    '<tr><th>'+uiIcon(id,16)+' '+m.name+'</th><td>'+Math.floor(r[id]||0)+'</td><td>'+looseTotal(id)+'</td><td>'+transitTotal(id)+'</td><td><button class="secondary" style="padding:6px;font-size:11px" data-unstore="'+id+'" '+(!(r[id]>0)?'disabled':'')+' aria-label="Move up to ten '+m.name+' outside">Move 10 out</button></td></tr>').join('');
@@ -1020,8 +1032,218 @@ document.addEventListener('click',e=>{
  closeSheet();renderUI(true);save();
 });
 
+// Production records live on the building, so a worker change or save never resets a batch.
+const INDUSTRY_RECIPES = {
+  smelt:{name:'Smelt ore',cost:{ore:2,scrap:1},yield:1,seconds:9},
+  recycle:{name:'Reclaim scrap',cost:{scrap:6},yield:1,seconds:13},
+  precision:{name:'Precision casting',cost:{ore:3,scrap:1},yield:2,seconds:13,tech:'metallurgy'}
+};
+const INDUSTRY_STAGES = {
+  plant:{label:'Planting',seconds:4}, germinate:{label:'Germinating',seconds:15},
+  tend:{label:'Tending seedlings',seconds:3}, grow:{label:'Growing',seconds:22},
+  harvest:{label:'Harvesting ripe crops',seconds:5}
+};
+function industryPolicy(){
+  if(!S.industry) S.industry={};
+  const c=S.industry;
+  c.targets??={wood:0,ore:0,scrap:150,food:180,alloy:65};
+  c.weights??={field:1,factory:1,gather:1};
+  c.harvests??=0;c.batches??=0;
+  return c;
+}
+function productionRecord(b){
+  return b.production??=(b.type==='garden'
+    ? {stage:'plant',elapsed:0,cycles:0,output:0}
+    : {recipe:'smelt',elapsed:0,cycles:0,output:0});
+}
+function industryOwned(kind){return (S.resources[kind]||0)+looseTotal(kind)+transitTotal(kind)}
+function industryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
+function chosenRecipe(r){return INDUSTRY_RECIPES[r.recipe]||INDUSTRY_RECIPES.smelt}
+function cropYield(){return S.research.includes('growth')?11:7}
+function cropDuration(stage){
+  const growing=stage==='germinate'||stage==='grow';
+  return INDUSTRY_STAGES[stage].seconds*(growing&&S.research.includes('irrigation')?.7:1);
+}
+function cropNeedsWorker(stage){return !['grow','germinate'].includes(stage)}
+function productionBlock(b){
+  if(!b.finished||b.editOrder)return 'Unavailable during construction or dismantling';
+  const r=productionRecord(b),kind=b.type==='garden'?'food':'alloy';
+  if(r.paused)return 'Paused by colony order';
+  if(industryOwned(kind)>=industryPolicy().targets[kind])return 'Colony stock target reached';
+  if(b.type==='garden')return '';
+  const recipe=chosenRecipe(r);
+  if(industryOwned('alloy')+recipe.yield>industryPolicy().targets.alloy)return 'Next batch would exceed target';
+  const grid=power();
+  if(grid.supply<grid.used)return 'Insufficient grid power';
+  for(const [k,amount] of Object.entries(recipe.cost))if((S.resources[k]||0)<amount)return 'Needs '+amount+' stored '+MATERIALS[k].name.toLowerCase();
+  return '';
+}
+function productionWorkers(b){return S.colonists.filter(p=>p.task?.id===b.id&&['farm','craft'].includes(p.task.type))}
+function industrySummary(b){
+  if(!['garden','workshop'].includes(b.type))return '';
+  const blocked=productionBlock(b);if(blocked)return blocked;
+  const r=productionRecord(b),worker=productionWorkers(b)[0];
+  if(b.type==='garden'&&!cropNeedsWorker(r.stage))return INDUSTRY_STAGES[r.stage].label;
+  if(!worker)return 'Waiting for '+(r.worker?S.colonists.find(p=>p.id===r.worker)?.name||'assigned worker':'an available worker');
+  return worker.path.length?'Worker approaching':(b.type==='garden'?INDUSTRY_STAGES[r.stage].label:'Manufacturing')+' · '+worker.name;
+}
+function productionWeight(p,b){
+  const isFarm=b.type==='garden',group=isFarm?'field':'factory',r=productionRecord(b);
+  if(r.worker&&r.worker!==p.id)return 0;
+  if(r.worker===p.id)return 100;
+  if(p.work==='survey')return 0;
+  const personal=p.workWeights?.[group]??1,colony=industryPolicy().weights[group]??1;
+  if(!personal||!colony)return 0;
+  const adept=isFarm?p.role==='Biologist'||p.work==='farm':p.role==='Engineer'||p.work==='engineer';
+  if(!adept&&personal===1&&colony===1)return 0;
+  return personal*colony*(adept?2:1);
+}
+function productionCandidate(p,type){
+  const choices=[];
+  for(const b of S.buildings){
+    if((type&&b.type!==type)||!['garden','workshop'].includes(b.type)||!b.finished||b.editOrder)continue;
+    const r=productionRecord(b),weight=productionWeight(p,b);
+    if(!weight||productionBlock(b)||b.type==='garden'&&!cropNeedsWorker(r.stage))continue;
+    if(productionWorkers(b).some(worker=>worker.id!==p.id))continue;
+    choices.push({b,rank:weight*100-Math.hypot(b.x-p.x,b.y-p.y)});
+  }
+  choices.sort((a,b)=>b.rank-a.rank);
+  for(const {b} of choices){
+    const task={type:b.type==='garden'?'farm':'craft',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h};
+    if(setTask(p,task))return task;
+  }
+  return null;
+}
+function nextCrop(r,stage){r.stage=stage;r.elapsed=0}
+function advanceCrops(step){
+  for(const b of S.buildings){
+    if(!b.finished||b.type!=='garden'||b.editOrder)continue;
+    const r=productionRecord(b);
+    if(r.paused||cropNeedsWorker(r.stage))continue;
+    r.elapsed+=step;
+    if(r.elapsed>=cropDuration(r.stage))nextCrop(r,r.stage==='grow'?'harvest':'tend');
+  }
+}
+function performProduction(p,t,work){
+  const b=S.buildings.find(b=>b.id===t.id);
+  if(!b||productionBlock(b)||!productionWeight(p,b)){p.task=null;return}
+  const r=productionRecord(b);
+  if(b.type==='garden'){
+    if(!cropNeedsWorker(r.stage)){p.task=null;return}
+    r.elapsed+=work;
+    if(r.elapsed<cropDuration(r.stage))return;
+    if(r.stage==='plant')nextCrop(r,'germinate');
+    else if(r.stage==='tend')nextCrop(r,'grow');
+    else{
+      // Ripe food waits on the bed if there is less demand than a full harvest.
+      r.ripe??=cropYield();
+      const n=Math.min(r.ripe,Math.max(0,industryPolicy().targets.food-industryOwned('food')));
+      if(n){freightOutput('food',n,b);r.output+=n;r.ripe-=n}
+      if(!r.ripe){delete r.ripe;nextCrop(r,'plant');r.cycles++;industryPolicy().harvests++}
+    }
+  }else{
+    const recipe=chosenRecipe(r);
+    r.elapsed+=work;if(r.elapsed<recipe.seconds)return;
+    if(!freightSpend(recipe.cost)){p.task=null;return}
+    freightOutput('alloy',recipe.yield,b);
+    r.output+=recipe.yield;r.elapsed=0;r.cycles++;industryPolicy().batches++;
+  }
+  p.task=null;p.action=0;
+}
+let nextAutoGather=-Infinity;
+function advanceGatherTargets(step){
+  const c=industryPolicy();nextAutoGather-=step;
+  if(nextAutoGather>0)return;nextAutoGather=5;
+  if(!c.weights.gather||!S.colonists.some(p=>['auto','gather','build'].includes(p.work)))return;
+  const anchor=S.buildings.find(b=>b.type==='supplies')||S.colonists[0];
+  if(!anchor)return;
+  for(const [kind,type] of [['wood','tree'],['ore','ore'],['scrap','scrap']]){
+    const committed=Object.keys(S.designations||{}).filter(id=>featureById(id)?.type===type).length*NATURAL[type].amount;
+    if(industryOwned(kind)+committed>=c.targets[kind])continue;
+    const candidates=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]&&!S.designations[f.id]).sort((a,b)=>Math.hypot(a.x-anchor.x,a.y-anchor.y)-Math.hypot(b.x-anchor.x,b.y-anchor.y));
+    for(const f of candidates.slice(0,18)){
+      const goals=neighborGoals(f.x,f.y);
+      if(!S.colonists.some(p=>goals.some(g=>Math.floor(p.x)===g.x&&Math.floor(p.y)===g.y)||findPath(p.x,p.y,goals).length))continue;
+      S.designations[f.id]={progress:0,automatic:true};
+      break;
+    }
+  }
+}
+function drawProduction(b,x,y){
+  if(b.type!=='garden'||!b.finished)return;
+  const r=productionRecord(b), stage=r.stage;
+  for(let row=0;row<3;row++){
+    const y0=y+6+row*18;
+    rect(x+9,y0+2,66,10,'#564133');
+    for(let i=0;i<9;i++){
+      const px=x+11+i*7,py=y0+7+(i%2);
+      rect(px,py,5,1,'#795743');
+      if(stage==='plant'&&i>Math.floor(r.elapsed*2))continue;
+      rect(px+2,py-1,2,2,'#9f975e');
+      if(stage==='plant')continue;
+      const fraction=r.elapsed/cropDuration(stage);
+      const size=stage==='germinate'?1+Math.min(2,Math.floor(fraction*3)):stage==='tend'?3:stage==='grow'?3+Math.min(3,Math.floor(fraction*4)):6;
+      rect(px+2,py-size,2,size,'#8da26a');rect(px,py-size+1,3,2,'#61916a');
+      if(size>3)rect(px+3,py-size,3,2,'#acba71');
+      if(stage==='harvest')rect(px+1,py-3,3,2,'#cf8959');
+    }
+  }
+}
+function industrySelect(name,value,options,attributes=''){
+ return '<select class="field" '+attributes+' aria-label="'+name+'">'+options.map(([v,label])=>'<option value="'+v+'" '+(String(v)===String(value)?'selected':'')+'>'+label+'</option>').join('')+'</select>';
+}
+function industryDetails(b){
+ if(!['garden','workshop'].includes(b.type))return '';
+ const r=productionRecord(b),recipe=chosenRecipe(r),duration=b.type==='garden'?cropDuration(r.stage):recipe.seconds;
+ return '<section class="infocard"><b>'+esc(industrySummary(b))+'</b><div class="progress"><i style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
+ '<p>'+(b.type==='garden'?'Plant → germinate → tend → grow → harvest · '+cropYield()+' food per full crop':recipe.name+' · '+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+recipe.yield+' alloy · 3 power demand')+'</p>'+
+ '<p>'+r.cycles+' cycles completed · '+r.output+' units produced</p>'+
+ '<button class="secondary" data-industry-pause="'+b.id+'">'+(r.paused?'Resume':'Pause')+' production</button>'+
+ (b.type==='workshop'?'<label>Recipe'+industrySelect('Workshop recipe',r.recipe,industryRecipes().map(([k,v])=>[k,v.name]),'data-industry-recipe="'+b.id+'"')+'</label>':'')+
+ '<label>Assigned worker'+industrySelect('Assigned worker',r.worker||'', [['','Any available specialist'],...S.colonists.map(p=>[p.id,p.name])],'data-industry-worker="'+b.id+'"')+'</label></section>';
+}
+const workGroups={build:'Construction',haul:'Hauling',gather:'Field resources',field:'Agriculture',factory:'Manufacturing',research:'Research',survey:'Survey'};
+function personPriorityControls(p){
+ return '<details><summary>Personal work priorities</summary>'+Object.entries(workGroups).map(([k,n])=>'<label class="work-control">'+n+industrySelect(n,p.workWeights?.[k]??1,[[0,'Disabled'],[1,'Normal'],[2,'High'],[3,'Urgent']],'data-work-person="'+p.id+'" data-work-group="'+k+'"')+'</label>').join('')+'</details>';
+}
+function industryPanel(){
+ const c=industryPolicy();
+ return '<p>Basic needs take precedence. Priorities direct available workers. Targets include stored, loose and carried supplies.</p><h3>Resource targets</h3>'+
+ Object.entries(c.targets).map(([k,n])=>'<label class="work-control">'+MATERIALS[k].name+'<input class="field" style="width:90px" aria-label="'+MATERIALS[k].name+' target" type="number" min="0" max="9999" step="1" value="'+n+'" data-industry-target="'+k+'"></label>').join('')+
+ '<h3>Colony priorities</h3>'+Object.entries(workGroups).map(([k,n])=>'<label class="work-control">'+n+industrySelect(n,c.weights[k]??1,[[0,'Disabled'],[1,'Normal'],[2,'High'],[3,'Urgent']],'data-colony-weight="'+k+'"')+'</label>').join('')+
+ '<h3>Production facilities</h3>'+S.buildings.filter(b=>['garden','workshop'].includes(b.type)).map(b=>'<button class="hubitem" data-facility="'+b.id+'"><span>'+uiIcon(b.type,20)+'</span><span><b>'+TYPES[b.type].name+'</b><small>'+esc(industrySummary(b))+'</small></span></button>').join('');
+}
+function showIndustry(){sheetSection='industry';showSheet(sectionHeader('Work & production','COLONY ORDERS')+industryPanel());renderNavState()}
+function workWeight(p,group){
+ const weights=industryPolicy().weights;
+ if(p.work==='survey'&&group!=='survey')return 0;
+ return (p.workWeights?.[group]??1)*(weights[group]??1);
+}
+function interruptAvailable(){
+ for(const p of S.colonists)if(['research','farm','craft'].includes(p.task?.type)){p.task=null;p.path=[];p.action=0}
+}
+document.addEventListener('change',e=>{
+ const el=e.target, c=industryPolicy();
+ if(el.dataset.industryTarget){
+   const n=Number(el.value);if(Number.isFinite(n))c.targets[el.dataset.industryTarget]=clamp(Math.floor(n),0,9999);
+ }else if(el.dataset.colonyWeight)c.weights[el.dataset.colonyWeight]=clamp(+el.value,0,3);
+ else if(el.dataset.workPerson){const p=S.colonists.find(p=>p.id===+el.dataset.workPerson);if(p){p.workWeights??={};p.workWeights[el.dataset.workGroup]=clamp(+el.value,0,3)}}
+ else if(el.dataset.industryWorker||el.dataset.industryRecipe){
+   const b=S.buildings.find(b=>b.id===+(el.dataset.industryWorker||el.dataset.industryRecipe));if(!b)return;
+   const r=productionRecord(b);
+   if(el.dataset.industryWorker)r.worker=+el.value||null;
+   else if(industryRecipes().some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;}
+ }else return;
+ interruptAvailable();save();
+});
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-industry-pause]');if(!el)return;
+ const b=S.buildings.find(b=>b.id===+el.dataset.industryPause);if(!b)return;
+ const r=productionRecord(b);r.paused=!r.paused;interruptAvailable();save();showBuilding(b.id);
+});
+
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

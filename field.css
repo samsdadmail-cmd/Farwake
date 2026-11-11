@@ -31,3 +31,16 @@ button:focus-visible,input:focus-visible{outline:2px solid #f8d399;outline-offse
 .preferences [aria-pressed=true]{background:#d4aa72;color:#171916}
 .preferences .pill{min-height:44px}.preferences label{display:flex;align-items:center;justify-content:space-between;height:46px}.preferences input{width:62%;accent-color:#d4aa72}
 @media(prefers-reduced-motion:no-preference){.sheetbg.open .sheet{animation:open-journal .18s ease-out}@keyframes open-journal{from{opacity:.5;transform:translateY(7px)}}}
+.command-stats,.command-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px}
+.command-stats{margin:16px 0;background:#4a493c;border:1px solid #4a493c}
+.command-stats>div{background:#252823;padding:11px;display:grid;gap:2px}
+.command-stats small,.guide-entry small{font:10px ui-monospace,monospace;color:#d9ba89;text-transform:uppercase;letter-spacing:.08em}
+.command-stats strong{font:25px Georgia,serif;color:#f1ecde}.command-stats span,.command-link small{color:#b7bbaf;font-size:11px}
+.command-alert,.facility-readout{border-left:2px solid #b99863;background:#302f26;padding:12px;margin:10px 0;color:#e3d6b8;font-size:12px;line-height:1.6}
+.command-links{gap:6px;margin-bottom:20px}.command-link{display:flex;align-items:center;text-align:left;gap:9px;padding:10px 8px;background:#2a2c27;border:1px solid #42443b;border-radius:4px;min-height:56px}
+.command-link>span:first-child{color:#c9ac7c}.command-link b,.command-link small{display:block}.command-link b{font-size:13px}
+.facility-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:8px 0 16px}.facility-list button{background:transparent;color:inherit;display:flex;align-items:center;gap:8px;text-align:left;border:0;border-bottom:1px solid #ffffff20;padding:12px 3px}.facility-list small{margin-left:auto;color:#b7baaa}
+.guide-entry{border-bottom:1px solid #ffffff24;padding:12px 0}.guide-entry h3{font:19px Georgia,serif;margin:4px 0}.guide-entry p{margin:0}.sheet .searchwrap{margin-top:10px}
+@media(min-width:680px){.command-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.work-control{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #ffffff16;font-size:12px}.work-control .field{width:43%;flex:none}
+.sheet select,.sheet input,.sheet button{max-width:100%}details{margin:10px 0}summary{cursor:pointer;min-height:40px;padding:10px 0;font-weight:600}
