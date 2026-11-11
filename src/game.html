@@ -81,7 +81,7 @@
 <script>
 'use strict';
 (()=>{
-const VW=56,VH=56,TS=32, SAVE='farwake_founders_alpha03_v1', canvas=document.getElementById('world'),ctx=canvas.getContext('2d',{alpha:false});
+const VW=56,VH=56,TS=32, SAVE='farwake_founders_alpha03_v1', SAVE_VERSION=3, SAVE_WRITER=SAVE+'_writer', canvas=document.getElementById('world'),ctx=canvas.getContext('2d',{alpha:false});
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mod=(x,n)=>(x%n+n)%n;
 const ROLE={Commander:'Leadership',Engineer:'Construction',Biologist:'Agriculture',Medic:'Healthcare',Surveyor:'Exploration'};
 const PROFILES=[{name:'Aya Mercer',role:'Commander',hue:'#ffc79e',hair:'#302c37',coat:'#ecb872',trait:'Steadfast',ambition:'Build a lasting home'},{name:'Tomas Venn',role:'Engineer',hue:'#ffd2af',hair:'#544031',coat:'#8db8d0',trait:'Inventive',ambition:'Power the first town'},{name:'Mira Solis',role:'Biologist',hue:'#e3a983',hair:'#252b29',coat:'#abcb88',trait:'Patient',ambition:'Grow a thriving garden'},{name:'Ivo Chen',role:'Medic',hue:'#f1c5a3',hair:'#463e44',coat:'#d6a8c5',trait:'Compassionate',ambition:'Keep the expedition safe'},{name:'Nell Ardent',role:'Surveyor',hue:'#d1a282',hair:'#c2a474',coat:'#e5bb83',trait:'Curious',ambition:'Chart the unknown'}];
@@ -159,11 +159,42 @@ function initial(seed){editor=null;FarwakeWorkFX.reset();S={v:3,seed,day:1,minut
 function log(icon,message){if(!S)return;S.events.unshift({icon,message,day:S.day,time:timeString()});if(S.events.length>50)S.events.length=50;if(S.events.length>2)notice(message);}
 function timeString(){let n=Math.floor(S.minute)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function notice(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.remove('show'),2400)}
-let importedNavigation=false;
-function save(){if(!S||importedNavigation)return;try{const clean={...S,colonists:S.colonists.map(p=>({...p,path:[],task:null,action:0,indoorStay:FarwakeDoors.saveVisit(p)})),fog:fog.map(x=>x?1:0),uid};localStorage.setItem(SAVE,JSON.stringify(clean));}catch(e){console.warn('Save failed',e)}}
+let importedNavigation=false,saveLocked=false,loadedStamp=null,lastWrittenStamp=null;
+function classifyStoredSave(raw){
+ if(raw==null)return {state:'missing',raw};
+ let stored;try{stored=JSON.parse(raw)}catch(e){return {state:'corrupt',raw}}
+ if(!stored||typeof stored!=='object'||Array.isArray(stored))return {state:'corrupt',raw};
+ if(Number.isFinite(stored.v)&&stored.v>SAVE_VERSION)return {state:'newer',raw,stored};
+ const writer=localStorage.getItem(SAVE_WRITER);
+ if(writer&&writer!==loadedStamp&&writer!==lastWrittenStamp)return {state:'foreign',raw,stored};
+ return {state:'ok',raw,stored};
+}
+function refuseStoredSave(found){
+ saveLocked=true;paused=true;
+ const storedVersion=found.stored&&Number.isFinite(found.stored.v)?found.stored.v:'unreadable';
+ const message=found.state==='corrupt'
+  ?'The stored expedition could not be read. This page left that save unchanged and will not replace it.'
+  :found.state==='foreign'
+  ?'Another build already updated this expedition. This page left that save unchanged and will not replace or downgrade it.'
+  :'A newer expedition is already stored on this device (version '+storedVersion+'). This build is version '+SAVE_VERSION+' and did not replace, delete, or downgrade that save.';
+ try{notice(message)}catch(e){}
+ try{
+  showSheet(sectionHeader(found.state==='corrupt'?'Expedition needs recovery':'Newer expedition','SAVE PROTECTION')+'<p>'+esc(message)+'</p><p>Close this page and open the current build if the stored expedition is from a newer version. Nothing stored was removed.</p><button class="primary" id="download-newer-save">Download stored save</button>');
+  const button=$('download-newer-save');
+  if(button)button.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([found.raw],{type:'application/json'}));a.download='FARWAKE-newer-expedition.json';a.click()};
+ }catch(e){}
+}
+function save(){if(!S||importedNavigation||saveLocked)return;try{
+ const found=classifyStoredSave(localStorage.getItem(SAVE));
+ if(found.state!=='ok'&&found.state!=='missing'){refuseStoredSave(found);return}
+ const clean={...S,colonists:S.colonists.map(p=>({...p,path:[],task:null,action:0,indoorStay:FarwakeDoors.saveVisit(p)})),fog:fog.map(x=>x?1:0),uid};
+ localStorage.setItem(SAVE,JSON.stringify(clean));
+ const stamp=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+ localStorage.setItem(SAVE_WRITER,stamp);lastWrittenStamp=stamp;
+}catch(e){console.warn('Save failed',e)}}
 function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(!validExpeditionSave(o))return false;S=o;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};guaranteeStartingOre();features=features.filter(f=>!S.harvested.includes(f.id));for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){
  FarwakeDoors.restore(p,S.buildings,walkable);
- p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();return true}catch(e){console.warn(e);return false}}
+ p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();frontierRestoreAccess();loadedStamp=localStorage.getItem(SAVE_WRITER);return true}catch(e){console.warn(e);return false}}
 function buildingAt(x,y,includeBlueprint=true){return S.buildings.find(b=>(includeBlueprint||b.finished)&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)}
 function featureAt(x,y){return features.find(f=>f.x===x&&f.y===y)}
 const NATURAL={
@@ -238,9 +269,10 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  if(p.hunger>67){const meal=frontierMealTarget(p);if(meal)return meal;}
  if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
-  ['build',()=>{const edit=editorCandidate(p);if(edit)return edit;
-    const q=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress)[0];
-    return q?{type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h}:null;
+  ['build',()=>{const edit=editorCandidate(p);if(edit&&setTask(p,edit))return p.task;
+    const ranked=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&frontierMarkAccess(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress);
+    for(const q of ranked){const task={type:'build',id:q.id,x:q.x,y:q.y,w:q.w,h:q.h};if(setTask(p,task))return p.task}
+    return null;
   }],
   ['haul',()=>freightPlan(p)],
   ['gather',()=>harvestTaskFor(p)],
@@ -255,7 +287,7 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
  for(const [group,pick] of lanes){
    if(!workWeight(p,group))continue;
    if(group==='build'&&!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))continue;
-   const task=pick();if(task)return task;
+   const task=pick();if(task&&(p.task===task||setTask(p,task)))return p.task;
  }
  return null;
 }
@@ -270,7 +302,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
  if(t.type==='upgrade'){frontierUpgradeWork(p,work);return}
  if(t.type==='social'){frontierSocial(p,work);return}
  if(t.type==='dismantle'){editorWork(p,work);return}
- if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
+ if(t.type==='build'){const b=S.buildings.find(b=>b.id===t.id);if(!b||b.finished||b.buildPaused||b.accessBlocked||b.editOrder||!freightSiteReady(b)){p.task=null;return}b.progress+=work*(p.role==='Engineer'?1.8:1.1)*2.2;if(b.progress>=TYPES[b.type].time){for(const [k,n] of Object.entries(b.siteStock||{}))freightFlow(k,n,'consumed');delete b.siteStock;delete b.reservedMaterials;delete b.accessBlocked;b.finished=true;b.progress=100;housingAllocate();FarwakeWorkFX.complete(b);localSound('complete',b);log('⌂',TYPES[b.type].name+' constructed by '+p.name+'.');p.task=null;updateGoal();save();}}
  else if(t.type==='farm'||t.type==='craft'){performProduction(p,t,work);}
  else if(t.type==='rest'&&p.action>1){housingRecovery(p,work);p.hunger=clamp(p.hunger+work*.1,0,100);if(p.energy>85&&S.minute>=6*60&&S.minute<20*60){p.task=null;}}
  else if(t.type==='eat'&&p.action>2.3){frontierEat(p);}
@@ -289,7 +321,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
 function updateGoal(){surveyAdvanceGoal();if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
 function tick(dt){if(paused)return;surveyGridTick(dt*speed);let step=dt*speed;frontierTick(step);advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
  for(const p of S.colonists){FarwakeDoors.sync(p,S.buildings);p.hunger=clamp(p.hunger+step*.045,0,100);p.social=clamp(p.social-step*.008,5,100);p.mood=clamp(p.mood+(p.energy>40&&p.hunger<70?.004:-.12)*step,0,100);if(p.hunger>=100){p.mood=Math.max(5,p.mood-step*.1);p.energy=Math.max(0,p.energy-step*.07);}if(p.task&&p.task.type==='rest'&&p.energy>80&&S.minute>6*60&&S.minute<20*60)p.task=null;
- if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
+ if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished&&!b.accessBlocked)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
  if(S.piles.some(q=>q.site!=null))for(const p of S.colonists)if(p.task?.type==='research'){p.task=null;p.path=[]}
  if(queuedWork()&&Math.floor(performance.now()/900)%3===0)dispatchFieldWork();
  FarwakeDoors.update(S,step,(k,b)=>localSound(k==='doorOpen'?'open':'close',b));
@@ -527,8 +559,9 @@ document.addEventListener('click',e=>{
  FieldPreferences.change(b.dataset.pref,b.dataset.pref==='muted'?!prefs.muted:b.value);if(b.dataset.pref==='muted'&&!prefs.muted)FarwakeAudio.unlock();openSection('preferences');resize();
 });
 $('sheet').addEventListener('input',e=>{if(e.target.dataset.volume)FieldPreferences.change(e.target.dataset.volume,+e.target.value/100)});
-function frame(now){if(!S){requestAnimationFrame(frame);return}const dt=Math.min(.07,(now-last)/1000||0);last=now;renderAccum+=dt;uiAccum+=dt;saveAccum+=dt;if(zoomRequest){const q=zoomRequest;setZoom(camera.z+(q.z-camera.z)*(FieldPreferences.reduced?1:1-Math.exp(-dt*17)),q.x,q.y);if(Math.abs(camera.z-q.z)<.002)zoomRequest=null}tick(dt);advanceWorld(dt);if(prefs.preset!=='performance'||renderAccum>=1/30){draw(now);renderAccum=0}if(uiAccum>.8){frontierRefreshTree();frontierRefreshDiscovery();refreshCommandReadouts();paintHUD();if(tab!=='build'&&!$('sheetbg').classList.contains('open'))renderUI();uiAccum=0}if(saveAccum>12){save();saveAccum=0}requestAnimationFrame(frame)}
+function frame(now){if(saveLocked)return;if(!S){requestAnimationFrame(frame);return}const dt=Math.min(.07,(now-last)/1000||0);last=now;renderAccum+=dt;uiAccum+=dt;saveAccum+=dt;if(zoomRequest){const q=zoomRequest;setZoom(camera.z+(q.z-camera.z)*(FieldPreferences.reduced?1:1-Math.exp(-dt*17)),q.x,q.y);if(Math.abs(camera.z-q.z)<.002)zoomRequest=null}tick(dt);advanceWorld(dt);if(prefs.preset!=='performance'||renderAccum>=1/30){draw(now);renderAccum=0}if(uiAccum>.8){frontierRefreshTree();frontierRefreshDiscovery();refreshCommandReadouts();paintHUD();if(tab!=='build'&&!$('sheetbg').classList.contains('open'))renderUI();uiAccum=0}if(saveAccum>12){save();saveAccum=0}requestAnimationFrame(frame)}
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();last=performance.now()});
+window.addEventListener('storage',e=>{if(!S||saveLocked||(e.key!==SAVE&&e.key!==SAVE_WRITER))return;const found=classifyStoredSave(localStorage.getItem(SAVE));if(found.state!=='ok'&&found.state!=='missing')refuseStoredSave(found)});
 // FOUNDATION MODULES
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
 window.FARWAKE_TEST={frontierOrderExtraction,frontierPlacementReason,TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
