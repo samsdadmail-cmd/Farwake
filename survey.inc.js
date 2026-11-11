@@ -124,8 +124,8 @@ const fieldResearch={
  heliostat:{name:'Solar tracking',cost:52,requires:'energy',description:'Each solar array supplies four additional units of daytime power.',gate:()=>finished('battery').length>0&&finished('solar').length>0,requirement:'Complete a power bank and solar array'},
  traverse:{name:'Expedition fieldcraft',cost:72,requires:'optics',description:'Colonists travel 25% faster on survey assignments.',gate:()=>S.ruin?.seen&&finished('comms').length>0,requirement:'Discover the landmark and complete the signal beacon'}
 };
-function researchDefinition(id){return fieldResearch[id]||TECHS[id]}
-function researchReason(id){
+function foundingResearchDefinition(id){return fieldResearch[id]||TECHS[id]}
+function foundingResearchReason(id){
  const tech=researchDefinition(id);
  if(!tech)return 'Unknown technology';
  if(S.research.includes(id))return 'Researched';

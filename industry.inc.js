@@ -12,18 +12,18 @@ const INDUSTRY_STAGES = {
 function industryPolicy(){
   if(!S.industry) S.industry={};
   const c=S.industry;
-  c.targets??={wood:0,ore:0,scrap:150,food:180,alloy:65};
+  c.targets??={wood:40,ore:0,scrap:150,food:180,alloy:65};
   c.weights??={field:1,factory:1,gather:1};
   c.harvests??=0;c.batches??=0;
   return c;
 }
-function productionRecord(b){
+function foundingProductionRecord(b){
   return b.production??=(b.type==='garden'
     ? {stage:'plant',elapsed:0,cycles:0,output:0}
     : {recipe:'smelt',elapsed:0,cycles:0,output:0});
 }
 function industryOwned(kind){return (S.resources[kind]||0)+looseTotal(kind)+transitTotal(kind)}
-function industryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
+function foundingIndustryRecipes(){return Object.entries(INDUSTRY_RECIPES).filter(([,r])=>!r.tech||S.research.includes(r.tech))}
 function chosenRecipe(r){return INDUSTRY_RECIPES[r.recipe]||INDUSTRY_RECIPES.smelt}
 function cropYield(){return S.research.includes('growth')?11:7}
 function cropDuration(stage){
@@ -31,7 +31,7 @@ function cropDuration(stage){
   return INDUSTRY_STAGES[stage].seconds*(growing&&S.research.includes('irrigation')?.7:1);
 }
 function cropNeedsWorker(stage){return !['grow','germinate'].includes(stage)}
-function productionBlock(b){
+function foundingProductionBlock(b){
   if(!b.finished||b.editOrder)return 'Unavailable during construction or dismantling';
   const r=productionRecord(b),kind=b.type==='garden'?'food':'alloy';
   if(r.paused)return 'Paused by colony order';
@@ -45,8 +45,8 @@ function productionBlock(b){
   return '';
 }
 function productionWorkers(b){return S.colonists.filter(p=>p.task?.id===b.id&&['farm','craft'].includes(p.task.type))}
-function industrySummary(b){
-  if(!['garden','workshop'].includes(b.type))return '';
+function foundingIndustrySummary(b){
+  if(!['garden','workshop'].includes(b.type)&&!frontierProducer(b))return '';
   const blocked=productionBlock(b);if(blocked)return blocked;
   const r=productionRecord(b),worker=productionWorkers(b)[0];
   if(b.type==='garden'&&!cropNeedsWorker(r.stage))return INDUSTRY_STAGES[r.stage].label;
@@ -67,7 +67,7 @@ function productionWeight(p,b){
 function productionCandidate(p,type){
   const choices=[];
   for(const b of S.buildings){
-    if((type&&b.type!==type)||!['garden','workshop'].includes(b.type)||!b.finished||b.editOrder)continue;
+    if((type&&!(type==='workshop'?b.type==='workshop'||frontierProducer(b):b.type===type))||!(['garden','workshop'].includes(b.type)||frontierProducer(b))||!b.finished||b.editOrder)continue;
     const r=productionRecord(b),weight=productionWeight(p,b);
     if(!weight||productionBlock(b)||b.type==='garden'&&!cropNeedsWorker(r.stage))continue;
     if(productionWorkers(b).some(worker=>worker.id!==p.id))continue;
@@ -90,7 +90,7 @@ function advanceCrops(step){
     if(r.elapsed>=cropDuration(r.stage))nextCrop(r,r.stage==='grow'?'harvest':'tend');
   }
 }
-function performProduction(p,t,work){
+function foundingProduction(p,t,work){
   const b=S.buildings.find(b=>b.id===t.id);
   if(!b||productionBlock(b)||!productionWeight(p,b)){p.task=null;return}
   const r=productionRecord(b);
@@ -158,8 +158,8 @@ function drawProduction(b,x,y){
 function industrySelect(name,value,options,attributes=''){
  return '<select class="field" '+attributes+' aria-label="'+name+'">'+options.map(([v,label])=>'<option value="'+v+'" '+(String(v)===String(value)?'selected':'')+'>'+label+'</option>').join('')+'</select>';
 }
-function industryDetails(b){
- if(!['garden','workshop'].includes(b.type))return '';
+function foundingIndustryDetails(b){
+ if(!['garden','workshop'].includes(b.type)&&!frontierProducer(b))return '';
  const r=productionRecord(b),recipe=chosenRecipe(r),duration=b.type==='garden'?cropDuration(r.stage):recipe.seconds;
  return '<section class="infocard"><b id="production-status">'+esc(industrySummary(b))+'</b><div class="progress"><i id="production-progress" style="width:'+Math.min(100,r.elapsed/duration*100)+'%"></i></div>'+
  '<p>'+(b.type==='garden'?'Plant → germinate → tend → grow → harvest · '+cropYield()+' food per full crop':recipe.name+' · '+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+recipe.yield+' alloy · 3 power demand')+'</p>'+
@@ -177,7 +177,7 @@ function industryPanel(){
  return '<p>Basic needs take precedence. Priorities direct available workers. Targets include stored, loose and carried supplies.</p><h3>Resource targets</h3>'+
  Object.entries(c.targets).map(([k,n])=>'<label class="work-control">'+MATERIALS[k].name+'<input class="field" style="width:90px" aria-label="'+MATERIALS[k].name+' target" type="number" min="0" max="9999" step="1" value="'+n+'" data-industry-target="'+k+'"></label>').join('')+
  '<h3>Colony priorities</h3>'+Object.entries(workGroups).map(([k,n])=>'<label class="work-control">'+n+industrySelect(n,c.weights[k]??1,[[0,'Disabled'],[1,'Normal'],[2,'High'],[3,'Urgent']],'data-colony-weight="'+k+'"')+'</label>').join('')+
- '<h3>Production facilities</h3>'+S.buildings.filter(b=>['garden','workshop'].includes(b.type)).map(b=>'<button class="hubitem" data-facility="'+b.id+'"><span>'+uiIcon(b.type,20)+'</span><span><b>'+TYPES[b.type].name+'</b><small>'+esc(industrySummary(b))+'</small></span></button>').join('');
+ '<h3>Production facilities</h3>'+S.buildings.filter(b=>['garden','workshop'].includes(b.type)||frontierProducer(b)).map(b=>'<button class="hubitem" data-facility="'+b.id+'"><span>'+uiIcon(b.type,20)+'</span><span><b>'+TYPES[b.type].name+'</b><small>'+esc(industrySummary(b))+'</small></span></button>').join('');
 }
 function showIndustry(){sheetSection='industry';showSheet(sectionHeader('Work & production','COLONY ORDERS')+industryPanel());renderNavState()}
 function workWeight(p,group){
@@ -198,7 +198,7 @@ document.addEventListener('change',e=>{
    const b=S.buildings.find(b=>b.id===+(el.dataset.industryWorker||el.dataset.industryRecipe));if(!b)return;
    const r=productionRecord(b);
    if(el.dataset.industryWorker)r.worker=+el.value||null;
-   else if(industryRecipes().some(([id])=>id===el.value)){r.recipe=el.value;r.elapsed=0;}
+   else if(industryRecipes(b).some(([id])=>id===el.value)&&!r.batch&&!b.inputOrder){r.recipe=el.value;r.elapsed=0;}
  }else return;
  interruptAvailable();save();
 });

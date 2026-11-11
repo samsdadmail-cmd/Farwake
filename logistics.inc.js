@@ -91,7 +91,7 @@ function freightRemoveStore(b){
  b.stock={};
 }
 function freightOutput(k,n,b){freightFlow(k,n,'produced');return freightOutside(k,n,b)}
-function freightSite(id){return S.buildings.find(b=>!b.finished&&b.id===id)}
+function freightSite(id){return S.buildings.find(b=>(!b.finished||b.inputOrder)&&b.id===id)}
 function freightCandidateStores(p,k){return storageBuildings().filter(b=>freightAccepts(b,k)).sort((a,b)=>(b.priority||0)-(a.priority||0)||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))}
 function freightClaim(p,q){
  if(!q||q.hold||S.colonists.some(z=>z!==p&&z.task?.type==='haul_pickup'&&z.task.pileId===q.id))return false;
@@ -136,7 +136,7 @@ function freightDeliver(p,t){
   dst.stock??={};dst.stock[c.kind]=(dst.stock[c.kind]||0)+c.amount;S.resources[c.kind]=(S.resources[c.kind]||0)+c.amount;
  }else{p.task=null;p.path=[];freightPlan(p);return}
  FarwakeWorkFX.transfer('delivery',p,c);localSound('drop',p);
- log('',p.name+' delivered '+c.amount+' '+MATERIALS[c.kind].name.toLowerCase()+(site?' to construction.':' to storage.'));
+ log('',p.name+' delivered '+c.amount+' '+MATERIALS[c.kind].name.toLowerCase()+(site?(site.finished?' to production.':' to construction.'):' to storage.'));
  p.carry=null;p.task=null;p.path=[];p.action=0;save();
 }
 function freightStatus(){

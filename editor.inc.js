@@ -132,6 +132,7 @@ function editorOrder(b,kind,dest=null){
   if(!b?.finished||!TYPES[b.type]||b.editOrder)return;
   b.editOrder={kind,progress:0,...(dest?{dest:{...dest}}:{})};
   editorEvacuate(b);
+  if(b.inputOrder||Object.values(b.siteStock||{}).some(n=>n>0)){freightCancel(b);b.inputOrder=false}
   if(b.type==='shed')freightRemoveStore(b);
   if(b.type==='shelter'){housingRelease(b);housingAllocate()}
   // Free the dispatch queue so an indefinitely researching builder can respond.

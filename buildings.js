@@ -10,6 +10,7 @@ window.FarwakeBuildings = (() => {
   const homeDoors=[[54,40],[22,39],[65,42],[40,40]];
   function variant(b){return b ? Math.abs(b.id||0)%4 : 0;}
   function entrance(b){
+    if(window.FarwakeFrontierArt?.sizes[b?.type])return FarwakeFrontierArt.entrance(b);
     if(!b)return null;
     const home=homeDoors[variant(b)];
     const dims=({shelter:[...home,10,14,'hinge'],workshop:[14,38,30,13,'roller'],
@@ -225,6 +226,7 @@ window.FarwakeBuildings = (() => {
   return {
     entrance,
     shadow(ctx,type,x,y,w,h,minute,b) {
+      if(window.FarwakeFrontierArt?.sizes[type]){FarwakeFrontierArt.shadow(ctx,type,x,y,w,h,minute,b);return}
       if(!sizes[type] || type==='path')return;
       const key=type+variant(b);
       if(!shadows.has(key)){
@@ -245,6 +247,7 @@ window.FarwakeBuildings = (() => {
       ctx.restore();
     },
     draw(ctx,type,x,y,w,h,night=false,b,door) {
+      if(window.FarwakeFrontierArt?.sizes[type]){FarwakeFrontierArt.draw(ctx,type,x,y,w,h,night,b,door);return}
       if(!sizes[type]) return;
       const sprite=plate(type,night && (!b || !!door?.occupied),variant(b));
       ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite,x,y,w,h);
@@ -283,6 +286,7 @@ window.FarwakeBuildings = (() => {
       ctx.restore();
     },
     thumbnail(type) {
+      if(window.FarwakeFrontierArt?.sizes[type])return FarwakeFrontierArt.thumbnail(type);
       if(!sizes[type]) return '';
       if(!thumbnails.has(type)) thumbnails.set(type,plate(type,false).toDataURL());
       return thumbnails.get(type);
