@@ -1,16 +1,16 @@
 // node tests/housing.cjs
 const vm=require('node:vm'), fs=require('node:fs'), assert=require('node:assert/strict');
-const context=vm.createContext({finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
+const context=vm.createContext({FRONTIER_BUILDINGS:{cabin:{beds:4},dormitory:{beds:8},outpost:{beds:4,temporary:true}},finished:()=>[],power:()=>({supply:4,used:0}),window:{},document:{addEventListener(){}},save(){},clamp:(x,a,b)=>Math.max(a,Math.min(b,x))});
 const read=file=>fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8');
-for(const file of ['buildings.js','doors.js']){vm.runInContext(read(file),context);Object.assign(context,context.window)}
+for(const file of ['frontier-art.js','buildings.js','doors.js']){vm.runInContext(read(file),context);Object.assign(context,context.window)}
 vm.runInContext(read('housing.inc.js'),context);
 const {FarwakeBuildings:art,FarwakeDoors:doors}=context;
-const types=['shelter','workshop','camp','shed','clinic','lander','supplies','garden','solar','path','comms','battery','ore','tree','stockpile'];
+const types=['shelter','workshop','camp','shed','clinic','lander','supplies','garden','solar','path','comms','battery','ore','tree','stockpile','cabin','dormitory','greenhouse','pump','kitchen','sawmill','smelter','fabricator','wind','accumulator','dining','recreation','warehouse','outpost','drill','observatory','road','lamppost'];
 for(const type of types){
  const b={id:1,type,finished:true,x:10,y:10,w:3,h:2};
- const inside=['shelter','workshop','camp','shed','clinic','lander'].includes(type);
+ const inside=['shelter','workshop','camp','shed','clinic','lander','cabin','dormitory','greenhouse','kitchen','sawmill','smelter','fabricator','dining','recreation','warehouse','outpost','observatory'].includes(type);
  assert.equal(!!art.entrance(b),inside,type);
- const task={type:({shelter:'rest',workshop:'craft',camp:'rest',shed:'haul_dropoff',clinic:'treat',lander:'research'})[type]||'haul_dropoff',id:1,x:10,y:10};
+ const task={type:({cabin:'rest',dormitory:'rest',greenhouse:'craft',kitchen:'craft',sawmill:'craft',smelter:'craft',fabricator:'craft',dining:'social',recreation:'social',warehouse:'haul_dropoff',outpost:'rest',observatory:'align',shelter:'rest',workshop:'craft',camp:'rest',shed:'haul_dropoff',clinic:'treat',lander:'research'})[type]||'haul_dropoff',id:1,x:10,y:10};
  const p={x:11.5,y:14.5,path:[],carry:{kind:'wood',amount:6}};
  const planned=doors.route(p,task,[b],()=>true,()=>[{x:11.5,y:12.5}],[]);
  assert.equal(!!planned,inside,type+' route');
@@ -42,4 +42,4 @@ home.editOrder={kind:'demolish'};context.housingRelease(home);context.housingAll
 const unsecured=context.S.colonists.find(c=>!c.home);
 assert.ok(context.housingRestTarget(unsecured).outdoors);
 context.housingRecovery(unsecured,1);assert.equal(unsecured.energy,2.1);assert.ok(unsecured.mood<50);
-console.log('15 structure classifications, shared indoor routing, pallet cargo migration, capacity, swaps, decommissioning and outdoor recovery passed.');
+console.log('33 structure classifications, shared indoor routing, pallet cargo migration, capacity, swaps, decommissioning and outdoor recovery passed.');
