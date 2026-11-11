@@ -123,7 +123,7 @@ function advanceGatherTargets(step){
   if(!c.weights.gather||!S.colonists.some(p=>['auto','gather','build'].includes(p.work)))return;
   const anchor=S.buildings.find(b=>b.type==='supplies')||S.colonists[0];
   if(!anchor)return;
-  for(const [kind,type] of [['wood','tree'],['ore','ore'],['scrap','scrap']]){
+  for(const [kind,type] of [['wood','tree'],['ore','ore'],['scrap','scrap'],['food','bush']]){
     const committed=Object.keys(S.designations||{}).filter(id=>featureById(id)?.type===type).length*NATURAL[type].amount;
     if(industryOwned(kind)+committed>=c.targets[kind])continue;
     const candidates=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]&&!S.designations[f.id]).sort((a,b)=>Math.hypot(a.x-anchor.x,a.y-anchor.y)-Math.hypot(b.x-anchor.x,b.y-anchor.y));
