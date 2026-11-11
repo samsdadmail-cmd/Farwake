@@ -39,3 +39,11 @@ Founder starting needs now use the expedition seed; existing saved needs are unt
 The runner also had a false-success window: the fresh phase reports COMPLETE while the full journey is still running. Journey completion now requires the exact COMPLETE ORGANIC JOURNEY marker, with FAILED still terminating immediately. The required journey is not skipped or marked known-failing. CI uploads its log and save/live checkpoint even on failure.
 
 Executed locally after this fix: 23 Chromium headless tests; source/build equality, housing, fixture sanity, content and survival checks passed. The focused full journey reached the actual listening-array objective on Day 57 with save/load. Remote CI results are recorded in PR #18 after the new commit runs; earlier c1cfb6d local results were not sufficient to establish CI success.
+
+## P0 #21 investigation — unresolved
+
+The physical iPhone permanent early-colony freeze is not reproduced or explained yet. Do not approve release. A real requestAnimationFrame-loop QA test now runs an unattended six-minute virtual session at the normal speed control's 3x setting through two nights, crops/construction, periodic UI, audio and autosaves, then reloads the same isolated save. Chromium completed with continuing frame/tick heartbeats, bounded writes/canvas creation and no exceptions. This is not proof of physical iPhone safety.
+
+Freeze instrumentation records frame phase (tick/presentation/draw/UI/save), heartbeat counts, save count, maximum phase times, canvas backing dimensions, optional Chromium heap, audio/visibility and deliberate save-protection pauses. Unhandled errors are retained in a separate diagnostic key across restart. `?diagnostics=1` adds one local heartbeat write per ten seconds; ordinary healthy play adds no diagnostic storage writes. Game & Save -> Export diagnostics downloads the current/previous fault record. No automatic reload, swallowed exception, changed task system or save-schema migration is introduced. CI retains unattended test artifacts on success/failure.
+
+Next: inspect WebKit CI endurance results, then reproduce on the actual affected iPhone/browser/preview origin and capture the exported diagnostic record. Infinite loop, WebKit process/memory loss, frame exception and deliberate cross-tab save protection remain competing explanations. No speculative root-cause fix is claimed.

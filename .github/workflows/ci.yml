@@ -37,6 +37,14 @@ jobs:
       - name: Headless smoke, save loads, and baseline probes
         run: npm test
 
+      - name: Keep unattended browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unattended-browser-diagnostics
+          path: test-results/
+          if-no-files-found: ignore
+
   legacy-browser-suites:
     runs-on: ubuntu-latest
     timeout-minutes: 45
