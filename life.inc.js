@@ -129,7 +129,7 @@ function lifeTick(step){
  }
  for(const p of S.colonists){
   const l=lifePerson(p),task=p.task;
-  if(task?.type==='idle_pause'&&(lifeEmergency(p)||S.minute>=1050||jobs().some(b=>!b.buildPaused))){p.task=null;p.path=[];p.action=0}
+  if(task?.type==='idle_pause'&&(lifeDirectedStandby(p)||lifeEmergency(p)||S.minute>=1050||jobs().some(b=>!b.buildPaused))){p.task=null;p.path=[];p.action=0}
   if(task?.type?.startsWith('life_')){
    if(!lifeBuilding(task.id)||lifeEmergency(p)||!lifeEvening(p)||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
     const session=r.sessions.find(s=>s.id===l.session);if(session)lifeCancel(session);else{lifeClear(p);l.retryAt=r.time+2}
@@ -169,8 +169,9 @@ function lifePanel(p){
 // Brief daytime pauses are transient, unrewarded and only fill genuinely idle
 // time. New work, hunger and nightfall release them immediately.
 const lifeIdleNext=new WeakMap();
+function lifeDirectedStandby(p){return !!p.workWeights&&Object.keys(workGroups).every(k=>(p.workWeights[k]??1)===0)}
 function lifeIdleTarget(p){
- if(p.work!=='auto'||p.carry||p.energy<60||p.hunger>40||S.minute<420||S.minute>=1050||industryFoodEmergency()||jobs().some(b=>!b.buildPaused))return null;
+ if(p.work!=='auto'||lifeDirectedStandby(p)||p.carry||p.energy<60||p.hunger>40||S.minute<420||S.minute>=1050||industryFoodEmergency()||jobs().some(b=>!b.buildPaused))return null;
  const now=lifeRoot().time;if(now<(lifeIdleNext.get(p)||0))return null;
  lifeIdleNext.set(p,now+38+(p.id%5)*7);
  const places=lifePlaces(p).sort((a,b)=>lifeAttachment(p,b.b)-lifeAttachment(p,a.b)||a.b.id-b.b.id);
@@ -181,4 +182,4 @@ function lifeIdleTarget(p){
  }
  return null;
 }
-function lifeIdleWork(p){if(p.action>=8||lifeEmergency(p)||jobs().some(b=>!b.buildPaused)||S.minute>=1050){p.task=null;p.path=[];p.action=0}}
+function lifeIdleWork(p){if(p.action>=8||lifeDirectedStandby(p)||lifeEmergency(p)||jobs().some(b=>!b.buildPaused)||S.minute>=1050){p.task=null;p.path=[];p.action=0}}

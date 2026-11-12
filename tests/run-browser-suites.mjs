@@ -163,6 +163,12 @@ try {
       });
       await writeFile(path.join(artifacts,'journey-checkpoint.json'),JSON.stringify(checkpoint,null,2));
     }
+    if(result.status==='fail'){
+      const artifacts=path.join(root,'test-results');await mkdir(artifacts,{recursive:true});
+      await writeFile(path.join(artifacts,'failed-'+file+'.log'),result.text);
+      const lines=result.text.split('\n');
+      console.log('FAILURE DETAILS '+file+'\n'+lines.filter((line,i)=>line.includes('FAILED')||lines.slice(Math.max(0,i-2),i).some(x=>x.includes('FAILED'))).join('\n'));
+    }
     const tail = result.text.trim().split('\n').slice(-8).join('\n');
     console.log(`\n== ${result.status.toUpperCase()} ${file} (${(result.ms / 1000).toFixed(1)}s) ==\n${tail}\n`);
     await context.close();

@@ -29,3 +29,9 @@ test('staggered founders can accept a willing invitation before choosing solitar
  const result=await page.evaluate(()=>{const g=FARWAKE_TEST,s=g.state;s.minute=1045;for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;for(const p of s.colonists)Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:5});const starts=[];let previous=0;for(let i=0;i<550;i++){g.tick(.1);const sessions=g.lifeRoot().sessions.length;if(sessions&&!previous)starts.push(s.minute);previous=sessions}return{starts,shared:s.colonists.filter(p=>p.life?.bonds.length).length}});
  expect(result.starts.length).toBeGreaterThan(0);expect(result.shared).toBe(2);
 });
+
+test('explicit personal standby blocks and interrupts optional daytime pauses',async({page})=>{
+ await page.addInitScript(()=>window.requestAnimationFrame=()=>0);await page.goto('/index.html');
+ const result=await page.evaluate(()=>{const g=FARWAKE_TEST,s=g.state,p=s.colonists[0];s.minute=720;for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:0,work:'auto',workWeights:{build:0,haul:0,gather:0,field:0,factory:0,research:0,survey:0}});g.tick(.1);const blocked=p.task===null;p.workWeights.build=1;g.tick(.1);const paused=p.task?.type==='idle_pause';p.workWeights.build=0;g.tick(.6);return{blocked,paused,interrupted:p.task===null,noReward:!p.life.memories.length}});
+ expect(result).toEqual({blocked:true,paused:true,interrupted:true,noReward:true});
+});

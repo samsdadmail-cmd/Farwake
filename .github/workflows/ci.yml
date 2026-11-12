@@ -82,6 +82,7 @@ jobs:
         with:
           name: organic-journey
           path: |
+            test-results/failed-*.log
             test-results/journey.log
             test-results/journey-checkpoint.json
           if-no-files-found: ignore
