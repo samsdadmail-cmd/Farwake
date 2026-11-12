@@ -2409,10 +2409,10 @@ const LIFE_TENDENCIES={
 };
 function lifeRoot(){return S.life??=( {version:1,time:0,serial:0,sessions:[]} )}
 function lifePerson(p){
- if(!p.life){
+ if(!p.life||p.life.owner!==p.id){
   const n=hash(p.id,31,hashStr(S.seed));
   const tendencies=LIFE_TENDENCIES[p.trait]||{company:.25+n*.65,home:.35,quiet:.8-n*.4,interest:n>.5?'sky':'tinkering'};
-  p.life={...tendencies,doneDay:0,retryAt:0,memories:[],places:[],bonds:[]};
+  p.life={owner:p.id,...tendencies,doneDay:0,retryAt:0,memories:[],places:[],bonds:[]};
  }
  return p.life;
 }
@@ -2453,13 +2453,14 @@ function lifeRemember(p,kind,b,other){
 function lifeCue(p,text){const r=lifeRoot();r.cue={serial:++r.serial,person:p.id,text,until:r.time+8}}
 function lifeTaskAt(session,p){
  const i=session.people.indexOf(p.id),point=session.points[i];
+ if(!point)return null;
  return {type:'life_share',session:session.id,id:session.building,x:Math.floor(point.x),y:Math.floor(point.y),outdoors:true};
 }
 function lifeTarget(p){
  const r=lifeRoot(),l=lifePerson(p);
  if(l.session){
   const session=r.sessions.find(s=>s.id===l.session);
-  if(session&&!lifeEmergency(p)&&lifeEvening(p))return lifeTaskAt(session,p);
+  if(session&&session.people.includes(p.id)&&!lifeEmergency(p)&&lifeEvening(p))return lifeTaskAt(session,p);
   if(session)lifeCancel(session);else delete l.session;
  }
  if(l.doneDay===S.day&&S.minute>=1200&&S.minute<1260)return housingRestTarget(p);
@@ -2474,7 +2475,7 @@ function lifeTarget(p){
   if(!wet)options.push({kind:'quiet',...place,score:l.quiet+quietFit+affection-travel});
   if(b===home)options.push({kind:'home',...place,score:l.home+(wet?.8:0)+affection-travel});
   if(!wet&&points.length>=2){
-   const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&lifeEvening(q)&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&Math.hypot(p.x-q.x,p.y-q.y)<14)
+   const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&lifeEvening(q)&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&!q.task?.type?.startsWith('life_')&&Math.hypot(p.x-q.x,p.y-q.y)<14)
     .sort((a,z)=>((l.bonds.find(q=>q.person===z.id)?.shared||0)-(l.bonds.find(q=>q.person===a.id)?.shared||0))||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y)||a.id-z.id)[0];
    if(partner)options.push({kind:'shared',...place,partner,score:l.company+affection-travel});
   }

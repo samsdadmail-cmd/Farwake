@@ -75,3 +75,79 @@ test('migration keeps exact original download and refuses to upgrade without rec
  expect(await page.evaluate(k=>localStorage.getItem(k),key)).toBe(raw);
  await expect(page.locator('#sheet')).toContainText('Expedition needs recovery');
 });
+
+test('an untouched founding colony reaches a real evening without sacrificing its work',async({page})=>{
+ await page.addInitScript(()=>{window.requestAnimationFrame=()=>0});await page.goto('/index.html');
+ await run(page,260);
+ const result=await page.evaluate(()=>{const g=FARWAKE_TEST;return {minute:g.state.minute,people:g.state.colonists.map(p=>({name:p.name,energy:p.energy,hunger:p.hunger,life:p.life})),harvested:g.state.harvested.length,produced:g.state.freightFlow.produced}});
+ console.log('ORGANIC_FIRST_EVENING '+JSON.stringify(result));
+ expect(result.minute).toBeGreaterThan(1200);
+ expect(result.people.filter(p=>p.life.memories.length).length).toBeGreaterThanOrEqual(3);
+ expect(result.harvested).toBeGreaterThan(0);
+ expect(result.people.every(p=>p.hunger<100&&p.energy>0)).toBe(true);
+});
+
+test('dialogue visibility and presentation rate do not change an evening',async({browser})=>{
+ const results=[];
+ for(const mode of ['off','lively']){
+  const context=await browser.newContext(),page=await context.newPage();await evening(page);
+  results.push(await page.evaluate(mode=>{
+   const g=FARWAKE_TEST;g.settings.dialogue=mode;
+   for(let i=0;i<450;i++){g.tick(.1);if(mode==='lively'&&i%3===0)g.advanceWorld(.3)}
+   return {life:g.state.life,people:g.state.colonists.map(p=>p.life)};
+  },mode));await context.close();
+ }
+ expect(results[1]).toEqual(results[0]);
+});
+
+test('rainy indoor leisure resumes real occupancy without duplicate memories',async({page})=>{
+ await evening(page);await page.evaluate(()=>FARWAKE_TEST.state.weather='rain');await run(page,8);
+ expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.every(p=>p.task?.type==='life_home'&&p.visit?.stage==='inside'))).toBe(true);
+ await page.evaluate(()=>FARWAKE_TEST.save());await page.reload();
+ expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.every(p=>p.task?.type==='life_home'&&p.visit?.stage==='inside'))).toBe(true);
+ await run(page,35);
+ expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.every(p=>p.life.memories.filter(m=>m.kind==='home').length===1))).toBe(true);
+});
+
+for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,height:667}])test(`evening profile and world remain touch-readable at ${viewport.width}x${viewport.height}`,async({page},info)=>{
+ await page.setViewportSize(viewport);await evening(page);await run(page,7);
+ await page.evaluate(()=>{const g=FARWAKE_TEST,p=g.state.colonists[0];g.advanceWorld(.2);const pose=FarwakePeople.pose(p);g.camera.x=pose.x*32;g.camera.y=pose.y*32;g.draw(performance.now())});
+ const box=await page.locator('#world').boundingBox();await page.locator('#world').tap({position:{x:box.width/2,y:box.height/2}});
+ await page.screenshot({path:info.outputPath('selected-'+viewport.width+'.png')});
+ await page.locator('[data-inspect="profile"]').click({timeout:5000});
+ await expect(page.locator('.life-profile')).toContainText('Sharing an evening');
+ await page.locator('.life-profile summary').click();await expect(page.locator('.life-profile details')).toHaveAttribute('open','');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:info.outputPath('profile-'+viewport.width+'.png')});
+ await page.locator('#sheet [data-sheet="close"]').click();
+ await page.evaluate(()=>FARWAKE_TEST.draw(performance.now()));
+ await page.screenshot({path:info.outputPath('world-'+viewport.width+'.png')});
+});
+
+test('completed experiences create a bounded, behavioural preference for a real place',async({page})=>{
+ await evening(page);await run(page,45);
+ const result=await page.evaluate(()=>{
+  const g=FARWAKE_TEST,s=g.state,p=s.colonists.find(p=>p.role==='Surveyor'),camp=s.buildings.find(b=>b.type==='camp');
+  if(!p.life.places.some(q=>q.building===camp.id))throw Error('No actual completed evening to remember');
+  // A second venue and a position equidistant to its edge isolate the choice.
+  s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1051;
+  Object.assign(p,{x:30.6,y:32.5,home:null,task:null,path:[],energy:95,hunger:5});
+  p.life.retryAt=0;const attached=g.lifeTarget(p)?.id;
+  p.task=null;p.path=[];const places=p.life.places;p.life.places=[];
+  const without=g.lifeTarget(p)?.id;p.life.places=places;
+  return {attached,without,camp:camp.id};
+ });
+ expect(result.attached).toBe(result.camp);expect(result.without).toBe(990);
+});
+
+test('repeated genuine meetings build familiarity once per day and keep memories bounded',async({page})=>{
+ await evening(page);
+ for(let day=1;day<=4;day++){
+  if(day>1)await page.evaluate(day=>{const s=FARWAKE_TEST.state;s.day=day;s.minute=1051;for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[]})},day);
+  await run(page,45);
+ }
+ const result=await page.evaluate(()=>FARWAKE_TEST.state.colonists.map(p=>p.life));
+ expect(result.filter(p=>p.bonds.length).every(p=>p.bonds[0].shared===4)).toBe(true);
+ expect(result.every(p=>p.memories.length<=8&&p.places.length<=4&&p.bonds.length<=8)).toBe(true);
+ expect(result.filter(p=>p.bonds.length).every(p=>p.memories[0].count===4)).toBe(true);
+});

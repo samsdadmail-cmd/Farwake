@@ -24,3 +24,11 @@
 .tech-node.locked{opacity:1;background:#242d27;border-color:#59634f}.tech-node.locked b{color:#e3dbc8}.tech-node{grid-template-rows:48px 18px 1fr;row-gap:5px}.tech-node>svg{grid-row:span 2;color:#bda477}.tech-node small{color:#b8b9a4}.tech-node img{image-rendering:pixelated}.tech-links path{opacity:.45}.tech-links path.connected{opacity:.85}.era-rail,.tree-branches{scrollbar-width:none}.era-rail::-webkit-scrollbar,.tree-branches::-webkit-scrollbar{display:none}
 @media(orientation:landscape) and (max-height:500px){.era-rail{margin:4px 0}.era-rail button{min-height:30px;padding:5px 9px}.tree-controls{padding:3px 0}.tree-controls button{min-height:32px;padding:4px 10px}.tree-branches{margin-bottom:6px}.tree-branches button{min-height:32px;padding:5px 8px}.tech-viewport{height:calc(96dvh - 190px);max-height:none}}
 @media(max-width:679px) and (orientation:portrait){.lower{position:absolute;left:12px;right:12px;bottom:calc(9px + env(safe-area-inset-bottom));border:1px solid #8c95713d;border-radius:13px;overflow:hidden;background:#18221bf2;box-shadow:0 6px 24px #0b130d66}.nav{height:53px;min-height:53px;padding:0 5px}.navbutton{height:52px}.mapbottom{bottom:76px}.inspector{bottom:78px}.toast{bottom:76px}}
+/* Keep the person inspector tappable above landscape navigation. */
+.life-profile summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:#d5ba84}
+.life-profile details[open] summary{border-bottom:1px solid #ffffff20;margin-bottom:8px}
+@media(orientation:landscape) and (max-height:500px){
+ .top{display:block;width:300px}.resbar{width:100%;display:flex;height:28px;padding-inline:8px}.resource{flex:1;min-width:0;flex-direction:row;padding:0 4px;gap:4px}.resource .k{display:none}.resource-expand{width:30px}
+ .maptop{left:315px}.lower{left:auto;right:10px;transform:none;width:320px;bottom:calc(8px + env(safe-area-inset-bottom))}.nav{height:49px;min-height:49px}.navbutton{height:48px;min-height:44px}
+ .inspector{left:12px;right:auto;bottom:68px;transform:none;width:min(450px,calc(100% - 24px));max-height:calc(100dvh - 150px);overflow:auto;margin:0}
+}
