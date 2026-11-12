@@ -116,7 +116,7 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
  await page.screenshot({path:info.outputPath('selected-'+viewport.width+'.png')});
  await page.locator('[data-inspect="profile"]').click({timeout:5000});
  await expect(page.locator('.life-profile')).toContainText('Sharing an evening');
- await page.locator('.life-profile summary').click();await expect(page.locator('.life-profile details')).toHaveAttribute('open','');
+ await page.getByText('Home, responsibilities & wellbeing',{exact:true}).click();await expect(page.locator('.life-profile > details')).toHaveAttribute('open','');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:info.outputPath('profile-'+viewport.width+'.png')});
  await page.locator('#sheet [data-sheet="close"]').click();
