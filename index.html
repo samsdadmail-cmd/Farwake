@@ -2432,7 +2432,9 @@ function lifePlaces(p){
  const home=lifeBuilding(p.home),quiet=lifePerson(p).interest;
  const buildings=S.buildings.filter(b=>b.finished&&!b.editOrder&&(b===home||b.type==='camp'||FRONTIER_BUILDINGS[b.type]?.community||quiet==='plants'&&b.type==='garden'));
  return buildings.map(b=>{
-  const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5}));
+  const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5})).filter(a=>
+   !lifeRoot().sessions.some(s=>s.points.some(q=>q.x===a.x&&q.y===a.y))&&
+   !S.colonists.some(q=>q!==p&&q.task?.type==='life_quiet'&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
   points.sort((a,z)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y));
   return {b,points};
  }).filter(q=>q.points.length);

@@ -158,7 +158,10 @@ test('forty distinct settlers cannot inherit another person’s meeting reservat
   const s=FARWAKE_TEST.state,founders=s.colonists.slice();
   s.colonists=Array.from({length:40},(_,i)=>({...founders[i%5],id:200+i,x:25.5+i%6,y:29.5+Math.floor(i/6),visit:null,task:null,path:[],carry:null}));
  });
- await run(page,45);
+ await run(page,3);
+ const reserved=await page.evaluate(()=>FARWAKE_TEST.lifeRoot().sessions.flatMap(s=>s.points.map(q=>q.x+','+q.y)));
+ expect(new Set(reserved).size).toBe(reserved.length);
+ await run(page,42);
  const result=await page.evaluate(()=>({people:FARWAKE_TEST.state.colonists.map(p=>({id:p.id,life:p.life})),sessions:FARWAKE_TEST.lifeRoot().sessions}));
  expect(new Set(result.people.map(p=>p.life.owner)).size).toBe(40);
  expect(result.people.some(p=>p.life.memories.length)).toBe(true);
