@@ -4,6 +4,7 @@ window.FarwakeMoments = (() => {
   'use strict';
   const limit = 6;
   let expedition, elapsed = 0, next = 6, active = null, answer = null;
+  let lastLifeCue = 0;
   let goal = 0, celebration = null, lastSpeaker = null, currentPose;
   const choose = rows => rows[Math.floor(Math.random()*rows.length)];
   const first = p => String(p.name).split(' ')[0];
@@ -75,7 +76,7 @@ window.FarwakeMoments = (() => {
 
   function update(state,dt,{mode='subtle',paused=false,eligible=()=>true,pose=p=>p}={}) {
     if(expedition!==state){
-      expedition=state;elapsed=0;next=6;goal=state.goal;celebration=null;
+      expedition=state;lastLifeCue=0;elapsed=0;next=6;goal=state.goal;celebration=null;
       active=null;answer=null;lastSpeaker=null;
     }
     currentPose=pose;
@@ -86,6 +87,10 @@ window.FarwakeMoments = (() => {
     }
     if(paused)return;
     elapsed+=Math.max(0,dt);
+    const cue=state.life?.cue;
+    if(cue&&cue.serial!==lastLifeCue&&cue.until>=state.life.time){
+      lastLifeCue=cue.serial;active={id:cue.person,text:cue.text,until:elapsed+4.5};answer=null;
+    }
     if(active){
       const speaker=state.colonists.find(p=>p.id===active.id);
       if(elapsed<active.until&&speaker&&eligible(speaker))return;
@@ -97,6 +102,7 @@ window.FarwakeMoments = (() => {
         say(state,b,line,a);return;
       }
     }
+    if(state.colonists.some(p=>p.task?.type?.startsWith('life_')))return;
     if(elapsed<next)return;
     const available=state.colonists.filter(eligible);
     if(!available.length){next=elapsed+3;return;}

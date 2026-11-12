@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {"deploymentEnabled": {"beyond-the-frontier-rc": false, "farwake/combined/rc1": false}}
+  "git": {
+    "deploymentEnabled": {
+      "beyond-the-frontier-rc": false,
+      "farwake/combined/rc1": false,
+      "living-colony-evening": false
+    }
+  }
 }

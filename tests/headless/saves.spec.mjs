@@ -24,7 +24,7 @@ function recoveryVisible(page) {
 }
 
 async function loadedState(page) {
-  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4);
   await expect(recoveryVisible(page)).toHaveCount(0);
   return page.evaluate(() => window.FARWAKE_TEST.state);
 }
@@ -38,7 +38,7 @@ test.describe('v3 save fixtures', () => {
       await installSave(page, raw);
       await openGame(page);
       const state = await loadedState(page);
-      expect(state.v).toBe(3);
+      expect(state.v).toBe(4);
       expect(state.seed).toBe(expected.seed);
       expect(state.day).toBe(expected.day);
       expect(state.minute).toBe(expected.minute);
@@ -162,10 +162,10 @@ test.describe('v3 save fixtures', () => {
 
   // Fields load() is allowed to change before save() writes the fixture back.
   // Anything else, including frontier.sites, resources, buildings, and cargo,
-  // must deep-equal the original file. The only current entry is the log:
+  // must deep-equal the original file. Version and the verified recovery pointer are also explicit migration changes. The log:
   // a successful load calls log('✦', 'Expedition resumed. Welcome back, Commander.'),
   // which unshifts S.events and drops the oldest line once the log is 50 long.
-  const LOAD_MAY_CHANGE = ['events'];
+  const LOAD_MAY_CHANGE = ['events','v','migration'];
 
   function changedPaths(actual, expected, path = '') {
     const found = [];
@@ -199,6 +199,9 @@ test.describe('v3 save fixtures', () => {
         window.FARWAKE_TEST.save();
         return JSON.parse(localStorage.getItem(key));
       }, SAVE_KEY);
+      expect(saved.v).toBe(4);
+      expect(saved.migration.from).toBe(3);
+      expect(await page.evaluate(k=>localStorage.getItem(k),saved.migration.recoveryKey)).toBe(readFixture(name));
       const roots = changedPaths(saved, fixture).map(path => path.split(/[.[]/)[0]);
       const unexpected = [...new Set(roots)].filter(root => !LOAD_MAY_CHANGE.includes(root));
       expect(unexpected, unexpected.join(', ')).toEqual([]);
@@ -218,7 +221,7 @@ test.describe('v3 save fixtures', () => {
   test('autosave, hidden visibility, and pagehide write the expedition', async ({page}) => {
     await page.clock.install();
     await page.goto('/index.html');
-    await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+    await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4);
     await page.evaluate(() => { window.FARWAKE_TEST.state.day = 11; });
     await page.clock.runFor(15000);
     expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)).day, SAVE_KEY)).toBe(11);
@@ -280,7 +283,7 @@ test.describe('v3 save fixtures', () => {
     expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(fresh);
   });
 
-  test('a v4 import file does not replace the colony', async ({page}) => {
+  test('a v5 import file does not replace the colony', async ({page}) => {
     const fresh = readFixture('fresh');
     await installSave(page, fresh);
     await openGame(page);
@@ -291,7 +294,7 @@ test.describe('v3 save fixtures', () => {
     await page.setInputFiles('#import-expedition-file', {
       name: 'future.json',
       mimeType: 'application/json',
-      buffer: Buffer.from(JSON.stringify({format: 'farwake-expedition-backup', formatVersion: 1, save: {v: 4, seed: 'LATER', day: 2, minute: 10, resources: {}, colonists: [{name: 'N', x: 1, y: 1}], buildings: [], fog: []}}))
+      buffer: Buffer.from(JSON.stringify({format: 'farwake-expedition-backup', formatVersion: 1, save: {v: 5, seed: 'LATER', day: 2, minute: 10, resources: {}, colonists: [{name: 'N', x: 1, y: 1}], buildings: [], fog: []}}))
     });
     await expect(page.locator('#toast')).toContainText('not a compatible FARWAKE Founders save');
     expect(JSON.parse(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).seed).toBe(JSON.parse(fresh).seed);
@@ -320,7 +323,7 @@ test.describe('v3 save fixtures', () => {
 
   test('a newer version opens recovery and is not overwritten', async ({page}) => {
     const newer = JSON.stringify({
-      v: 4,
+      v: 5,
       seed: 'FROM-A-NEWER-BUILD',
       day: 9,
       minute: 80,
