@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
-const {prepare,recoveryKey}=require('../save-migration.js');
+const {prepare,recoveryKey,validLife}=require('../save-migration.js');
 const key='isolated-qa';
 const entries=new Map(),storage={getItem:k=>entries.get(k)??null,setItem:(k,v)=>entries.set(k,v)};
 for(const name of ['fresh','mid','late']){
@@ -18,3 +18,8 @@ assert.throws(()=>prepare(raw,{getItem:()=>null,setItem:()=>{throw Error('quota'
 assert.throws(()=>prepare(raw,{getItem:()=> 'different',setItem:()=>assert.fail('overwrite')},key),/conflict/);
 assert.throws(()=>prepare('{',storage,key));assert.throws(()=>prepare('{"v":5}',storage,key));
 console.log('Living Colony migration: legacy fixtures conserved, exact recovery copies, idempotence and failure safety PASS');
+
+assert.equal(validLife({colonists:[],life:{version:1,time:0,serial:0,sessions:[]}}),true);
+assert.equal(validLife({colonists:[],life:{version:1,time:0,serial:0,sessions:{}}}),false);
+assert.equal(validLife({colonists:[{id:1,life:{owner:1}}]}),false);
+console.log('Malformed v4 life state is refused, rather than loaded into the frame loop');

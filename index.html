@@ -447,6 +447,7 @@ function validExpeditionSave(o){
  if(!o||typeof o!=='object'||Array.isArray(o)||![3,4].includes(o.v)||typeof o.seed!=='string'||o.seed.length<1||o.seed.length>100)return false;
  if(!Number.isFinite(o.day)||o.day<1||!Number.isFinite(o.minute)||o.minute<0||o.minute>=1440)return false;
  if(!o.resources||typeof o.resources!=='object'||!Array.isArray(o.colonists)||!Array.isArray(o.buildings)||!Array.isArray(o.fog))return false;
+ if(o.v===4&&!FarwakeSaveMigration.validLife(o))return false;
  if(o.fog.length!==VW*VH||o.colonists.length<1||o.colonists.length>100||o.buildings.length>10000)return false;
  if(!o.colonists.every(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&typeof p.name==='string'))return false;
  if(!o.buildings.every(b=>b&&Number.isFinite(b.x)&&Number.isFinite(b.y)&&typeof b.type==='string'&&Number.isFinite(b.w)&&Number.isFinite(b.h)))return false;

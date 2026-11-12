@@ -55,3 +55,12 @@ Physical iPhone performance and longer hands-on balance remain review gates;
 software Chromium/WebKit are proxies. No romance, families, interiors, recruiting
 redesign, broad schedules or new hobby progression were added in Phase 1.
 Production and the Beyond preview must remain unchanged.
+
+## Visual direction
+
+The approved cozy-room reference guides warmth, personal objects, readable shared
+moments and the contrast with the alien outdoors. Phase 1 expresses that through
+real activity poses/props, facing companions, and occupancy-driven home light.
+`lifeView` is a simulation-backed presentation adapter: a later cutaway renderer
+can consume the same activity/companion state without creating decorative lives.
+Detailed rooms and the larger atmospheric science-fiction UI remain future work.

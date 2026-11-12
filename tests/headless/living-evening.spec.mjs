@@ -165,3 +165,13 @@ test('forty distinct settlers cannot inherit another person’s meeting reservat
  expect(result.people.every(p=>p.life.bonds.every(b=>b.person>=200))).toBe(true);
  for(const session of result.sessions)expect(session.people.every(id=>result.people.some(p=>p.id===id))).toBe(true);
 });
+
+test('malformed v4 life data opens recovery and leaves the original untouched',async({page})=>{
+ await page.addInitScript(()=>{window.requestAnimationFrame=()=>0});await page.goto('/index.html');
+ const raw=await page.evaluate(()=>{const g=FARWAKE_TEST,s=JSON.parse(JSON.stringify(g.state));s.life={version:1,time:0,serial:0,sessions:{bad:true}};return JSON.stringify(s)});
+ await page.goto('/manifest.webmanifest');
+ await page.evaluate(raw=>localStorage.setItem('farwake_founders_alpha03_v1',raw),raw);await page.goto('/index.html');
+ expect(await page.evaluate(()=>FARWAKE_TEST.state)).toBeNull();
+ await expect(page.locator('#sheet')).toContainText('Expedition needs recovery');
+ expect(await page.evaluate(()=>localStorage.getItem('farwake_founders_alpha03_v1'))).toBe(raw);
+});
