@@ -5,8 +5,8 @@ test('profile real simulation and rendering with five, twenty and forty settlers
  await page.addInitScript(()=>window.requestAnimationFrame=()=>0);await page.goto('/index.html');
  const reports=[];
  for(const layout of ['early','mature']){
- await page.goto('/index.html?review=1');
- if(layout==='mature'){await page.addScriptTag({path:'perf/scenes.js'});await page.evaluate(async()=>{window.requestAnimationFrame=cb=>setTimeout(()=>cb(performance.now()),0);try{await FarwakePerfScenes.apply(window,FarwakePerfScenes.resolve('late'))}finally{window.requestAnimationFrame=()=>0}})}
+ await page.goto('/index.html');
+ if(layout==='mature'){await page.addScriptTag({path:'perf/scenes.js'});await page.evaluate(async()=>{window.requestAnimationFrame=cb=>setTimeout(()=>cb(performance.now()),0);try{await FarwakePerfScenes.apply(window,FarwakePerfScenes.resolve('late',new URLSearchParams()))}finally{window.requestAnimationFrame=()=>0}})}
  for(const count of [5,20,40]){
   reports.push(await page.evaluate(({count,layout})=>{
    const g=FARWAKE_TEST,s=g.state,founders=s.colonists.slice(0,5);s.minute=1093;
