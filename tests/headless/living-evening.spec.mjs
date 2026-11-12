@@ -151,3 +151,17 @@ test('repeated genuine meetings build familiarity once per day and keep memories
  expect(result.every(p=>p.memories.length<=8&&p.places.length<=4&&p.bonds.length<=8)).toBe(true);
  expect(result.filter(p=>p.bonds.length).every(p=>p.memories[0].count===4)).toBe(true);
 });
+
+test('forty distinct settlers cannot inherit another person’s meeting reservation',async({page})=>{
+ await evening(page);await run(page,2);
+ await page.evaluate(()=>{
+  const s=FARWAKE_TEST.state,founders=s.colonists.slice();
+  s.colonists=Array.from({length:40},(_,i)=>({...founders[i%5],id:200+i,x:25.5+i%6,y:29.5+Math.floor(i/6),visit:null,task:null,path:[],carry:null}));
+ });
+ await run(page,45);
+ const result=await page.evaluate(()=>({people:FARWAKE_TEST.state.colonists.map(p=>({id:p.id,life:p.life})),sessions:FARWAKE_TEST.lifeRoot().sessions}));
+ expect(new Set(result.people.map(p=>p.life.owner)).size).toBe(40);
+ expect(result.people.some(p=>p.life.memories.length)).toBe(true);
+ expect(result.people.every(p=>p.life.bonds.every(b=>b.person>=200))).toBe(true);
+ for(const session of result.sessions)expect(session.people.every(id=>result.people.some(p=>p.id===id))).toBe(true);
+});

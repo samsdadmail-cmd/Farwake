@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [farwake/integration, main]
+    branches: [farwake/integration, farwake/combined/rc1, main]
   push:
     branches: [farwake/integration]
 
@@ -23,6 +23,8 @@ jobs:
         run: |
           python3 build.py
           git diff --exit-code -- index.html
+      - name: Living Colony recovery migration
+        run: node tests/life-migration.cjs
       - name: Housing regression
         run: node tests/housing.cjs
       - name: Save fixture sanity
