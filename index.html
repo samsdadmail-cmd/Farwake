@@ -2505,7 +2505,7 @@ function lifeWork(p,work){
  const t=p.task,b=lifeBuilding(t.id);
  if(!b||lifeEmergency(p)){lifeClear(p);return}
  if(t.type==='life_share')return; // Only joint, actual attendance advances a meeting.
- if(t.type==='life_home'&&p.visit?.stage!=='inside'){lifeClear(p);return}
+ if(t.type==='life_home'&&p.visit?.stage!=='inside'){lifeClear(p);lifePerson(p).retryAt=lifeRoot().time+12;return}
  if(p.action<1+work)lifeCue(p,t.type==='life_home'?'A little time to myself.':lifePerson(p).interest==='plants'?'Look how the leaves catch this light.':lifePerson(p).interest==='sky'?'A whole sky we have barely begun to know.':'Finally, time for my own little project.');
  if(p.action>=20){lifeRemember(p,t.type==='life_home'?'home':'quiet',b);lifeClear(p)}
 }

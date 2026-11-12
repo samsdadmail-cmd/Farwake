@@ -178,3 +178,17 @@ test('malformed v4 life data opens recovery and leaves the original untouched',a
  await expect(page.locator('#sheet')).toContainText('Expedition needs recovery');
  expect(await page.evaluate(()=>localStorage.getItem('farwake_founders_alpha03_v1'))).toBe(raw);
 });
+
+test('an assigned expedition outpost supports real indoor home leisure and reload',async({page})=>{
+ await evening(page);
+ const id=await page.evaluate(()=>{
+  const g=FARWAKE_TEST,s=g.state;let outpost;
+  for(let y=30;y<42&&!outpost;y++)for(let x=20;x<40&&!outpost;x++)if(g.clearFootprint(x,y,3,2)&&!g.frontierPlacementReason('outpost',x,y))outpost={id:991,type:'outpost',x,y,w:3,h:2,finished:true,progress:100};
+  if(!outpost)throw Error('No reachable outpost home fixture');s.buildings.push(outpost);
+  if(!g.housingAssign(s.colonists[0].id,outpost.id))throw Error('Actual outpost bed assignment failed');s.weather='rain';return outpost.id;
+ });
+ await run(page,12);
+ expect(await page.evaluate(id=>{const p=FARWAKE_TEST.state.colonists[0];return p.task?.type==='life_home'&&p.visit?.stage==='inside'&&p.visit.building===id},id)).toBe(true);
+ await page.evaluate(()=>FARWAKE_TEST.save());await page.reload();
+ expect(await page.evaluate(id=>FarwakeDoors.occupants(FARWAKE_TEST.state,FARWAKE_TEST.state.buildings.find(b=>b.id===id)).some(p=>p.id===1),id)).toBe(true);
+});
