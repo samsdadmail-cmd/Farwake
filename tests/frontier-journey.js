@@ -14,9 +14,15 @@ async function verifyFrontierJourney(frame,out){
   // As in the turbine policy below, explicitly pause optional consumers while
   // saving alloy for a construction order. A continuous component target may
   // otherwise spend the reserve faster than this five-person settlement casts it.
-  const fundingPaused=[];if(t.cost.alloy)for(const b of s.buildings){const r=b.production,recipe=r&&g.FRONTIER_RECIPES[r.recipe];if(recipe?.cost?.alloy&&!r.paused){r.paused=true;fundingPaused.push(b)}}
+  const fundingPaused=[];
   const search=()=>{
    if(++attempt%10)return false;
+   if(t.cost.alloy)for(const b of s.buildings){
+    const r=b.production,recipe=r&&g.FRONTIER_RECIPES[r.recipe];
+    // Do not pause a plant while its components/panels are still required by
+    // this same blueprint. Fund those outputs first, then retain the alloy.
+    if(recipe?.cost?.alloy&&!r.paused&&Object.keys(recipe.output).every(k=>g.freightAvailable(k)>=(t.cost[k]||0))){r.paused=true;fundingPaused.push(b)}
+   }
    if(Object.entries(t.cost).some(([k,n])=>g.freightAvailable(k)<n))return false;
    const geometry=s.buildings.length+':'+s.harvested.length+':'+s.piles.map(q=>q.id).join(',');if(geometry===lastGeometry)return false;lastGeometry=geometry;
    const x0=near?Math.max(2,near.x-5):20,y0=near?Math.max(2,near.y-5):30;

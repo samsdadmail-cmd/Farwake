@@ -16,9 +16,12 @@ test('render the field interface, real social phases and occupied home in phone 
   phases.push({label:phase,...state});await phone.screenshot({path:info.outputPath('04-evening-'+phase+'.png')});
  }
  expect(phases[0].people.some(p=>p.task==='life_share')).toBe(true);expect(phases[1].phase).toBeGreaterThan(6);expect(phases[2].phase).toBeGreaterThanOrEqual(27);expect(phases[3].people.filter(p=>p.bonds.length)).toHaveLength(2);
- await world.locator('[data-nav="crew"]').click();await world.locator('#sheet [data-action="crew"]').first().click();await phone.screenshot({path:info.outputPath('05-character.png')});await world.locator('[data-sheet="close"]').click();
- const image=page.waitForResponse(r=>r.url().endsWith('/interior-home.webp')&&r.status()===200);await page.locator('#cabin').click();await image;
- await page.evaluate(async()=>{const w=document.querySelector('iframe').contentWindow,im=new w.Image();im.src=new URL('interior-home.webp',w.document.baseURI).href;await im.decode();w.FARWAKE_TEST.draw(200000)});
+ await world.locator('[data-nav="crew"]').click();await world.locator('#sheet [data-action="crew"]').first().click();await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(150000));await phone.screenshot({path:info.outputPath('05-character.png')});await world.locator('[data-sheet="close"]').click();
+ const image=page.waitForResponse(r=>r.url().endsWith('/interior-home.webp')&&r.status()===200);await page.locator('#cabin').click();
+ // Presentation was advanced with explicit timestamps above. Keep that clock
+ // monotonic so the lazy room renderer starts its asset request before waiting.
+ await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(200000));await image;
+ await page.evaluate(async()=>{const w=document.querySelector('iframe').contentWindow,im=new w.Image();im.src=new URL('interior-home.webp',w.document.baseURI).href;await im.decode();w.FARWAKE_TEST.draw(200100)});
  await expect(world.locator('#facility-readout')).toContainText('Inside: Aya Mercer, Tomas Venn');await phone.screenshot({path:info.outputPath('06-occupied-home.png')});
  await page.locator('#viewport').selectOption('844,390');await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(210000));await phone.screenshot({path:info.outputPath('07-home-landscape.png')});
  await info.attach('actual-scene-history.json',{body:JSON.stringify({note:'Isolated fed/evening and home fixtures. Real pathfinding, attendance and reward logic; simulation time advanced manually. These are rendered gameplay screenshots, not physical-device evidence.',phases},null,2),contentType:'application/json'});
