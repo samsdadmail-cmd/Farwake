@@ -17,7 +17,7 @@ window.FarwakePeople = (() => {
   function advance(p,dt,paused,speed,options={}) {
     const v=pose(p), x=options.x??p.x, y=options.y??p.y;
     if(paused||dt<=0)return v;
-    v.reduced=!!options.reduced;
+    v.reduced=!!options.reduced;v.leisure=options.life;
     const blend=1-Math.exp(-dt*23*Math.sqrt(speed||1));
     const dx=x-v.x,dy=y-v.y,dist=Math.hypot(dx,dy);
     if(dist>2){v.x=x;v.y=y;v.walk=0;return v}
@@ -25,7 +25,7 @@ window.FarwakePeople = (() => {
     v.x+=dx*blend;v.y+=dy*blend;
     const strength=Math.min(1,moved/Math.max(.001,dt)/(1.15*(speed||1)));
     v.walk+=(strength-v.walk)*(1-Math.exp(-dt*15));
-    if(dist>.015)v.dir=face(dx,dy);
+    if(dist>.015)v.dir=face(dx,dy);else if(options.life?.look)v.dir=face(options.life.look.x-p.x,options.life.look.y-p.y);
     const phase=v.phase;
     v.phase+=moved*(p.carry?8.8:8);
     if(v.walk>.17&&Math.floor(phase/Math.PI)!==Math.floor(v.phase/Math.PI))options.onSound?.('step',p);
@@ -113,7 +113,8 @@ window.FarwakePeople = (() => {
       const x=base+(side?leg*2.6:0),y=side?-Math.max(0,leg)*2:leg*2.1;
       box(base,-3,3,5,ink);box(x,1+y,side?5:4,3,boot);box(x+1,1+y,2,1,'#9b8d72');
     }
-    const bob=v.reduced?0:-Math.abs(swing)*.85;
+    const sitting=!!v.leisure&&v.walk<.1&&v.leisure.kind!=='sky';
+    const bob=(sitting?3:0)+(v.reduced?0:-Math.abs(swing)*.85);
     ctx.translate(p.carry?.65:0,bob+lift*2+(v.kind==='farm'?stroke*2:0));
     box(-5,-12,9,11,ink);box(-4,-12,7,8,p.coat);box(-5,-10,3,5,p.coat);
     box(-4,-4,8,2,strap); box(-1,-4,2,1,'#dbc798');
@@ -146,6 +147,13 @@ window.FarwakePeople = (() => {
       ctx.save();ctx.translate(1,-6+5*(v.held?v.lift:1-v.drop));ctx.globalAlpha*=v.held?1:v.drop;
       bundle(ctx,p.carry?.kind||v.carry);ctx.restore();
       box(-5,-4,2,2,p.hue);box(5,-5,2,2,p.hue);
+    }else if(v.leisure&&v.walk<.1){
+      const kind=v.leisure.kind;
+      if(kind==='plants'){box(5,-6,2,7,'#8eab78');box(3,-6,3,2,'#b7c28c');box(7,-4,3,2,'#70986d')}
+      else if(kind==='tinkering'){box(3,-6,7,4,'#637879');box(5,-7,2,6,'#c2b69a');box(4,-3,2,2,p.hue)}
+      else if(kind==='sky'){box(4,-16,5,3,'#bfa574');box(7,-17,2,5,'#536b6d');box(4,-13,2,2,p.hue)}
+      else if(kind==='conversation'){const gesture=v.reduced?0:Math.sin(time*.002+p.id)*1.4;box(4,-9+gesture,2,4,p.coat);box(6,-7+gesture,3,2,p.hue)}
+      else{box(3,-6,8,5,'#c6b790');box(7,-6,1,5,'#786954')}
     }else if(working){
       ctx.save();ctx.globalAlpha*=v.work;
       ctx.translate(5,armY+4);

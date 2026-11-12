@@ -217,7 +217,7 @@ function save(){if(!S||importedNavigation||saveLocked)return;health.saves++;try{
 }catch(e){console.warn('Save failed',e)}}
 function load(){try{const raw=localStorage.getItem(SAVE);if(!raw)return false;const o=JSON.parse(raw);if(!validExpeditionSave(o))return false;const upgraded=FarwakeSaveMigration.prepare(raw,localStorage,SAVE);S=upgraded;const oldRuin=o.ruin;makeMap(S.seed);if(oldRuin)S.ruin=oldRuin;S.harvested=S.harvested||[];S.piles=Array.isArray(S.piles)?S.piles:[];S.resources.wood??=24;S.resources.ore??=0;S.designations=S.designations||{};guaranteeStartingOre();features=features.filter(f=>!S.harvested.includes(f.id));for(const id of Object.keys(S.designations))if(!features.some(f=>f.id===id))delete S.designations[id];fog=o.fog?.map(Boolean)||fog;uid=o.uid||Math.max(...S.buildings.map(x=>x.id))+1;for(const p of S.colonists){
  FarwakeDoors.restore(p,S.buildings,walkable);
- p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();frontierRestoreAccess();loadedStamp=localStorage.getItem(SAVE_WRITER);return true}catch(e){console.warn(e);return false}}
+ p.task=null;p.path=[];p.action=0;FarwakeDoors.resume(p,S.buildings);p.next=0;p.work=p.work||'auto';p.carry??=null;}housingAllocate();if(S.ruin?.seen)S.ruin.seen=true;camera={x:28*TS,y:28*TS,z:1};frontierMigrate();freightInit();frontierRestoreAccess();lifeRestore();loadedStamp=localStorage.getItem(SAVE_WRITER);return true}catch(e){console.warn(e);return false}}
 function buildingAt(x,y,includeBlueprint=true){return S.buildings.find(b=>(includeBlueprint||b.finished)&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)}
 function featureAt(x,y){return features.find(f=>f.x===x&&f.y===y)}
 const NATURAL={
@@ -269,7 +269,7 @@ function queuedWork(){return Object.keys(S.designations||{}).filter(id=>!!featur
 function cancelDesignation(id){if(!S.designations?.[id])return false;delete S.designations[id];for(const p of S.colonists)if(p.task?.type==='harvest'&&p.task.feature===id){p.task=null;p.path=[];p.action=0;}save();return true}
 function designateFeature(id){const f=featureById(id);if(!f||!fog[index(f.x,f.y)])return false;S.designations??={};if(S.designations[id])return false;S.designations[id]={progress:0};for(const p of S.colonists)if(p.task?.feature===id&&p.task.type!=='harvest'){p.task=null;p.path=[];p.action=0;}dispatchFieldWork();save();return true}
 function harvestTaskFor(p){if(!workWeight(p,'gather')||!['auto','gather','build'].includes(p.work))return null;const candidates=features.filter(f=>S.designations?.[f.id]&&fog[index(f.x,f.y)]&&!S.colonists.some(z=>z.id!==p.id&&z.task?.type==='harvest'&&z.task.feature===f.id));candidates.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));for(const f of candidates.slice(0,30)){if(setTask(p,{type:'harvest',feature:f.id,x:f.x,y:f.y}))return p.task;}return null}
-function dispatchFieldWork(){if(!queuedWork())return;const pool=[...S.colonists].filter(p=>workWeight(p,'gather')>0&&p.energy>=32&&p.hunger<67&&!['rest','eat','build','harvest','haul_pickup','haul_dropoff'].includes(p.task?.type)&&['auto','gather','build'].includes(p.work));pool.sort((a,b)=>(a.work==='gather'?-2:0)-(b.work==='gather'?-2:0));for(const p of pool){if(!queuedWork())break;if(harvestTaskFor(p))break}}
+function dispatchFieldWork(){if(!queuedWork())return;const pool=[...S.colonists].filter(p=>workWeight(p,'gather')>0&&p.energy>=32&&p.hunger<67&&!p.task?.type?.startsWith('life_')&&!['rest','eat','build','harvest','haul_pickup','haul_dropoff'].includes(p.task?.type)&&['auto','gather','build'].includes(p.work));pool.sort((a,b)=>(a.work==='gather'?-2:0)-(b.work==='gather'?-2:0));for(const p of pool){if(!queuedWork())break;if(harvestTaskFor(p))break}}
 // Include the full illustrated tree canopy above its ground tile in touch targeting.
 function featureFromPoint(pos){const x=Math.floor(pos.x),y=Math.floor(pos.y);let exact=featureAt(x,y);if(exact&&fog[index(exact.x,exact.y)])return exact;
  let best=null,score=Infinity;for(const fy of [y,y+1])for(const fx of [x-1,x,x+1]){const f=featureAt(fx,fy);if(!f||f.type!=='tree'||!fog[index(f.x,f.y)])continue;const dx=pos.x-(f.x+.5),dy=pos.y-(f.y+.10);if(Math.abs(dx)<.48&&dy>-.65&&dy<.47){const s=dx*dx+dy*dy;if(s<score){score=s;best=f}}}return best;
@@ -290,7 +290,8 @@ function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='surv
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
 function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const drop=haulTaskFor(p);if(drop)return drop}if(p.energy<30||night)return housingRestTarget(p);
  if(p.hunger>67){const meal=frontierMealTarget(p);if(meal)return meal;}
- if(!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
+ const evening=lifeTarget(p);if(evening)return evening;
+ if(!lifeEvening(p)&&!jobs().some(b=>b.buildPriority)){const social=frontierCommunityTarget(p);if(social)return social;}
  const lanes=[
   ['build',()=>{const edit=editorCandidate(p);if(edit&&setTask(p,edit))return p.task;
     const ranked=jobs().filter(b=>!b.buildPaused&&freightSiteReady(b)&&frontierMarkAccess(b)&&!S.colonists.some(o=>o!==p&&o.task?.type==='build'&&o.task.id===b.id)).sort((a,b)=>(b.buildPriority||0)-(a.buildPriority||0)||b.progress-a.progress);
@@ -317,6 +318,7 @@ function getTarget(p){const hr=S.minute/60,night=hr>=21||hr<6;if(p.carry){const 
 
 function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(buildingAt(Math.floor(p.x),Math.floor(p.y))?.type==='road'?1.25:1)*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
+ if(t.type.startsWith('life_')){lifeWork(p,work);return}
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
  if(t.seam){frontierFieldExtract(p,work);return}
@@ -343,7 +345,7 @@ function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.
 }
 function updateGoal(){surveyAdvanceGoal();if(S.goal===0&&finished('shelter').length){S.goal=1;log('✦','Directive completed. Permanent shelter established.')}if(S.goal===1&&finished('garden').length){S.goal=2;log('✦','Food production is online. Expand your settlement.')}if(S.goal===2&&finished('workshop').length&&finished('solar').length){S.goal=3;log('✦','Frontier industry established. Signal One advances.')}if(S.goal===3&&finished('comms').length){S.goal=4;log('⌁','Signal One broadcast activated. A new chapter begins.')}}
 let fieldDispatchState=null,fieldDispatchElapsed=0;
-function tick(dt){if(paused)return;health.ticks++;surveyGridTick(dt*speed);let step=dt*speed;frontierTick(step);advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
+function tick(dt){if(paused)return;health.ticks++;surveyGridTick(dt*speed);let step=dt*speed;lifeTick(step);frontierTick(step);advanceCrops(step);advanceGatherTargets(step);S.minute+=dt*speed*3.1;while(S.minute>=1440){S.minute-=1440;S.day++;log('☼','Day '+S.day+' begins on the frontier.');if(S.day%3===0){const n=hash(S.day,7,hashStr(S.seed));S.weather=n>.79?'rain':n>.62?'wind':'clear';if(S.weather!=='clear')log('☁','Weather watch: '+(S.weather==='rain'?'showers moving through the valley':'strong winds expected')+'.')}}
  for(const p of S.colonists){FarwakeDoors.sync(p,S.buildings);p.hunger=clamp(p.hunger+step*.045,0,100);p.social=clamp(p.social-step*.008,5,100);p.mood=clamp(p.mood+(p.energy>40&&p.hunger<70?.004:-.12)*step,0,100);if(p.hunger>=100){p.mood=Math.max(5,p.mood-step*.1);p.energy=Math.max(0,p.energy-step*.07);}if(p.task&&p.task.type==='rest'&&p.energy>80&&S.minute>6*60&&S.minute<20*60)p.task=null;
  if(!p.task||p.task.type==='build'&&!S.buildings.some(b=>b.id===p.task.id&&!b.finished&&!b.accessBlocked)||p.task.type==='gather'&&!features.some(f=>f.id===p.task.feature)||p.task.type==='harvest'&&!S.designations?.[p.task.feature]||p.task.type==='haul_pickup'&&!pileById(p.task.pileId)){p.task=null;const t=getTarget(p);if(t&&p.task!==t)setTask(p,t)}doTask(p,dt)}
  if(S.piles.some(q=>q.site!=null))for(const p of S.colonists)if(p.task?.type==='research'){p.task=null;p.path=[]}
@@ -426,7 +428,7 @@ function renderUI(force=false){if(!S)return;const nav=$('nav');nav.innerHTML=NAV
  body.scrollTop=st;body.scrollLeft=sl;if(tab==='build'&&body.querySelector('.builder'))body.querySelector('.builder').scrollLeft=builderScroll;
  $('headextra').textContent=tab==='crew'?'5 aboard':tab==='research'?S.resources.knowledge+' ✦ available':tab==='build'?jobs().length+' under construction':tab==='world'?'SEED '+S.seed:S.buildings.length+' structures';
  paintHUD();}
-function taskLabel(p){if(p.task?.seam)return 'Mining a surveyed seam';if(p.task?.type==='harvest')return NATURAL[featureById(p.task.feature)?.type]?.verb||'Gathering';let t=p.task?.type;return({social:'Sharing a break',upgrade:'Upgrading equipment',investigate:'Investigating a planetary site',align:'Aligning the signal array',build:'Building',farm:'Growing crops',craft:'Manufacturing',rest:'Resting',eat:'Eating',research:'Studying',survey:'Surveying',gather:'Salvaging',forage:'Foraging',haul_pickup:'Collecting supplies',haul_dropoff:'Hauling to storage'})[t]||'Assessing priorities'}
+function taskLabel(p){const evening=lifeDescription(p);if(evening)return evening;if(p.task?.seam)return 'Mining a surveyed seam';if(p.task?.type==='harvest')return NATURAL[featureById(p.task.feature)?.type]?.verb||'Gathering';let t=p.task?.type;return({social:'Sharing a break',upgrade:'Upgrading equipment',investigate:'Investigating a planetary site',align:'Aligning the signal array',build:'Building',farm:'Growing crops',craft:'Manufacturing',rest:'Resting',eat:'Eating',research:'Studying',survey:'Surveying',gather:'Salvaging',forage:'Foraging',haul_pickup:'Collecting supplies',haul_dropoff:'Hauling to storage'})[t]||'Assessing priorities'}
 function naturalInspector(f){const spec=NATURAL[f.type],q=S.designations?.[f.id],worker=S.colonists.find(p=>p.task?.type==='harvest'&&p.task.feature===f.id),pct=q?Math.round(100*(q.progress||0)/(f.workTime||spec.workTime)):0;
  return '<div class="inspectcard inspectnatural"><div class="naturalhead"><div class="naturalicon">'+uiIcon(f.type,23)+'</div><div class="naturaltitle"><div class="label">'+(f.amount?'Dense '+spec.name:spec.name)+'</div><div class="naturalmeta">'+spec.kind+' · '+f.x+', '+f.y+(q?' · '+(worker?'In progress':'Queued'):'')+'</div></div><button class="secondary" data-inspect="cancel">Close</button></div><div class="naturedesc">'+spec.description+'</div><div class="naturalmeta">On completion: '+(f.amount?f.amount+' '+MATERIALS[spec.resource].name.toLowerCase()+' left for physical hauling':spec.yield)+(q?' · '+(worker?worker.name+' working':'Awaiting crew'):'')+'</div>'+(q?'<div class="workmeter"><i style="width:'+pct+'%"></i></div>':'')+'<div class="naturalbuttons"><button class="'+(q?'secondary':'primary')+'" data-inspect="'+(q?'cancelwork':'designate')+'" data-id="'+f.id+'">'+(q?'Cancel work order':spec.action)+'</button></div></div>';
 }
@@ -439,7 +441,7 @@ function refreshInspect(){const el=$('inspector');if(editor){el.innerHTML=editor
  }else el.innerHTML='';}
 function showSheet(html){$('sheet').innerHTML=html;$('sheetbg').classList.add('open')}
 function closeSheet(){$('sheetbg').classList.remove('open');sheetSection=null;renderNavState()}
-function profile(id){const p=S.colonists.find(z=>z.id===id);if(!p)return;const focusOptions=[['auto','Self-direct'],['build','Construction'],['farm','Agriculture'],['engineer','Manufacturing'],['survey','Exploration'],['gather','Salvaging']];showSheet('<div class="row"><div class="smallcaps">EXPEDITION PERSONNEL</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>'+p.name+'</h2><p>'+p.role+' · '+p.trait+' · '+p.ambition+'</p><div class="splitgrid"><div class="infocard"><b>Energy</b><div class="progress"><i style="width:'+Math.round(p.energy)+'%"></i></div><p>'+Math.round(p.energy)+'%</p></div><div class="infocard"><b>Hunger</b><div class="progress"><i style="width:'+(100-Math.round(p.hunger))+'%"></i></div><p>'+Math.round(p.hunger)+'% hungry</p></div><div class="infocard"><b>Morale</b><div class="progress"><i style="width:'+Math.round(p.mood)+'%"></i></div><p>'+Math.round(p.mood)+'%</p></div><div class="infocard"><b>Social comfort</b><div class="progress"><i style="width:'+Math.round(p.social)+'%"></i></div><p>'+Math.round(p.social)+'%</p></div></div><div class="sectioncap" style="margin-top:14px">Work preference (optional)</div><div class="buttongroup">'+focusOptions.map(([k,n])=>'<button class="pill '+(p.work===k?'active':'')+'" data-sheet="work" data-id="'+id+'" data-work="'+k+'">'+n+'</button>').join('')+'</div>'+housingPerson(p)+personPriorityControls(p)+FarwakeMoments.profile(p)+'<p>Currently: <b>'+taskLabel(p)+'</b>. Your guidance influences priorities, but basic needs still come first. Food and rest take precedence over ordinary work.</p><button class="primary" style="width:100%" data-sheet="follow" data-id="'+id+'">Follow '+p.name.split(' ')[0]+'</button>')}
+function profile(id){const p=S.colonists.find(z=>z.id===id);if(!p)return;const focusOptions=[['auto','Self-direct'],['build','Construction'],['farm','Agriculture'],['engineer','Manufacturing'],['survey','Exploration'],['gather','Salvaging']];showSheet('<div class="row"><div class="smallcaps">EXPEDITION PERSONNEL</div><button class="iconbtn" data-sheet="close">✕</button></div><h2>'+p.name+'</h2><p>'+p.role+' · '+p.trait+' · '+p.ambition+'</p><div class="splitgrid"><div class="infocard"><b>Energy</b><div class="progress"><i style="width:'+Math.round(p.energy)+'%"></i></div><p>'+Math.round(p.energy)+'%</p></div><div class="infocard"><b>Hunger</b><div class="progress"><i style="width:'+(100-Math.round(p.hunger))+'%"></i></div><p>'+Math.round(p.hunger)+'% hungry</p></div><div class="infocard"><b>Morale</b><div class="progress"><i style="width:'+Math.round(p.mood)+'%"></i></div><p>'+Math.round(p.mood)+'%</p></div><div class="infocard"><b>Social comfort</b><div class="progress"><i style="width:'+Math.round(p.social)+'%"></i></div><p>'+Math.round(p.social)+'%</p></div></div><div class="sectioncap" style="margin-top:14px">Work preference (optional)</div><div class="buttongroup">'+focusOptions.map(([k,n])=>'<button class="pill '+(p.work===k?'active':'')+'" data-sheet="work" data-id="'+id+'" data-work="'+k+'">'+n+'</button>').join('')+'</div>'+housingPerson(p)+personPriorityControls(p)+lifePanel(p)+FarwakeMoments.profile(p)+'<p>Currently: <b>'+taskLabel(p)+'</b>. Your guidance influences priorities, but basic needs still come first. Food and rest take precedence over ordinary work.</p><button class="primary" style="width:100%" data-sheet="follow" data-id="'+id+'">Follow '+p.name.split(' ')[0]+'</button>')}
 
 function validExpeditionSave(o){
  if(!o||typeof o!=='object'||Array.isArray(o)||![3,4].includes(o.v)||typeof o.seed!=='string'||o.seed.length<1||o.seed.length>100)return false;
@@ -571,7 +573,7 @@ function localSound(kind,source){
 function advanceWorld(dt){
  for(const p of S.colonists){
    const id=p.task?.feature;
-   FarwakePeople.advance(p,dt,paused,speed,{kind:p.task?.seam?'ore':id?featureById(id)?.type:undefined,progress:S.designations?.[id]?.progress??p.action,reduced:FieldPreferences.reduced,onSound:localSound});
+   FarwakePeople.advance(p,dt,paused,speed,{kind:p.task?.seam?'ore':id?featureById(id)?.type:undefined,progress:S.designations?.[id]?.progress??p.action,reduced:FieldPreferences.reduced,life:lifeView(p),onSound:localSound});
  }
  FarwakeWorkFX.advance(dt,paused,speed,FieldPreferences.reduced);
  FarwakeMoments.update(S,dt,{mode:prefs.dialogue,paused,pose:FarwakePeople.pose,eligible:p=>FarwakeDoors.visible(p)>.8&&Math.abs(sx(p.x*TS)-cw/2)<cw/2&&Math.abs(sy(p.y*TS)-ch/2)<ch/2});
@@ -1419,6 +1421,8 @@ const guideEntries=[
  ['Agriculture','Growing food','Inspect a grow bed for its crop stage. Workers plant and tend crops and harvest mature food. Check work assignments, output targets and the stage before expecting a harvest.'],
  ['Manufacturing','Making alloy','The basic workshop recipe uses two ore and one salvage metal per alloy. The building needs inputs, a worker and power. Inspect the workshop for progress and its limiting condition.'],
  ['Automation','Giving orders','Use Work & production for colony priorities and targets. Open a colonist profile for personal work choices. Hunger and rest still interrupt work.'],
+ ['Personnel','An evening together','From 17:30, rested and fed colonists choose company, a quiet interest or time at home. A shared meeting only builds familiarity after both people arrive and stay. Rain encourages home time. Urgent construction, hunger and carried supplies take precedence. Inspect a person for their current intention and a few meaningful memories.'],
+ ['Saving','Original colony recovery','Living Colony upgrades version 3 colonies to version 4 only after verifying an exact recovery copy. Game & Save can export that original file. Older Beyond builds refuse version 4 saves. Use the original copy if returning to an older build.'],
  ['Personnel','Daily life','Tap a person to see their job and needs. Doors and occupancy reflect indoor jobs. Outdoor supplies are handled beside the pallet. A nearby operating clinic improves rest recovery.'],
  ['Research','Technology requirements','The research screen shows costs, prerequisites and benefits. Earn knowledge through real research and survey work. A locked technology lists what the colony still needs.'],
  ['Power','Generation and demand','Compare power supply and demand in Command Center. Solar output falls at night. Power banks charge surplus energy and discharge into a deficit. Check power when a staffed workshop stops producing.'],
@@ -2394,8 +2398,168 @@ function frontierAccessReason(type,x,y,ignoreId){
  frontierAccessCache={state:S,key,reason};return reason;
 }
 
+// Phase 1: one chosen evening, real meetings, remembered people and places.
+// Simulation time only. Rendering, dialogue visibility and camera never decide outcomes.
+const LIFE_TENDENCIES={
+ Steadfast:{company:.88,home:.35,quiet:.35,interest:'conversation'},
+ Inventive:{company:.25,home:.60,quiet:.82,interest:'tinkering'},
+ Patient:{company:.35,home:.42,quiet:.90,interest:'plants'},
+ Compassionate:{company:1,home:.40,quiet:.28,interest:'conversation'},
+ Curious:{company:.38,home:.22,quiet:.95,interest:'sky'}
+};
+function lifeRoot(){return S.life??=( {version:1,time:0,serial:0,sessions:[]} )}
+function lifePerson(p){
+ if(!p.life){
+  const n=hash(p.id,31,hashStr(S.seed));
+  const tendencies=LIFE_TENDENCIES[p.trait]||{company:.25+n*.65,home:.35,quiet:.8-n*.4,interest:n>.5?'sky':'tinkering'};
+  p.life={...tendencies,doneDay:0,retryAt:0,memories:[],places:[],bonds:[]};
+ }
+ return p.life;
+}
+function lifeEvening(p){return S.minute>=1050&&S.minute<1230}
+function lifeEmergency(p){return !!p.carry||p.energy<35||p.hunger>60||industryFoodEmergency()}
+function lifeBuilding(id){return S.buildings.find(b=>b.id===id&&b.finished&&!b.editOrder)}
+function lifeClear(p){
+ if(p.task?.type?.startsWith('life_')){p.task=null;p.path=[];p.action=0}
+ if(p.life)delete p.life.session;
+}
+function lifeCancel(session){
+ for(const id of session.people){const p=S.colonists.find(p=>p.id===id);if(p){lifeClear(p);lifePerson(p).retryAt=lifeRoot().time+12}}
+ lifeRoot().sessions=lifeRoot().sessions.filter(s=>s!==session);
+}
+function lifePlaces(p){
+ const home=lifeBuilding(p.home),quiet=lifePerson(p).interest;
+ const buildings=S.buildings.filter(b=>b.finished&&!b.editOrder&&(b===home||b.type==='camp'||FRONTIER_BUILDINGS[b.type]?.community||quiet==='plants'&&b.type==='garden'));
+ return buildings.map(b=>{
+  const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5}));
+  points.sort((a,z)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y));
+  return {b,points};
+ }).filter(q=>q.points.length);
+}
+function lifeAttachment(p,b){return lifePerson(p).places.find(q=>q.building===b.id)?.fondness||0}
+function lifeRemember(p,kind,b,other){
+ const l=lifePerson(p),key=kind+':'+b.id+':'+(other?.id||0);
+ const text=kind==='shared'?'Shared an evening with '+other.name+' by the '+(TYPES[b.type]?.name||'expedition camp'):kind==='home'?'Unwound at home':l.interest==='plants'?'Spent a quiet evening watching the plants':l.interest==='sky'?'Took a quiet moment beneath the evening sky':'Found time for a small personal project';
+ const previous=l.memories.find(m=>m.key===key);
+ l.memories=[{key,kind,other:other?.id,building:b.id,day:S.day,minute:Math.floor(S.minute),text,count:(previous?.count||0)+1},...l.memories.filter(m=>m.key!==key)].slice(0,8);
+ const place=l.places.find(q=>q.building===b.id);
+ l.places=[{building:b.id,fondness:Math.min(4,(place?.fondness||0)+1),lastDay:S.day},...l.places.filter(q=>q.building!==b.id)].slice(0,4);
+ if(other){
+  const bond=l.bonds.find(q=>q.person===other.id);
+  l.bonds=[{person:other.id,shared:(bond?.shared||0)+1,lastDay:S.day},...l.bonds.filter(q=>q.person!==other.id)].sort((a,z)=>z.shared-a.shared).slice(0,8);
+ }
+ l.doneDay=S.day;p.social=clamp(p.social+(kind==='shared'?14:l.company<.5?8:3),0,100);p.mood=clamp(p.mood+1.5,0,100);
+}
+function lifeCue(p,text){const r=lifeRoot();r.cue={serial:++r.serial,person:p.id,text,until:r.time+8}}
+function lifeTaskAt(session,p){
+ const i=session.people.indexOf(p.id),point=session.points[i];
+ return {type:'life_share',session:session.id,id:session.building,x:Math.floor(point.x),y:Math.floor(point.y),outdoors:true};
+}
+function lifeTarget(p){
+ const r=lifeRoot(),l=lifePerson(p);
+ if(l.session){
+  const session=r.sessions.find(s=>s.id===l.session);
+  if(session&&!lifeEmergency(p)&&lifeEvening(p))return lifeTaskAt(session,p);
+  if(session)lifeCancel(session);else delete l.session;
+ }
+ if(l.doneDay===S.day&&S.minute>=1200&&S.minute<1260)return housingRestTarget(p);
+ if(!lifeEvening(p)||l.doneDay===S.day||r.time<l.retryAt||lifeEmergency(p))return null;
+ if(jobs().some(b=>b.buildPriority&&!b.buildPaused))return null;
+ const home=lifeBuilding(p.home),wet=['rain','storm'].includes(S.weather);
+ const places=lifePlaces(p);
+ const options=[];
+ for(const place of places){
+  const {b,points}=place,affection=lifeAttachment(p,b)*.06,travel=Math.hypot(p.x-points[0].x,p.y-points[0].y)*.018;
+  const quietFit=l.interest==='plants'&&b.type==='garden'?.25:b===home?.08:0;
+  if(!wet)options.push({kind:'quiet',...place,score:l.quiet+quietFit+affection-travel});
+  if(b===home)options.push({kind:'home',...place,score:l.home+(wet?.8:0)+affection-travel});
+  if(!wet&&points.length>=2){
+   const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&lifeEvening(q)&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&Math.hypot(p.x-q.x,p.y-q.y)<14)
+    .sort((a,z)=>((l.bonds.find(q=>q.person===z.id)?.shared||0)-(l.bonds.find(q=>q.person===a.id)?.shared||0))||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y)||a.id-z.id)[0];
+   if(partner)options.push({kind:'shared',...place,partner,score:l.company+affection-travel});
+  }
+ }
+ options.sort((a,z)=>z.score-a.score||a.b.id-z.b.id);
+ for(const option of options.slice(0,5)){
+  const {b,points,kind}=option;
+  if(kind==='shared'){
+   // Choose adjacent places; two opposite building edges are not a conversation.
+   const pair=points.slice(1).find(q=>Math.hypot(q.x-points[0].x,q.y-points[0].y)<1.6);
+   if(!pair)continue;
+   const session={id:++r.serial,day:S.day,building:b.id,people:[p.id,option.partner.id],points:[points[0],pair],progress:0,expires:r.time+18};
+   const task=lifeTaskAt(session,p);
+   if(!setTask(p,task))continue;
+   r.sessions.push(session);l.session=session.id;lifePerson(option.partner).session=session.id;return task;
+  }
+  const point=points[0];
+  const task=kind==='home'?{type:'life_home',id:b.id,x:b.x,y:b.y,w:b.w,h:b.h}:{type:'life_quiet',id:b.id,x:Math.floor(point.x),y:Math.floor(point.y),outdoors:true};
+  if(setTask(p,task))return task;
+ }
+ l.retryAt=r.time+12;return null;
+}
+function lifeWork(p,work){
+ const t=p.task,b=lifeBuilding(t.id);
+ if(!b||lifeEmergency(p)){lifeClear(p);return}
+ if(t.type==='life_share')return; // Only joint, actual attendance advances a meeting.
+ if(t.type==='life_home'&&p.visit?.stage!=='inside'){lifeClear(p);return}
+ if(p.action<1+work)lifeCue(p,t.type==='life_home'?'A little time to myself.':lifePerson(p).interest==='plants'?'Look how the leaves catch this light.':lifePerson(p).interest==='sky'?'A whole sky we have barely begun to know.':'Finally, time for my own little project.');
+ if(p.action>=20){lifeRemember(p,t.type==='life_home'?'home':'quiet',b);lifeClear(p)}
+}
+let lifeTickState=null,lifeElapsed=0;
+function lifeTick(step){
+ const r=lifeRoot();r.time+=step;
+ if(lifeTickState!==S){lifeTickState=S;lifeElapsed=0}
+ lifeElapsed+=step;if(lifeElapsed<.5)return;const elapsed=lifeElapsed;lifeElapsed=0;
+ for(const session of [...r.sessions]){
+  const people=session.people.map(id=>S.colonists.find(p=>p.id===id)),b=lifeBuilding(session.building);
+  if(!b||session.day!==S.day||people.some(p=>!p||lifeEmergency(p))||S.minute>=1230||['rain','storm'].includes(S.weather)){lifeCancel(session);continue}
+  const present=people.every(p=>p.task?.type==='life_share'&&p.task.session===session.id&&!p.path.length)&&Math.hypot(people[0].x-people[1].x,people[0].y-people[1].y)<2.5;
+  if(!present){if(r.time>=session.expires)lifeCancel(session);continue}
+  if(!session.started){session.started=true;lifeCue(people[0],'Good to have a quiet minute together.')}session.progress+=elapsed;
+  if(session.progress>=20){
+   lifeRemember(people[0],'shared',b,people[1]);lifeRemember(people[1],'shared',b,people[0]);
+   lifeCue(people[1],'Same place another evening?');for(const p of people)lifeClear(p);
+   r.sessions=r.sessions.filter(s=>s!==session);
+  }
+ }
+ for(const p of S.colonists){
+  const l=lifePerson(p),task=p.task;
+  if(task?.type?.startsWith('life_')){
+   if(!lifeBuilding(task.id)||lifeEmergency(p)||!lifeEvening(p)||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
+    const session=r.sessions.find(s=>s.id===l.session);if(session)lifeCancel(session);else{lifeClear(p);l.retryAt=r.time+2}
+   }
+  }
+
+ }
+}
+function lifeRestore(){
+ if(!S.life)return;
+ // Jobs/routes are intentionally rebuilt by the existing loader. Unfinished
+ // meetings have no rewards; re-invite after load instead of manufacturing attendance.
+ S.life.sessions=[];delete S.life.cue;
+ for(const p of S.colonists){delete p.life?.session;if(p.task?.type==='life_share')lifeClear(p)}
+}
+function lifeDescription(p){
+ const t=p.task;if(!t?.type?.startsWith('life_'))return '';
+ if(t.type==='life_home')return p.path.length?'Going home for a quiet evening':'Unwinding at home';
+ const l=lifePerson(p);
+ if(t.type==='life_quiet')return p.path.length?'Finding a quiet spot':({plants:'Watching the evening garden',sky:'Watching the evening sky',tinkering:'Tinkering with personal equipment',conversation:'Taking a quiet breath'})[l.interest];
+ const s=lifeRoot().sessions.find(s=>s.id===t.session),other=s&&S.colonists.find(q=>q.id===s.people.find(id=>id!==p.id));
+ return (s?.started?'Sharing an evening with ':'Meeting ')+(other?.name.split(' ')[0]||'a neighbour');
+}
+function lifeView(p){
+ const t=p.task;if(!t?.type?.startsWith('life_')||p.path.length)return null;
+ const session=t.type==='life_share'&&lifeRoot().sessions.find(s=>s.id===t.session);
+ const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
+ return {kind:t.type==='life_share'?'conversation':lifePerson(p).interest,look:other&&session.started?other:null};
+}
+function lifePanel(p){
+ const l=lifePerson(p),memories=l.memories.slice(0,4),bonds=l.bonds.map(q=>({q,p:S.colonists.find(p=>p.id===q.person)})).filter(q=>q.p);
+ return '<section class="infocard life-profile"><b>'+esc(lifeDescription(p)||'An evening of their own')+'</b><p>'+esc(l.company>=.7?'Often seeks company':l.interest==='plants'?'Finds calm around growing things':l.interest==='sky'?'Drawn to quiet skies':'Enjoys small personal projects')+'</p><details><summary>People, places & memories</summary><p>'+esc(bonds.map(({q,p})=>p.name+' · '+(q.shared>=3?'familiar companion':'getting acquainted')).join('; ')||'Friendships grow through time actually spent together.')+'</p>'+memories.map(m=>'<p><small>Day '+m.day+'</small><br>'+esc(m.text)+(m.count>1?' · '+m.count+' evenings':'')+'</p>').join('')+'</details></section>';
+}
+
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
-window.FARWAKE_TEST={healthSnapshot,frontierOrderExtraction,frontierPlacementReason,TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
+window.FARWAKE_TEST={lifeRoot,lifePerson,lifeTarget,lifeTick,lifeView,lifeDescription,lifePlaces,lifeAttachment,lifePanel,lifeCancel,lifeRestore,healthSnapshot,frontierOrderExtraction,frontierPlacementReason,TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features}};
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse
 root=Path(__file__).resolve().parent
-modules=['housing','logistics','editor','industry','command','survey','frontier']
+modules=['housing','logistics','editor','industry','command','survey','frontier','life']
 source=(root/'src/game.html').read_text()
 bundle='\n'.join((root/(name+'.inc.js')).read_text() for name in modules)
 result=source.replace('// FOUNDATION MODULES',bundle)
