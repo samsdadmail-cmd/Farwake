@@ -4,7 +4,7 @@ test.use({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasT
 async function evening(page){
  await page.addInitScript(()=>{window.requestAnimationFrame=()=>0});await page.goto('/index.html');
  await page.evaluate(()=>{
-  const g=FARWAKE_TEST,s=g.state;s.minute=1051;
+  const g=FARWAKE_TEST,s=g.state;s.minute=1093;
   for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;
   for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[],carry:null});
  });
@@ -116,7 +116,7 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
  await page.screenshot({path:info.outputPath('selected-'+viewport.width+'.png')});
  await page.locator('[data-inspect="profile"]').click({timeout:5000});
  await expect(page.locator('.life-profile')).toContainText('Sharing an evening');
- await page.locator('.life-profile summary').click();await expect(page.locator('.life-profile details')).toHaveAttribute('open','');
+ await page.getByText('Home, responsibilities & wellbeing',{exact:true}).click();await expect(page.locator('.life-profile > details')).toHaveAttribute('open','');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:info.outputPath('profile-'+viewport.width+'.png')});
  await page.locator('#sheet [data-sheet="close"]').click();
@@ -130,8 +130,9 @@ test('completed experiences create a bounded, behavioural preference for a real 
   const g=FARWAKE_TEST,s=g.state,p=s.colonists.find(p=>p.role==='Surveyor'),camp=s.buildings.find(b=>b.type==='camp');
   if(!p.life.places.some(q=>q.building===camp.id))throw Error('No actual completed evening to remember');
   // A second venue and a position equidistant to its edge isolate the choice.
-  s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1051;
+  s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1093;
   Object.assign(p,{x:30.6,y:32.5,home:null,task:null,path:[],energy:95,hunger:5});
+  const venues=g.lifePlaces(p),a=venues.find(q=>q.b.id===camp.id).points[0],z=venues.find(q=>q.b.id===990).points[0],d=Math.hypot(z.x-a.x,z.y-a.y);p.x=(a.x+z.x)/2+(z.x-a.x)/d*.1;p.y=(a.y+z.y)/2+(z.y-a.y)/d*.1;
   p.life.retryAt=0;const attached=g.lifeTarget(p)?.id;
   p.task=null;p.path=[];const places=p.life.places;p.life.places=[];
   const without=g.lifeTarget(p)?.id;p.life.places=places;
@@ -143,7 +144,7 @@ test('completed experiences create a bounded, behavioural preference for a real 
 test('repeated genuine meetings build familiarity once per day and keep memories bounded',async({page})=>{
  await evening(page);
  for(let day=1;day<=4;day++){
-  if(day>1)await page.evaluate(day=>{const s=FARWAKE_TEST.state;s.day=day;s.minute=1051;for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[]})},day);
+  if(day>1)await page.evaluate(day=>{const s=FARWAKE_TEST.state;s.day=day;s.minute=1093;for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[]})},day);
   await run(page,45);
  }
  const result=await page.evaluate(()=>FARWAKE_TEST.state.colonists.map(p=>p.life));

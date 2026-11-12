@@ -4,15 +4,18 @@ async function verifyFrontierFresh(frame,out){
  const ok=(v,label)=>{if(!v)throw Error(fail(label));lines.push('PASS '+label+' · Day '+s.day);out.textContent=lines.join('\n')};
  // Only player-facing policies, research and construction orders are changed.
  // No resources, achievements, colonists or technologies are granted by the fixture.
- const run=async (until,n=100000)=>{for(let i=0;i<n;i++){if(until())return true;g.tick(.1);if(i%30===0)await new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();c.port2.close();r()};c.port2.postMessage(0)})}return until()};
- const fail=label=>label+' '+JSON.stringify({day:s.day,stocks:s.resources,people:s.colonists.map(p=>({name:p.name,task:p.task?.type,energy:p.energy,hunger:p.hunger})),sites:s.buildings.filter(b=>!b.finished).map(b=>({type:b.type,stock:b.siteStock,needs:b.reservedMaterials}))});
+ const traces=[];let traceDay=0;
+ const run=async (until,n=100000)=>{for(let i=0;i<n;i++){if(until())return true;g.tick(.1);if(s.day!==traceDay&&s.minute>=720&&s.minute<730){traceDay=s.day;traces.push({day:s.day,alloy:s.resources.alloy,piles:s.piles.map(q=>({kind:q.kind,amount:q.amount,site:q.site})),people:s.colonists.map(p=>({name:p.name,task:p.task,path:p.path.length,carry:p.carry}))});if(traces.length>5)traces.shift()}if(i%30===0)await new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();c.port2.close();r()};c.port2.postMessage(0)})}return until()};
+ const fail=label=>label+' '+JSON.stringify({traces,day:s.day,stocks:s.resources,power:g.surveyGrid(),alloyAvailable:g.freightAvailable('alloy'),targets:g.industryPolicy().targets,facilities:s.buildings.filter(b=>b.finished&&!['path','road'].includes(b.type)).map(b=>({id:b.id,type:b.type,x:b.x,y:b.y,production:b.production,held:b.autoPowerHold,block:['workshop','garden','sawmill','smelter','pump','kitchen'].includes(b.type)?g.productionBlock(b):undefined})),people:s.colonists.map(p=>({name:p.name,task:p.task?.type,target:p.task?.id,path:p.path?.length,x:p.x,y:p.y,energy:p.energy,hunger:p.hunger})),sites:s.buildings.filter(b=>!b.finished).map(b=>({type:b.type,stock:b.siteStock,needs:b.reservedMaterials}))});
  async function place(type){
   let b,attempt=0,lastGeometry='';
   const search=()=>{if(++attempt%10)return false;const def=g.TYPES[type];if(Object.entries(def.cost).some(([k,n])=>g.freightAvailable(k)<n))return false;
    const geometry=s.buildings.length+':'+s.harvested.length+':'+s.piles.map(q=>q.id).join(',');if(geometry===lastGeometry)return false;lastGeometry=geometry;
    for(let y=30;y<52;y++)for(let x=21;x<52;x++)if(g.clearFootprint(x,y,def.w,def.h)&&!g.frontierPlacementReason(type,x,y)&&g.buildAt(type,x,y)){b=s.buildings.at(-1);return true}
    return false};
-  ok(await run(search,20000),'fund and place '+type);ok(await run(()=>b.finished,40000),'crew completes '+type);return b;
+  // The workshop can be twenty tiles from the central store. Allow the real
+  // producer/hauler round trips across several staggered work/sleep cycles.
+  ok(await run(search,40000),'fund and place '+type);ok(await run(()=>b.finished,40000),'crew completes '+type);return b;
  }
  async function study(id){ok(await run(()=>!g.researchReason(id),60000),'satisfy '+id+' prerequisites');g.frontierBeginResearch(id);ok(await run(()=>s.research.includes(id),20000),'staff research '+id)}
  try{

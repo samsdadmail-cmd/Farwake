@@ -27,7 +27,7 @@ for revision, folder in [(baseline,"living"),("368c2c0f80ba31120b8d992ea75f4a08e
     paths = (check_output(["git","ls-tree","--name-only",revision],cwd=root).decode().splitlines()
              if revision else [p.name for p in root.iterdir() if p.is_file()])
     for name in paths:
-        if not name.endswith((".html",".js",".css",".png",".webmanifest")):
+        if not name.endswith((".html",".js",".css",".png",".webp",".webmanifest")):
             continue
         data = (check_output(["git","show",f"{revision}:{name}"],cwd=root) if revision else (root/name).read_bytes())
         if name=="index.html":

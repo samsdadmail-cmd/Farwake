@@ -47,6 +47,7 @@ test('records frontier door admission and technology-tree overflow', async ({pag
   await page.click('[data-sheet="close"]');
 
   await page.click('[data-nav="research"]');
+  await expect(page.locator('.discovery-node')).toHaveCount(26);await page.click('[data-tech-view="map"]');
   await page.waitForSelector('#sheet .tech-viewport', {timeout: 10000});
   const tree = await page.evaluate(() => {
     const sheet = document.querySelector('#sheet');

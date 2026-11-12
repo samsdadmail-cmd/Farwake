@@ -10,7 +10,7 @@ async function verifyFrontierUI(frame,out){
   ok(d.querySelector('#sheet').clientWidth>0&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'catalogue fits '+width+'×'+height);
   click('[data-blueprint-detail="fabricator"]');ok(d.querySelector('.chain-preview').textContent.includes('Components'),'future fabrication preview explains real chain');
   click('[data-tech-detail="fabrication"]');ok(d.querySelector('.unlock-preview').textContent.includes('Component Works'),'locked blueprint opens its meaningful research unlock');
-  click('[data-open="research"]');ok(d.querySelectorAll('.tech-links path').length>15,'connected research tree opens '+width+'×'+height);
+  click('[data-open="research"]');click('[data-tech-view="discoveries"]');ok(d.querySelectorAll('.discovery-node').length>=26,'mobile discoveries expose the whole research catalogue');click('[data-tech-view="map"]');ok(d.querySelectorAll('.tech-links path').length>15,'connected research tree opens '+width+'×'+height);
   await new Promise(r=>setTimeout(r,160));click('[data-tech-branch="4"]');await new Promise(r=>setTimeout(r,160));ok(d.querySelector('#sheet .tech-viewport').scrollTop>1000,'branch navigation scrolls to planetary science '+d.querySelector('#sheet .tech-viewport').scrollTop+'/'+d.querySelector('#sheet .tech-viewport').scrollHeight);
   ok(d.querySelector('#sheet').clientWidth>0&&d.querySelector('#sheet').scrollWidth<=d.querySelector('#sheet').clientWidth+1,'research fits phone width');
   qa.openSection('colony');ok(d.querySelector('.civilization-hero')&&d.querySelector('.facility-list img'),'command journal shows actual colony and illustrated facilities');

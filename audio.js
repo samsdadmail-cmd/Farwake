@@ -150,7 +150,7 @@ window.FarwakeAudio = (() => {
     const channel=kind==='ui'?'interface':kind==='thunder'?'ambience':'effects';
     if(!settings[channel])return;
     const now=ctx.currentTime,pan=Number.isFinite(opts.pan)?opts.pan:0;
-    const density={step:.12,ui:.07,build:.18,chop:.22,mine:.2,open:.27,close:.24,thunder:8};
+    const density={step:.12,ui:.07,build:.18,chop:.22,mine:.2,open:.27,close:.24,thunder:8,greeting:5};
     if(now<(cooldown.get(kind)??-1))return;
     cooldown.set(kind,now+(density[kind]||.14));
     let sample,vol=.5;
@@ -172,6 +172,7 @@ window.FarwakeAudio = (() => {
       case 'farm':sample=rustle('soil',.24);vol=.66;break;
       case 'ui':sample=impact('switch',[638,182],.014,.55);vol=.28;break;
       case 'complete':sample=pluck(67);vol=.52;break;
+      case 'greeting':sample=rustle('companion-greeting',.26);vol=.10;break;
       case 'thunder':{
         let prev=0;
         sample=makeClip('thunder',2.7,t=>{

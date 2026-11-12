@@ -27,7 +27,7 @@ async function verifyFrontierTech(frame,out){
  ok(run(()=>g.freightAvailable('boards')>=16&&g.freightAvailable('wood')>=8),'supply processed boards and timber for the cabin');
  ok(g.buildAt('cabin',30,33),'new residence uses actual processed timber');
  ok(run(()=>s.buildings.some(b=>b.type==='cabin'&&b.finished)),'researched cabin can be built by the crew');
- w.QA.openSection('research');
+ w.QA.openSection('research');frame.contentDocument.querySelector('[data-tech-view="map"]').click();
  ok(frame.contentDocument.querySelectorAll('.tech-links path').length>15,'technology prerequisites form visible connected edges');
  g.save();g.load();ok(g.state.research.includes('cabins')&&g.state.buildings.some(b=>b.type==='cabin'),'new capability and building survive a v3 save');
  g.frontierBeginResearch('medicine');

@@ -4,7 +4,11 @@ on:
   pull_request:
     branches: [farwake/integration, farwake/combined/rc1, main]
   push:
-    branches: [farwake/integration]
+    branches: [farwake/integration, living-colony-experience-overhaul]
+
+concurrency:
+  group: farwake-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref == 'refs/heads/living-colony-experience-overhaul' }}
 
 permissions:
   contents: read
@@ -78,6 +82,7 @@ jobs:
         with:
           name: organic-journey
           path: |
+            test-results/failed-*.log
             test-results/journey.log
             test-results/journey-checkpoint.json
           if-no-files-found: ignore
