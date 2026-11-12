@@ -2453,7 +2453,13 @@ function lifeTarget(p){
   if(session&&session.people.includes(p.id)&&!lifeEmergency(p)&&lifeEvening(p))return lifeTaskAt(session,p);
   if(session)lifeCancel(session);else delete l.session;
  }
- if(l.doneDay===S.day&&S.minute>=1200&&S.minute<1260)return housingRestTarget(p);
+ // A finished evening winds down at home instead of briefly resuming research.
+ // This continuation earns no second memory, friendship or place reward.
+ if(l.doneDay===S.day&&S.minute>=1050&&S.minute<1260+(p.id%5)*5&&!lifeEmergency(p)&&!lifeUrgentWork(p)){
+  const home=lifeBuilding(p.home);
+  if(home)return {type:'life_home',id:home.id,x:home.x,y:home.y,w:home.w,h:home.h,afterLeisure:true};
+  if(S.minute>=1200)return housingRestTarget(p);
+ }
  if(!lifeEvening(p)||l.doneDay===S.day||r.time<l.retryAt||lifeEmergency(p))return null;
  if(jobs().some(b=>b.buildPriority&&!b.buildPaused))return null;
  const home=lifeBuilding(p.home),wet=['rain','storm'].includes(S.weather);
@@ -2494,6 +2500,7 @@ function lifeWork(p,work){
  if(t.type==='life_share')return; // Only joint, actual attendance advances a meeting.
  if(t.type==='life_home'&&p.visit?.stage!=='inside'){lifeClear(p);lifePerson(p).retryAt=lifeRoot().time+12;return}
  if(p.action<1+work)lifeCue(p,t.type==='life_home'?'A little time to myself.':lifePerson(p).interest==='plants'?'Look how the leaves catch this light.':lifePerson(p).interest==='sky'?'A whole sky we have barely begun to know.':'Finally, time for my own little project.');
+ if(t.afterLeisure)return;
  if(p.action>=28){lifeRemember(p,t.type==='life_home'?'home':'quiet',b);lifeClear(p)}
 }
 let lifeTickState=null,lifeElapsed=0;
@@ -2517,7 +2524,7 @@ function lifeTick(step){
   const l=lifePerson(p),task=p.task;
   if(task?.type==='idle_pause'&&(lifeDirectedStandby(p)||lifeEmergency(p)||S.minute>=1050||jobs().some(b=>!b.buildPaused))){p.task=null;p.path=[];p.action=0}
   if(task?.type?.startsWith('life_')){
-   if(!lifeBuilding(task.id)||lifeEmergency(p)||lifeUrgentWork(p)||!lifeEvening(p)||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
+   if(!lifeBuilding(task.id)||lifeEmergency(p)||lifeUrgentWork(p)||(!lifeEvening(p)&&!task.afterLeisure)||(task.afterLeisure&&(l.doneDay!==S.day||S.minute<1050||S.minute>=1260+(p.id%5)*5))||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
     const session=r.sessions.find(s=>s.id===l.session);if(session)lifeCancel(session);else{lifeClear(p);l.retryAt=r.time+2}
    }
   }
@@ -2544,7 +2551,7 @@ function lifeView(p){
  const session=t.type==='life_share'&&lifeRoot().sessions.find(s=>s.id===t.session);
  const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
  const kind=session?lifeEncounterKind(session):t.type==='life_home'?'reading':lifePerson(p).interest;
- const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>(t.type==='idle_pause'?6:25)?'finishing':'active';
+ const phase=session?lifeEncounterPhase(session):p.action<3?'settling':!t.afterLeisure&&p.action>(t.type==='idle_pause'?6:25)?'finishing':'active';
  const b=lifeBuilding(t.id),target=phase==='greeting'||phase==='goodbye'?other:kind==='sky'?{x:p.x,y:p.y-8}:kind==='plants'&&b?{x:b.x+b.w/2,y:b.y+b.h/2}:other;
  return {kind,phase,progress:session?session.progress:p.action,look:target||null,shared:!!session,
   familiar:!!other&&lifePerson(p).bonds.some(b=>b.person===other.id&&b.shared>=3),building:t.id};

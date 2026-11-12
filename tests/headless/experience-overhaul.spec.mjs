@@ -53,3 +53,22 @@ test('Build first interrupts an attended evening without rewards and respects di
  });
  expect(result).toEqual({canceled:true,noReward:true,released:true,working:true,standby:true});
 });
+
+test('completed evenings wind down in real homes without repeating rewards or briefly restarting work',async({page})=>{
+ await page.addInitScript(()=>window.requestAnimationFrame=()=>0);await page.goto('/index.html');
+ const result=await page.evaluate(()=>{
+  const g=FARWAKE_TEST,s=g.state;s.minute=1093;
+  for(const p of s.colonists)Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:5});
+  let returnedToWork=false,homeSeen=false;const counts=new Map();
+  for(let i=0;i<750;i++){
+   g.tick(.1);
+   for(const p of s.colonists)if(p.life.doneDay===s.day){
+    if(['research','survey','craft','farm','idle_pause'].includes(p.task?.type))returnedToWork=true;
+    if(p.task?.afterLeisure&&p.visit?.stage==='inside')homeSeen=true;
+    const n=p.life.memories.reduce((a,m)=>a+m.count,0);if(!counts.has(p.id))counts.set(p.id,n);else if(counts.get(p.id)!==n)throw Error('Repeated leisure reward');
+   }
+  }
+  return{returnedToWork,homeSeen,rewarded:counts.size,asleep:s.colonists.every(p=>p.task?.type==='rest')};
+ });
+ expect(result).toEqual({returnedToWork:false,homeSeen:true,rewarded:5,asleep:true});
+});

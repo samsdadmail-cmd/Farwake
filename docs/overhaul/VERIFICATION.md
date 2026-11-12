@@ -28,6 +28,11 @@ choice but did not release an already attended evening. Eligible builders/hauler
 now leave that optional activity at the bounded life update. The session cancels
 without a reward; disabled personal work lanes remain protected.
 
+Rendered review also exposed a short return-to-research between completed leisure
+and bedtime. Completed evenings now continue as quiet home time, with real door
+entry and no additional rewards, until each resident’s staggered bedtime. Hunger,
+cargo and eligible priority construction still interrupt it.
+
 ## Visual review executed
 
 A fresh 390×844 staging colony ran for 300.20 real seconds without menus. The
@@ -36,6 +41,14 @@ recorder sampled 601 times: harvest, research, survey, idle, pickup and dropoff;
 the starting camera. This verifies an unattended run, not five minutes of uniformly
 interesting visible action or physical iPhone speed. The cloud browser's roughly
 one-Hz frame delivery makes wall-clock FPS and game-clock pace unrepresentative.
+
+The unmodified organic Day 62 checkpoint (8 people, 32 buildings) was then
+imported through the actual file picker and confirmation into the isolated review
+slot. A second 300.09-real-second observation sampled 601 times, recording eating,
+crafting, research, hauling, quiet leisure and shared leisure. Actual shared
+stargazing progressed through waiting, greeting, settling and sharing; gardening
+and personal equipment work were inspected in the rendered settlement. No recorded
+error or context loss; 455 frames/ticks. The same cloud timing limitation applies.
 
 Separately inspected actual rendered scenes in the labelled evening fixture:
 perimeter destinations, kneeling plant interaction, equipment handling, sky pose,
