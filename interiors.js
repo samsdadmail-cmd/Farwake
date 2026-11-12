@@ -1,8 +1,53 @@
 // An authored cutaway, populated only by residents physically inside this building.
 window.FarwakeInteriors=(()=>{
+ let homeImage=null;
+ function homePlate(){if(!homeImage){homeImage=new Image();homeImage.src=new URL('interior-home.webp',document.baseURI).href}return homeImage}
+ function inhabitant(c,p,x,y,time,reduced,sleep=false){
+  const box=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h)};
+  c.save();c.translate(x,y);c.scale(1.55,1.55);
+  if(sleep)c.rotate(-Math.PI/2);
+  const t=reduced||sleep?0:time*.001+p.id,turn=Math.sin(t*.4)>.6?1:0;
+  box(-6,-15,12,13,'#293536');box(-5,-14,10,10,p.coat);box(-5,-4,11,3,'#645440');
+  box(-5,-25,10,11,'#283638');box(-4,-25,8,8,p.hair);box(-3+turn,-21,8,6,p.hue);box(-4,-24,8,2,p.hair);box(2+turn,-19,1,1,'#293536');
+  if(p.role==='Engineer'){box(-5,-26,10,3,'#c49b60');box(-6,-23,12,1,'#e6c888')}
+  if(p.role==='Medic'){box(-4,-24,9,2,'#d9d2b5');box(1,-24,2,2,'#ad6f62')}
+  if(p.role==='Surveyor'){box(-4,-27,8,3,'#927c57');box(-6,-24,13,2,'#bea373')}
+  box(-6,-12,3,10,p.coat);box(5,-12+Math.sin(t*1.5),3,9,p.coat);box(-6,-3,3,3,p.hue);box(5,-3+Math.sin(t*1.5),3,3,p.hue);
+  if(!sleep){box(-5,0,4,7,'#45524e');box(3,0,4,7,'#45524e');box(-6,6,6,3,'#544b3d');box(3,6,6,3,'#544b3d');
+   const job=p.task?.type;
+   if(job==='eat'){box(-4,-2,11,4,'#b8bf9d');box(5,-9+Math.sin(t*2)*3,3,2,p.hue)}
+   else if(job==='craft'){box(-4,-1,12,4,'#486c70');box(7,-6+Math.sin(t*3),2,7,'#c1b08a')}
+   else{box(-6,-4,15,7,'#c8b68d');box(1,-4,1,7,'#807254');box(-4,-2,4,1,'#a19472');if(Math.sin(t*.8)>.5)box(3,-3,4,4,'#e0d1a8')}
+  }
+  c.restore();
+ }
+ function furnishedHome(c,b,state,occupants,time,reduced,image){
+  c.drawImage(image,0,0,384,216);
+  const night=state.minute<390||state.minute>1110,awake=occupants.some(p=>p.task?.type!=='rest');
+  if(!night){const sky=c.createLinearGradient(0,41,0,84);sky.addColorStop(0,'#789caa');sky.addColorStop(1,'#c3c4a0');c.fillStyle=sky;c.fillRect(118,42,136,39);c.fillStyle='#536c72';c.beginPath();c.moveTo(118,80);c.lineTo(145,65);c.lineTo(165,75);c.lineTo(184,58);c.lineTo(215,77);c.lineTo(240,63);c.lineTo(254,79);c.lineTo(254,84);c.lineTo(118,84);c.fill()}
+  if(state.weather==='rain'&&!reduced){c.save();c.beginPath();c.rect(118,42,136,39);c.clip();c.fillStyle='#c3d5d059';for(let i=0;i<16;i++)c.fillRect(118+(i*19+time*.012)%136,42+(i*11+time*.024)%39,1,4);c.restore()}
+  if(occupants.length){
+   const glow=c.createRadialGradient(290,99,3,290,99,230);glow.addColorStop(0,awake?'#ffd38a42':'#dfb98112');glow.addColorStop(1,'#ffbc6800');c.fillStyle=glow;c.fillRect(0,0,384,216);
+   if(awake){c.fillStyle='#f6db9a';c.fillRect(355,88,8,2)}
+  }
+  let sleeping=0,awakeSlot=0;
+  for(const p of occupants.slice(0,6)){
+   if(p.task?.type==='rest'){
+    const i=sleeping++,x=i<2?42:278+(i-2)*19,y=i===0?72:i===1?125:185;
+    if(i>=2){c.fillStyle='#526b6b';c.fillRect(x-19,y-7,39,12);c.fillStyle=p.coat;c.fillRect(x-10,y-4,28,8)}
+    c.save();c.beginPath();c.rect(x-24,y-17,49,21);c.clip();inhabitant(c,p,x,y,time,true,true);c.restore();
+   }else{
+    const places=[[151,150],[232,150],[296,132],[79,177],[291,184],[197,181]],point=places[awakeSlot++];
+    inhabitant(c,p,point[0],point[1],time,reduced);
+   }
+  }
+  if(!occupants.length){c.fillStyle=night?'#0c203c70':'#13262d2b';c.fillRect(0,0,384,216)}else if(!awake){c.fillStyle='#132a3e33';c.fillRect(0,0,384,216)}
+ }
+
  function draw(canvas,b,state,occupants,time,reduced){
   const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
   const W=384,H=216; c.clearRect(0,0,W,H);
+  if(['shelter','cabin','dormitory','outpost'].includes(b.type)){const image=homePlate();if(image.complete&&image.naturalWidth){furnishedHome(c,b,state,occupants,time,reduced,image);return}}
   const home=['shelter','cabin','dormitory','camp','outpost'].includes(b.type),night=state.minute<390||state.minute>1080;
   const awake=occupants.some(p=>p.task?.type!=='rest'),lit=occupants.length>0;
   const box=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)};

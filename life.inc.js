@@ -34,9 +34,11 @@ function lifePlaces(p){
  const buildings=S.buildings.filter(b=>b.finished&&!b.editOrder&&(b===home||b.type==='camp'||quiet==='tinkering'&&['workshop','fabricator','sawmill'].includes(b.type)||FRONTIER_BUILDINGS[b.type]?.community||quiet==='plants'&&b.type==='garden'));
  return buildings.map(b=>{
   const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5})).filter(a=>
-   !lifeRoot().sessions.some(s=>s.points.some(q=>q.x===a.x&&q.y===a.y))&&
-   !S.colonists.some(q=>q!==p&&['life_quiet','idle_pause'].includes(q.task?.type)&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
-  points.sort((a,z)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y));
+   !lifeRoot().sessions.some(s=>s.points.some(q=>Math.hypot(q.x-a.x,q.y-a.y)<1.25))&&
+   !S.colonists.some(q=>q!==p&&['life_quiet','idle_pause'].includes(q.task?.type)&&Math.hypot(q.task.x+.5-a.x,q.task.y+.5-a.y)<1.25));
+  const anchor=quiet==='tinkering'?{x:b.x+b.w+.5,y:b.y+.5}:quiet==='sky'?{x:b.x-.5,y:b.y+b.h+.5}:{x:b.x+b.w/2,y:b.y+b.h+.5};
+  const rank=a=>Math.hypot(a.x-anchor.x,a.y-anchor.y)+Math.hypot(a.x-p.x,a.y-p.y)*.12;
+  points.sort((a,z)=>rank(a)-rank(z));
   return {b,points};
  }).filter(q=>q.points.length);
 }
@@ -159,7 +161,8 @@ function lifeView(p){
  const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
  const kind=session?lifeEncounterKind(session):t.type==='life_home'?'reading':lifePerson(p).interest;
  const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>(t.type==='idle_pause'?6:25)?'finishing':'active';
- return {kind,phase,progress:session?session.progress:p.action,look:other||null,shared:!!session,
+ const b=lifeBuilding(t.id),target=phase==='greeting'||phase==='goodbye'?other:kind==='sky'?{x:p.x,y:p.y-8}:kind==='plants'&&b?{x:b.x+b.w/2,y:b.y+b.h/2}:other;
+ return {kind,phase,progress:session?session.progress:p.action,look:target||null,shared:!!session,
   familiar:!!other&&lifePerson(p).bonds.some(b=>b.person===other.id&&b.shared>=3),building:t.id};
 }
 function lifePanel(p){
@@ -183,3 +186,16 @@ function lifeIdleTarget(p){
  return null;
 }
 function lifeIdleWork(p){if(p.action>=8||lifeDirectedStandby(p)||lifeEmergency(p)||jobs().some(b=>!b.buildPaused)||S.minute>=1050){p.task=null;p.path=[];p.action=0}}
+
+// Physical scene props belong to a genuinely attended meeting. No food or
+// resource is spawned: these are reusable personal seats and a portable table.
+function lifeSceneDraw(c,left,top,right,bottom){
+ for(const session of lifeRoot().sessions){
+  if(!session.started||session.progress<6||session.progress>=27)continue;
+  const people=session.people.map(id=>S.colonists.find(p=>p.id===id));
+  if(people.some(p=>!p||p.path.length||p.task?.session!==session.id))continue;
+  const x=(people[0].x+people[1].x)*16,y=(people[0].y+people[1].y)*16;
+  if(x<left*32||x>right*32||y<top*32||y>bottom*32)continue;
+  c.fillStyle='#405650';c.fillRect(x-23,y+1,46,7);c.fillStyle='#b19a6e';c.fillRect(x-10,y-2,20,4);c.fillStyle='#685a43';c.fillRect(x-8,y+2,2,5);c.fillRect(x+6,y+2,2,5);c.fillStyle='#d4c5a1';c.fillRect(x-6,y-5,3,3);c.fillRect(x+4,y-5,3,3);
+ }
+}

@@ -132,6 +132,7 @@ test('completed experiences create a bounded, behavioural preference for a real 
   // A second venue and a position equidistant to its edge isolate the choice.
   s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1093;
   Object.assign(p,{x:30.6,y:32.5,home:null,task:null,path:[],energy:95,hunger:5});
+  const venues=g.lifePlaces(p),a=venues.find(q=>q.b.id===camp.id).points[0],z=venues.find(q=>q.b.id===990).points[0],d=Math.hypot(z.x-a.x,z.y-a.y);p.x=(a.x+z.x)/2+(z.x-a.x)/d*.1;p.y=(a.y+z.y)/2+(z.y-a.y)/d*.1;
   p.life.retryAt=0;const attached=g.lifeTarget(p)?.id;
   p.task=null;p.path=[];const places=p.life.places;p.life.places=[];
   const without=g.lifeTarget(p)?.id;p.life.places=places;
