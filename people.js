@@ -17,7 +17,7 @@ window.FarwakePeople = (() => {
   function advance(p,dt,paused,speed,options={}) {
     const v=pose(p), x=options.x??p.x, y=options.y??p.y;
     if(paused||dt<=0)return v;
-    v.reduced=!!options.reduced;v.leisure=options.life;
+    v.reduced=!!options.reduced;v.leisure=options.life;const settled=options.life&&!['waiting','greeting','settling','goodbye','finishing'].includes(options.life.phase);v.settle=(v.settle||0)+((settled?1:0)-(v.settle||0))*(v.reduced?1:1-Math.exp(-dt*7));
     const blend=1-Math.exp(-dt*23*Math.sqrt(speed||1));
     const dx=x-v.x,dy=y-v.y,dist=Math.hypot(dx,dy);
     if(dist>2){v.x=x;v.y=y;v.walk=0;return v}
@@ -101,7 +101,7 @@ window.FarwakePeople = (() => {
     const stroke=Math.sin(v.stroke*Math.PI)*v.work;
     function box(x,y,w,h,c) {ctx.fillStyle=c;ctx.fillRect(x,y,w,h);}
     ctx.save();
-    ctx.translate(v.x*tileSize,v.y*tileSize);
+    ctx.translate(v.x*tileSize,v.y*tileSize);ctx.scale(1.12,1.12);
     ellipse(ctx,2,4,7,2.5,'rgba(24,34,31,.36)');
     if (selected) {
       ctx.strokeStyle='#f2ca86';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,3,9,4,0,0,Math.PI*2);ctx.stroke();
@@ -205,7 +205,7 @@ window.FarwakePeople = (() => {
       if(recline){box(-13,2,27,5,'#526d72');box(-11,3,23,1,'#b5bfa4');box(-13,5,27,2,'#324b55')}
       else if(!kneel){box(-8,-1,16,3,'#af8e61');box(-6,2,2,6,'#465754');box(5,2,2,6,'#465754')}
     }
-    const bodyY=seat?(kneel?-5:recline?-4:-8):-13;
+    const targetBody=seat?(kneel?-5:recline?-4:-8):-13;const bodyY=-13+(targetBody+13)*(v.settle??1);
     const headY=bodyY-10+(plant&&seat?2:sky&&seat?-2:0);
     const back=v.dir==='back',side=v.dir==='left'||v.dir==='right';
     if(v.dir==='left')ctx.scale(-1,1);
