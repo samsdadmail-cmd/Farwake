@@ -4,7 +4,7 @@ const SAVE_KEY = 'farwake_founders_alpha03_v1';
 
 test('records frontier door admission and technology-tree overflow', async ({page}, info) => {
   await page.goto('/index.html');
-  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4);
 
   const doors = await page.evaluate(() => {
     const route = (building, job) => window.FarwakeDoors.route(
@@ -66,7 +66,7 @@ test('records frontier door admission and technology-tree overflow', async ({pag
 
 test('FARWAKE_TEST.save is a function on a loaded expedition', async ({page}) => {
   await page.goto('/index.html');
-  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4);
   expect(await page.evaluate(() => typeof window.FARWAKE_TEST.save)).toBe('function');
 });
 
@@ -75,11 +75,11 @@ test('FARWAKE_TEST.save is a function on a loaded expedition', async ({page}) =>
 test('issue #16: read-before-write guard keeps a newer save on an already-open page', async ({page}) => {
   await page.clock.install();
   await page.goto('/index.html');
-  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3);
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4);
   const result = await page.evaluate(async key => {
     const save = window.FARWAKE_TEST && window.FARWAKE_TEST.save;
     if (typeof save !== 'function') return {hook: typeof save};
-    const newer = JSON.stringify({v: 4, marker: 'newer-than-this-build'});
+    const newer = JSON.stringify({v: 5, marker: 'newer-than-this-build'});
     localStorage.setItem(key, newer);
     save();
     window.dispatchEvent(new Event('pagehide'));
@@ -93,5 +93,5 @@ test('issue #16: read-before-write guard keeps a newer save on an already-open p
   let storedVersion = null;
   try { storedVersion = JSON.parse(after).v; } catch { storedVersion = null; }
   expect(after).toBe(result.planted);
-  expect(storedVersion).toBe(4);
+  expect(storedVersion).toBe(5);
 });

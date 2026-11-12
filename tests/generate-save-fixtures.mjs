@@ -55,7 +55,7 @@ async function boot(page, origin) {
     else if (text.startsWith('FIXTURE')) console.log(text);
   });
   await page.goto(`${origin}/index.html`);
-  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 3 && localStorage.getItem('farwake_founders_alpha03_v1'));
+  await page.waitForFunction(() => window.FARWAKE_TEST?.state?.v === 4 && localStorage.getItem('farwake_founders_alpha03_v1'));
   return errors;
 }
 
@@ -71,7 +71,7 @@ async function stabilize(page, raw) {
   await page.waitForFunction(() => {
     const sheet = document.querySelector('#sheet');
     const recovering = sheet && sheet.textContent.includes('Expedition needs recovery');
-    return window.FARWAKE_TEST?.state?.v === 3 && !recovering;
+    return window.FARWAKE_TEST?.state?.v === 4 && !recovering;
   });
   return page.evaluate(key => {
     window.FARWAKE_TEST.save();

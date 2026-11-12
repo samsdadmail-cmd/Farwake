@@ -12,7 +12,7 @@ test('boots, exposes FARWAKE_TEST, and advances 600 ticks without console errors
     if (message.type() === 'warning') errors.push(`warn: ${text}`);
   });
   await page.goto('/index.html');
-  await page.waitForFunction(() => window.FARWAKE_TEST && window.FARWAKE_TEST.state && window.FARWAKE_TEST.state.v === 3);
+  await page.waitForFunction(() => window.FARWAKE_TEST && window.FARWAKE_TEST.state && window.FARWAKE_TEST.state.v === 4);
   const result = await page.evaluate(() => {
     const game = window.FARWAKE_TEST;
     let ticks = 0;
@@ -30,7 +30,7 @@ test('boots, exposes FARWAKE_TEST, and advances 600 ticks without console errors
     };
   });
   expect(result.ticks, `${info.project.name} tick count`).toBeGreaterThanOrEqual(600);
-  expect(result.version).toBe(3);
+  expect(result.version).toBe(4);
   expect(result.colonists).toBe(5);
   expect(result.minute).toBeGreaterThan(7 * 60 + 20);
   expect(errors, `${info.project.name}\n${errors.join('\n')}`).toEqual([]);
