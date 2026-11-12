@@ -33,7 +33,7 @@
 <script>
 'use strict';
 (()=>{
-const VW=56,VH=56,TS=32, SAVE='farwake_founders_alpha03_v1', SAVE_VERSION=4, SAVE_WRITER=SAVE+'_writer', canvas=document.getElementById('world'),ctx=canvas.getContext('2d',{alpha:false});
+const VW=56,VH=56,TS=32, SAVE=new URLSearchParams(location.search).get('review')==='1'?'farwake_overhaul_review_v4':'farwake_founders_alpha03_v1', SAVE_VERSION=4, SAVE_WRITER=SAVE+'_writer', canvas=document.getElementById('world'),ctx=canvas.getContext('2d',{alpha:false});
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mod=(x,n)=>(x%n+n)%n;
 const ROLE={Commander:'Leadership',Engineer:'Construction',Biologist:'Agriculture',Medic:'Healthcare',Surveyor:'Exploration'};
 const PROFILES=[{name:'Aya Mercer',role:'Commander',hue:'#ffc79e',hair:'#302c37',coat:'#ecb872',trait:'Steadfast',ambition:'Build a lasting home'},{name:'Tomas Venn',role:'Engineer',hue:'#ffd2af',hair:'#544031',coat:'#8db8d0',trait:'Inventive',ambition:'Power the first town'},{name:'Mira Solis',role:'Biologist',hue:'#e3a983',hair:'#252b29',coat:'#abcb88',trait:'Patient',ambition:'Grow a thriving garden'},{name:'Ivo Chen',role:'Medic',hue:'#f1c5a3',hair:'#463e44',coat:'#d6a8c5',trait:'Compassionate',ambition:'Keep the expedition safe'},{name:'Nell Ardent',role:'Surveyor',hue:'#d1a282',hair:'#c2a474',coat:'#e5bb83',trait:'Curious',ambition:'Chart the unknown'}];
@@ -235,7 +235,8 @@ function jobs(){return S.buildings.filter(b=>!b.finished)}function finished(t){r
 function power(){return surveyGrid()}function isNight(){return S.minute<6*60||S.minute>19*60}
 function taskPosition(t){return{x:t.x,y:t.y}}
 function neighborGoals(x,y,w=1,h=1){const goals=[];for(let yy=y-1;yy<=y+h;yy++)for(let xx=x-1;xx<=x+w;xx++)if((xx===x-1||xx===x+w||yy===y-1||yy===y+h)&&walkable(xx,yy))goals.push({x:xx,y:yy});return goals}
-function findPath(px,py,goals){const sx=clamp(Math.floor(px),0,VW-1),sy=clamp(Math.floor(py),0,VH-1);if(!goals.length)return[];const target=new Set(goals.map(g=>index(g.x,g.y))),start=index(sx,sy);if(target.has(start))return[];const prev=new Int32Array(VW*VH).fill(-1),queue=new Int32Array(VW*VH);let front=0,back=0;queue[back++]=start;prev[start]=start;let end=-1;while(front<back){const p=queue[front++],x=p%VW,y=(p-x)/VW;const cells=[[x+1,y],[x-1,y],[x,y+1],[x,y-1]];for(const [nx,ny] of cells){if(!walkable(nx,ny))continue;let j=index(nx,ny);if(prev[j]!==-1)continue;prev[j]=p;if(target.has(j)){end=j;front=back;break}queue[back++]=j}}
+const pathPrevious=new Int32Array(VW*VH),pathQueue=new Int32Array(VW*VH);
+function findPath(px,py,goals){const sx=clamp(Math.floor(px),0,VW-1),sy=clamp(Math.floor(py),0,VH-1);if(!goals.length)return[];const target=new Set(goals.map(g=>index(g.x,g.y))),start=index(sx,sy);if(target.has(start))return[];const prev=pathPrevious.fill(-1),queue=pathQueue;let front=0,back=0;queue[back++]=start;prev[start]=start;let end=-1;while(front<back){const p=queue[front++],x=p%VW,y=(p-x)/VW;for(let direction=0;direction<4;direction++){const nx=x+(direction===0?1:direction===1?-1:0),ny=y+(direction===2?1:direction===3?-1:0);if(!walkable(nx,ny))continue;let j=index(nx,ny);if(prev[j]!==-1)continue;prev[j]=p;if(target.has(j)){end=j;front=back;break}queue[back++]=j}}
 if(end<0)return[];const result=[];for(let i=end;i!==start;i=prev[i])result.push({x:i%VW+.5,y:Math.floor(i/VW)+.5});return result.reverse()}
 function setTask(p,t){if(!t){p.task=null;p.path=[];return}const g=t.type==='survey'||t.outdoors?[{x:t.x,y:t.y}]:neighborGoals(t.x,t.y,t.w||1,t.h||1);const path=FarwakeDoors.route(p,t,S.buildings,walkable,findPath,g)??findPath(p.x,p.y,g);if(!path.length&&!g.some(a=>Math.hypot(a.x+.5-p.x,a.y+.5-p.y)<1.55))return false;p.task=t;p.path=path;FarwakeDoors.assigned(p,t,path);p.action=0;return true}
 function nearFeature(type,p){const pool=features.filter(f=>f.type===type&&fog[index(f.x,f.y)]);pool.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)));return pool.slice(0,7)}
@@ -320,7 +321,7 @@ function disk(x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r,r*.
 function renderBuilding(b,time){
  const x=b.x*TS,y=b.y*TS,w=b.w*TS,h=b.h*TS;
  if(b.finished){
-   FarwakeBuildings.draw(ctx,b.type,x,y,w,h,isNight(),b,FarwakeDoors.state(b));drawProduction(b,x,y);FarwakeHearth.configure(prefs.preset);FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,FarwakeDoors.state(b),FieldPreferences.reduced);
+   const door=FarwakeDoors.state(b),lit=isNight()&&(door.occupied>0||['lander','comms','lamppost'].includes(b.type));FarwakeBuildings.draw(ctx,b.type,x,y,w,h,lit,b,door);drawProduction(b,x,y);FarwakeHearth.configure(prefs.preset);FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,FarwakeDoors.state(b),FieldPreferences.reduced);
    return;
  }
  const progress=clamp(b.progress/TYPES[b.type].time,0,1);

@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [farwake/integration, farwake/combined/rc1, main]
   push:
-    branches: [farwake/integration]
+    branches: [farwake/integration, living-colony-experience-overhaul]
 
 permissions:
   contents: read

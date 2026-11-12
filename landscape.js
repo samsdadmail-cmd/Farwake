@@ -263,6 +263,7 @@ window.FarwakeLandscape = (() => {
     }
     c.restore();
   }
+  let warmLight=null;
   function light(c,w,h,state,camera,sx,sy,time){
     const solar=Math.sin((state.minute-360)*Math.PI/720);
     const dark=Math.min(1,Math.max(0,(.24-solar)*1.8));
@@ -278,12 +279,11 @@ window.FarwakeLandscape = (() => {
       box(c,0,0,w,h,'rgba(17,31,58,'+dark*.59+')');
       c.globalCompositeOperation='screen';
       for(const b of state.buildings){
-        if(!b.finished||!['lander','supplies','comms'].includes(b.type))continue;
-        const x=sx((b.x+b.w*.51)*32),y=sy((b.y+b.h*.78)*32),radius=44*camera.z;
+        if(!b.finished||!(['lander','comms','lamppost'].includes(b.type)||window.FarwakeDoors?.state(b).occupied>0))continue;
+        const x=sx((b.x+b.w*.51)*32),y=sy((b.y+b.h*.78)*32),radius=72*camera.z;
         if(x+radius<0||x-radius>w||y+radius<0||y-radius>h)continue;
-        const glow=c.createRadialGradient(x,y,1,x,y,radius);
-        glow.addColorStop(0,'rgba(255,179,86,'+dark*.54+')');glow.addColorStop(.45,'rgba(255,149,69,'+dark*.16+')');glow.addColorStop(1,'rgba(245,145,68,0)');
-        box(c,x-radius,y-radius,radius*2,radius*2,glow);
+        if(!warmLight){warmLight=document.createElement('canvas');warmLight.width=warmLight.height=144;const lamp=warmLight.getContext('2d'),glow=lamp.createRadialGradient(72,72,1,72,72,72);glow.addColorStop(0,'#ffbc6aac');glow.addColorStop(.45,'#ff9a4530');glow.addColorStop(1,'#f5914400');lamp.fillStyle=glow;lamp.fillRect(0,0,144,144)}
+        c.globalAlpha=dark*(window.FarwakeDoors?.state(b).actions.includes('rest')?.35:1);c.drawImage(warmLight,x-radius,y-radius,radius*2,radius*2);c.globalAlpha=1;
       }
       c.globalCompositeOperation='source-over';
     }

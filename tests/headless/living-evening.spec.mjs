@@ -4,7 +4,7 @@ test.use({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasT
 async function evening(page){
  await page.addInitScript(()=>{window.requestAnimationFrame=()=>0});await page.goto('/index.html');
  await page.evaluate(()=>{
-  const g=FARWAKE_TEST,s=g.state;s.minute=1051;
+  const g=FARWAKE_TEST,s=g.state;s.minute=1093;
   for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;
   for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[],carry:null});
  });
@@ -130,7 +130,7 @@ test('completed experiences create a bounded, behavioural preference for a real 
   const g=FARWAKE_TEST,s=g.state,p=s.colonists.find(p=>p.role==='Surveyor'),camp=s.buildings.find(b=>b.type==='camp');
   if(!p.life.places.some(q=>q.building===camp.id))throw Error('No actual completed evening to remember');
   // A second venue and a position equidistant to its edge isolate the choice.
-  s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1051;
+  s.buildings.push({...camp,id:990,x:32,history:{}});s.day=2;s.minute=1093;
   Object.assign(p,{x:30.6,y:32.5,home:null,task:null,path:[],energy:95,hunger:5});
   p.life.retryAt=0;const attached=g.lifeTarget(p)?.id;
   p.task=null;p.path=[];const places=p.life.places;p.life.places=[];
@@ -143,7 +143,7 @@ test('completed experiences create a bounded, behavioural preference for a real 
 test('repeated genuine meetings build familiarity once per day and keep memories bounded',async({page})=>{
  await evening(page);
  for(let day=1;day<=4;day++){
-  if(day>1)await page.evaluate(day=>{const s=FARWAKE_TEST.state;s.day=day;s.minute=1051;for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[]})},day);
+  if(day>1)await page.evaluate(day=>{const s=FARWAKE_TEST.state;s.day=day;s.minute=1093;for(const p of s.colonists)Object.assign(p,{energy:95,hunger:5,task:null,path:[]})},day);
   await run(page,45);
  }
  const result=await page.evaluate(()=>FARWAKE_TEST.state.colonists.map(p=>p.life));
