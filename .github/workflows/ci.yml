@@ -23,6 +23,10 @@ jobs:
         run: |
           python3 build.py
           git diff --exit-code -- index.html
+      - name: Content and survival regressions
+        run: |
+          node tests/frontier-content.cjs
+          node tests/frontier-survival.cjs
       - name: Living Colony recovery migration
         run: node tests/life-migration.cjs
       - name: Housing regression

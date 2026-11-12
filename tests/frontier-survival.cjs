@@ -6,6 +6,8 @@ const c=vm.createContext({document:{addEventListener(){}},guideEntries:[],GROUP_
 for(const name of ['TYPES','TECHS','MATERIALS'])vm.runInContext('var '+name+'='+literal(source,name),c);
 vm.runInContext('var fieldResearch='+literal(read('survey.inc.js'),'fieldResearch'),c);
 vm.runInContext(read('industry.inc.js'),c);vm.runInContext(read('frontier.inc.js'),c);
+vm.runInContext(source.split('\n').filter(line=>line.startsWith('function hashStr(')||line.startsWith('function hash(')).join('\n'),c);
+vm.runInContext(read('life.inc.js'),c);
 vm.runInContext(source.slice(source.indexOf('function getTarget(p)'),source.indexOf('\nfunction doTask(p')),c);
 Object.assign(c,{
  looseTotal:k=>c.S.piles.filter(p=>p.kind===k&&p.site==null).reduce((n,p)=>n+p.amount,0),
@@ -18,7 +20,7 @@ Object.assign(c,{
 });
 const p={id:1,work:'survey',role:'Surveyor',hunger:100,energy:90,mood:10,x:2,y:2,path:[]};
 const bed={id:2,type:'garden',finished:true,x:3,y:3,production:{stage:'plant',elapsed:0,cycles:0,output:0}};
-c.S={minute:720,resources:{food:0,meals:0},piles:[],colonists:[p],buildings:[bed],research:[],industry:{targets:{food:0}}};c.bushes=[];
+c.S={seed:'QA-SURVIVAL',minute:720,resources:{food:0,meals:0},piles:[],colonists:[p],buildings:[bed],research:[],industry:{targets:{food:0}}};c.bushes=[];
 assert.equal(c.industryFoodEmergency(),true);assert.equal(c.industryTarget('food'),2);
 // An otherwise non-farming founder performs actual crop work when no food exists.
 let task=c.frontierMealTarget(p);assert.equal(task.type,'farm');
@@ -42,5 +44,7 @@ assert.equal(c.frontierMealTarget(p),null); // Explicit worker allocation remain
 // No obtainable meal must allow normal hauling/work, not assign futile eating forever.
 Object.assign(c,{jobs:()=>[],frontierCommunityTarget:()=>null,editorCandidate:()=>null,freightPlan:()=>({type:'haul_pickup',pileId:'delivery'}),harvestTaskFor:()=>null,workWeight:(p,k)=>k==='haul'?1:0});
 assert.equal(c.getTarget(p).type,'haul_pickup');
+c.S.minute=1100;p.task=null;
+assert.equal(c.getTarget(p).type,'haul_pickup','evening leisure must yield to unobtainable-food recovery and ordinary hauling');
 assert.equal(c.S.resources.food,0);assert.equal(c.S.piles[0].amount,4);
 console.log('PASS: zero-target famine -> real crop stages -> physical harvest -> consumption; finite forage, reachability, reserved food, pauses, assignments and hauling fallback. Navigation and freight output placement isolated.');
