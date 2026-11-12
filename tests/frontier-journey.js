@@ -26,11 +26,24 @@ async function verifyFrontierJourney(frame,out){
   if(type!=='wind')await ensurePower();return built;
  }
  async function ensurePower(){
-  for(let i=0;i<5;i++){
-   g.frontierTick(1);const grid=g.surveyGrid(),held=s.buildings.filter(b=>b.autoPowerHold).reduce((n,b)=>n-g.TYPES[b.type].power,0);
-   if(grid.supply-grid.used>=held+3)return;await place('wind');
-  }
+  // A player preparing a turbine pauses optional alloy-consuming fabrication.
+  // Otherwise the continuous components target can spend each newly cast alloy
+  // before the four-unit construction reserve exists. Resume after real delivery
+  // and construction; no resources, unlocks or extra simulation time are granted.
+  const paused=[];
+  try{
+   for(let i=0;i<5;i++){
+    g.frontierTick(1);const grid=g.surveyGrid(),held=s.buildings.filter(b=>b.autoPowerHold).reduce((n,b)=>n-g.TYPES[b.type].power,0);
+    if(grid.supply-grid.used>=held+3)return;
+    for(const b of s.buildings){
+     const r=b.production,recipe=r&&g.FRONTIER_RECIPES[r.recipe];
+     if(recipe?.cost?.alloy&&!r.paused){r.paused=true;paused.push(b)}
+    }
+    await place('wind');
+   }
+  }finally{for(const b of paused)if(!b.autoPowerHold)g.productionRecord(b).paused=false;}
  }
+
  async function study(id){ok(await run(()=>!g.researchReason(id)),'satisfy '+id+' prerequisites');g.frontierBeginResearch(id);ok(await run(()=>s.research.includes(id)),'staff research '+id)}
  async function investigate(site){
   if(!g.frontierSiteReach(site))await place('outpost',site);

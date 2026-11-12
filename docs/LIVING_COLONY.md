@@ -39,7 +39,9 @@ foundation, not a complete relationship simulation.
 Root version 4; versions 3 and 4 can be imported. `save-migration.js` was tested
 and committed before enabling the format change. An exact original v3 copy is
 written and verified before upgrade. Failure or collision refuses the upgrade.
-Game & Save exports this original copy. Existing recovery, multi-tab and
+Game & Save exports this original copy on the preview where migration occurred.
+Export it separately before moving a v4 colony to another preview; browser-local
+recovery copies do not travel inside the colony export. Existing recovery, multi-tab and
 read-before-write protections remain in place. Older Beyond builds reject v4;
 use the original recovery export when returning to them.
 
