@@ -11,6 +11,10 @@ async function verifyFrontierJourney(frame,out){
  const run=async (until,n=40000)=>{for(let i=0;i<n;i++){if(until())return true;g.tick(.25);if(i%30===0)await new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();c.port2.close();r()};c.port2.postMessage(0)})}return until()};
  async function place(type,near){
   const t=g.TYPES[type];let built,attempt=0,lastGeometry='';
+  // As in the turbine policy below, explicitly pause optional consumers while
+  // saving alloy for a construction order. A continuous component target may
+  // otherwise spend the reserve faster than this five-person settlement casts it.
+  const fundingPaused=[];if(t.cost.alloy)for(const b of s.buildings){const r=b.production,recipe=r&&g.FRONTIER_RECIPES[r.recipe];if(recipe?.cost?.alloy&&!r.paused){r.paused=true;fundingPaused.push(b)}}
   const search=()=>{
    if(++attempt%10)return false;
    if(Object.entries(t.cost).some(([k,n])=>g.freightAvailable(k)<n))return false;
@@ -22,7 +26,8 @@ async function verifyFrontierJourney(frame,out){
     if(g.clearFootprint(x,y,t.w,t.h)&&!s.buildings.some(b=>x+Math.floor(t.w/2)>=b.x&&x+Math.floor(t.w/2)<b.x+b.w&&y+t.h>=b.y&&y+t.h<b.y+b.h)&&!g.frontierPlacementReason(type,x,y)&&g.buildAt(type,x,y)){built=s.buildings.at(-1);return true}
    }return false;
   };
-  ok(await run(search,20000),'fund and place '+type);ok(await run(()=>built.finished),'crew completes '+type);
+  try{ok(await run(search,40000),'fund and place '+type);ok(await run(()=>built.finished),'crew completes '+type)}
+  finally{for(const b of fundingPaused)if(!b.autoPowerHold)g.productionRecord(b).paused=false}
   if(type!=='wind')await ensurePower();return built;
  }
  async function ensurePower(){

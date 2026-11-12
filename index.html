@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111315">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
@@ -2125,9 +2125,11 @@ function showCatalog(){
 }
 function frontierBlueprintDetail(id){
  const t=TYPES[id];if(!t)return;const tech=researchDefinition(t.tech),ready=accessible(id),recipe=FRONTIER_RECIPES[t.recipe];
+ const alloyCompetition=(t.cost.alloy||0)>freightAvailable('alloy')&&S.buildings.some(b=>b.finished&&!b.editOrder&&!b.production?.paused&&FRONTIER_RECIPES[b.production?.recipe]?.cost?.alloy);
  showSheet(sectionHeader(t.name,GROUP_FOR[id]+' / '+(FRONTIER_ERAS[tech?.era||0]))+'<div class="facility-hero">'+blueprintArt(id)+'</div><p class="blueprint-lede">'+t.description+'</p>'+
  '<div class="blueprint-specs"><span><b>'+t.w+' × '+t.h+'</b>footprint</span><span><b>'+ (t.power>0?'+':'')+t.power+'</b>power</span><span><b>'+ (t.beds||t.storage||t.time)+'</b>'+ (t.beds?'beds':t.storage?'storage':'build work')+'</span></div>'+
  '<h3>Construction supplies</h3><div class="material-chips">'+Object.entries(t.cost).map(([k,n])=>'<span class="'+(freightAvailable(k)<n?'short':'')+'">'+n+' '+MATERIALS[k].name+' <small>'+freightAvailable(k)+' available</small></span>').join('')+'</div>'+
+ (alloyCompetition?'<p class="supply-guidance">Fabrication is using alloy. To save for this blueprint, pause alloy-consuming production until the construction supplies are ready. <button class="secondary" data-open="industry">Manage production</button></p>':'')+
  (recipe?'<section class="chain-preview"><h3>Production chain</h3><p>'+Object.entries(recipe.cost).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+' → '+Object.entries(recipe.output).map(([k,n])=>n+' '+MATERIALS[k].name).join(' + ')+'</p><small>Delivered inputs · labour · '+recipe.seconds+' work seconds · '+(-t.power)+' power</small></section>':'')+
  (FRONTIER_UPGRADABLE.has(id)?'<p>Upgradeable through physically supplied construction work after the appropriate technology.</p>':'')+
  (ready?'<button class="primary wide-action" data-build="'+id+'">'+uiIcon('build',18)+' Place blueprint</button>':'<button class="primary wide-action" data-tech-detail="'+t.tech+'">'+uiIcon('research',18)+' Discover '+(tech?.name||'research')+'</button>')+'<button class="secondary" data-open="build">Back to designs</button>');
