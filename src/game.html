@@ -265,11 +265,12 @@ function getTarget(p){const hr=S.minute/60,night=S.minute>=1260+(p.id%5)*5||S.mi
    if(group==='build'&&!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))continue;
    const task=pick();if(task&&(p.task===task||setTask(p,task)))return p.task;
  }
- return null;
+ return lifeIdleTarget(p);
 }
 
 function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(buildingAt(Math.floor(p.x),Math.floor(p.y))?.type==='road'?1.25:1)*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
+ if(t.type==='idle_pause'){lifeIdleWork(p);return}
  if(t.type.startsWith('life_')){lifeWork(p,work);return}
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}

@@ -265,11 +265,12 @@ function getTarget(p){const hr=S.minute/60,night=S.minute>=1260+(p.id%5)*5||S.mi
    if(group==='build'&&!(p.work==='build'||['Engineer','Commander','Medic'].includes(p.role)))continue;
    const task=pick();if(task&&(p.task===task||setTask(p,task)))return p.task;
  }
- return null;
+ return lifeIdleTarget(p);
 }
 
 function doTask(p,dt){const t=p.task;if(!t)return;const work=dt*speed*(1+.2*((S.buildings.find(b=>b.id===t.id)?.level||1)-1));frontierRecord(p,t,dt*speed);if(p.path.length){let dst=p.path[0],dx=dst.x-p.x,dy=dst.y-p.y,d=Math.hypot(dx,dy),step=dt*speed*(buildingAt(Math.floor(p.x),Math.floor(p.y))?.type==='road'?1.25:1)*(p.role==='Surveyor'?2:1.65)*(t.type==='survey'&&S.research.includes('traverse')?1.25:1);if(d<=step){p.x=dst.x;p.y=dst.y;p.path.shift()}else{p.x+=dx/d*step;p.y+=dy/d*step}p.level=0;return}
  if(p.task?.type==='research'&&frontierState().research)frontierStudy(work);p.level=Math.sin(performance.now()/260+p.id)*.3+.7;p.action+=work;p.energy=clamp(p.energy-work*.20,0,100);
+ if(t.type==='idle_pause'){lifeIdleWork(p);return}
  if(t.type.startsWith('life_')){lifeWork(p,work);return}
  if(t.type==='haul_pickup'){freightPickup(p,t);return}
  if(t.type==='haul_dropoff'){if(p.visit&&p.action<.4)return;freightDeliver(p,t);return}
@@ -1342,7 +1343,7 @@ function showBuilding(id){
  const housing=housingBeds(b)?housingPanel(b):'';
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
- experienceRoom(b)+frontierFacilityHero(b)+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
+ (experienceRoom(b)||frontierFacilityHero(b))+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
  frontierHistoryPanel(b)+housing+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
@@ -2389,7 +2390,7 @@ function lifePlaces(p){
  return buildings.map(b=>{
   const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5})).filter(a=>
    !lifeRoot().sessions.some(s=>s.points.some(q=>q.x===a.x&&q.y===a.y))&&
-   !S.colonists.some(q=>q!==p&&q.task?.type==='life_quiet'&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
+   !S.colonists.some(q=>q!==p&&['life_quiet','idle_pause'].includes(q.task?.type)&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
   points.sort((a,z)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y));
   return {b,points};
  }).filter(q=>q.points.length);
@@ -2483,6 +2484,7 @@ function lifeTick(step){
  }
  for(const p of S.colonists){
   const l=lifePerson(p),task=p.task;
+  if(task?.type==='idle_pause'&&(lifeEmergency(p)||S.minute>=1050||jobs().some(b=>!b.buildPaused))){p.task=null;p.path=[];p.action=0}
   if(task?.type?.startsWith('life_')){
    if(!lifeBuilding(task.id)||lifeEmergency(p)||!lifeEvening(p)||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
     const session=r.sessions.find(s=>s.id===l.session);if(session)lifeCancel(session);else{lifeClear(p);l.retryAt=r.time+2}
@@ -2499,7 +2501,7 @@ function lifeRestore(){
  for(const p of S.colonists){delete p.life?.session;if(p.task?.type==='life_share')lifeClear(p)}
 }
 function lifeDescription(p){
- const t=p.task;if(!t?.type?.startsWith('life_'))return '';
+ const t=p.task;if(t?.type==='idle_pause')return p.path.length?'Taking a short break':({plants:'Looking over the growing things',sky:'Taking in the horizon',tinkering:'Checking personal equipment',conversation:'Taking a quiet breath'})[lifePerson(p).interest];if(!t?.type?.startsWith('life_'))return '';
  if(t.type==='life_home')return p.path.length?'Going home for a quiet evening':'Unwinding at home';
  const l=lifePerson(p);
  if(t.type==='life_quiet')return p.path.length?'Finding a quiet spot':({plants:'Watching the evening garden',sky:'Watching the evening sky',tinkering:'Tinkering with personal equipment',conversation:'Taking a quiet breath'})[l.interest];
@@ -2507,11 +2509,11 @@ function lifeDescription(p){
  return (s?.started?(lifeEncounterPhase(s)==='greeting'?'Greeting ':lifeEncounterPhase(s)==='goodbye'?'Saying goodbye to ':'Sharing an evening with '):'Meeting ')+(other?.name.split(' ')[0]||'a neighbour');
 }
 function lifeView(p){
- const t=p.task;if(!t?.type?.startsWith('life_')||p.path.length)return null;
+ const t=p.task;if((!t?.type?.startsWith('life_')&&t?.type!=='idle_pause')||p.path.length)return null;
  const session=t.type==='life_share'&&lifeRoot().sessions.find(s=>s.id===t.session);
  const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
  const kind=session?lifeEncounterKind(session):t.type==='life_home'?'reading':lifePerson(p).interest;
- const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>25?'finishing':'active';
+ const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>(t.type==='idle_pause'?6:25)?'finishing':'active';
  return {kind,phase,progress:session?session.progress:p.action,look:other||null,shared:!!session,
   familiar:!!other&&lifePerson(p).bonds.some(b=>b.person===other.id&&b.shared>=3),building:t.id};
 }
@@ -2519,6 +2521,22 @@ function lifePanel(p){
  const l=lifePerson(p),memories=l.memories.slice(0,4),bonds=l.bonds.map(q=>({q,p:S.colonists.find(p=>p.id===q.person)})).filter(q=>q.p);
  return '<section class="infocard life-profile"><b>'+esc(lifeDescription(p)||'An evening of their own')+'</b><p>'+esc(l.company>=.7?'Often seeks company':l.interest==='plants'?'Finds calm around growing things':l.interest==='sky'?'Drawn to quiet skies':'Enjoys small personal projects')+'</p><details><summary>People, places & memories</summary><p>'+esc(bonds.map(({q,p})=>p.name+' · '+(q.shared>=3?'familiar companion':'getting acquainted')).join('; ')||'Friendships grow through time actually spent together.')+'</p>'+memories.map(m=>'<p><small>Day '+m.day+'</small><br>'+esc(m.text)+(m.count>1?' · '+m.count+' evenings':'')+'</p>').join('')+'</details></section>';
 }
+// Brief daytime pauses are transient, unrewarded and only fill genuinely idle
+// time. New work, hunger and nightfall release them immediately.
+const lifeIdleNext=new WeakMap();
+function lifeIdleTarget(p){
+ if(p.work!=='auto'||p.carry||p.energy<60||p.hunger>40||S.minute<420||S.minute>=1050||industryFoodEmergency()||jobs().some(b=>!b.buildPaused))return null;
+ const now=lifeRoot().time;if(now<(lifeIdleNext.get(p)||0))return null;
+ lifeIdleNext.set(p,now+38+(p.id%5)*7);
+ const places=lifePlaces(p).sort((a,b)=>lifeAttachment(p,b.b)-lifeAttachment(p,a.b)||a.b.id-b.b.id);
+ for(const place of places.slice(0,4)){
+  const point=place.points[(p.id+S.day)%place.points.length];
+  const t={type:'idle_pause',id:place.b.id,x:Math.floor(point.x),y:Math.floor(point.y),outdoors:true};
+  if(setTask(p,t))return t;
+ }
+ return null;
+}
+function lifeIdleWork(p){if(p.action>=8||lifeEmergency(p)||jobs().some(b=>!b.buildPaused)||S.minute>=1050){p.task=null;p.path=[];p.action=0}}
 
 // The field interface reads the world; it never drives simulation outcomes.
 let experiencePerson=null,experienceLastRender=0;

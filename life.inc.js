@@ -35,7 +35,7 @@ function lifePlaces(p){
  return buildings.map(b=>{
   const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5})).filter(a=>
    !lifeRoot().sessions.some(s=>s.points.some(q=>q.x===a.x&&q.y===a.y))&&
-   !S.colonists.some(q=>q!==p&&q.task?.type==='life_quiet'&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
+   !S.colonists.some(q=>q!==p&&['life_quiet','idle_pause'].includes(q.task?.type)&&q.task.x===Math.floor(a.x)&&q.task.y===Math.floor(a.y)));
   points.sort((a,z)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y));
   return {b,points};
  }).filter(q=>q.points.length);
@@ -129,6 +129,7 @@ function lifeTick(step){
  }
  for(const p of S.colonists){
   const l=lifePerson(p),task=p.task;
+  if(task?.type==='idle_pause'&&(lifeEmergency(p)||S.minute>=1050||jobs().some(b=>!b.buildPaused))){p.task=null;p.path=[];p.action=0}
   if(task?.type?.startsWith('life_')){
    if(!lifeBuilding(task.id)||lifeEmergency(p)||!lifeEvening(p)||task.type==='life_quiet'&&['rain','storm'].includes(S.weather)){
     const session=r.sessions.find(s=>s.id===l.session);if(session)lifeCancel(session);else{lifeClear(p);l.retryAt=r.time+2}
@@ -145,7 +146,7 @@ function lifeRestore(){
  for(const p of S.colonists){delete p.life?.session;if(p.task?.type==='life_share')lifeClear(p)}
 }
 function lifeDescription(p){
- const t=p.task;if(!t?.type?.startsWith('life_'))return '';
+ const t=p.task;if(t?.type==='idle_pause')return p.path.length?'Taking a short break':({plants:'Looking over the growing things',sky:'Taking in the horizon',tinkering:'Checking personal equipment',conversation:'Taking a quiet breath'})[lifePerson(p).interest];if(!t?.type?.startsWith('life_'))return '';
  if(t.type==='life_home')return p.path.length?'Going home for a quiet evening':'Unwinding at home';
  const l=lifePerson(p);
  if(t.type==='life_quiet')return p.path.length?'Finding a quiet spot':({plants:'Watching the evening garden',sky:'Watching the evening sky',tinkering:'Tinkering with personal equipment',conversation:'Taking a quiet breath'})[l.interest];
@@ -153,11 +154,11 @@ function lifeDescription(p){
  return (s?.started?(lifeEncounterPhase(s)==='greeting'?'Greeting ':lifeEncounterPhase(s)==='goodbye'?'Saying goodbye to ':'Sharing an evening with '):'Meeting ')+(other?.name.split(' ')[0]||'a neighbour');
 }
 function lifeView(p){
- const t=p.task;if(!t?.type?.startsWith('life_')||p.path.length)return null;
+ const t=p.task;if((!t?.type?.startsWith('life_')&&t?.type!=='idle_pause')||p.path.length)return null;
  const session=t.type==='life_share'&&lifeRoot().sessions.find(s=>s.id===t.session);
  const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
  const kind=session?lifeEncounterKind(session):t.type==='life_home'?'reading':lifePerson(p).interest;
- const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>25?'finishing':'active';
+ const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>(t.type==='idle_pause'?6:25)?'finishing':'active';
  return {kind,phase,progress:session?session.progress:p.action,look:other||null,shared:!!session,
   familiar:!!other&&lifePerson(p).bonds.some(b=>b.person===other.id&&b.shared>=3),building:t.id};
 }
@@ -165,3 +166,19 @@ function lifePanel(p){
  const l=lifePerson(p),memories=l.memories.slice(0,4),bonds=l.bonds.map(q=>({q,p:S.colonists.find(p=>p.id===q.person)})).filter(q=>q.p);
  return '<section class="infocard life-profile"><b>'+esc(lifeDescription(p)||'An evening of their own')+'</b><p>'+esc(l.company>=.7?'Often seeks company':l.interest==='plants'?'Finds calm around growing things':l.interest==='sky'?'Drawn to quiet skies':'Enjoys small personal projects')+'</p><details><summary>People, places & memories</summary><p>'+esc(bonds.map(({q,p})=>p.name+' · '+(q.shared>=3?'familiar companion':'getting acquainted')).join('; ')||'Friendships grow through time actually spent together.')+'</p>'+memories.map(m=>'<p><small>Day '+m.day+'</small><br>'+esc(m.text)+(m.count>1?' · '+m.count+' evenings':'')+'</p>').join('')+'</details></section>';
 }
+// Brief daytime pauses are transient, unrewarded and only fill genuinely idle
+// time. New work, hunger and nightfall release them immediately.
+const lifeIdleNext=new WeakMap();
+function lifeIdleTarget(p){
+ if(p.work!=='auto'||p.carry||p.energy<60||p.hunger>40||S.minute<420||S.minute>=1050||industryFoodEmergency()||jobs().some(b=>!b.buildPaused))return null;
+ const now=lifeRoot().time;if(now<(lifeIdleNext.get(p)||0))return null;
+ lifeIdleNext.set(p,now+38+(p.id%5)*7);
+ const places=lifePlaces(p).sort((a,b)=>lifeAttachment(p,b.b)-lifeAttachment(p,a.b)||a.b.id-b.b.id);
+ for(const place of places.slice(0,4)){
+  const point=place.points[(p.id+S.day)%place.points.length];
+  const t={type:'idle_pause',id:place.b.id,x:Math.floor(point.x),y:Math.floor(point.y),outdoors:true};
+  if(setTask(p,t))return t;
+ }
+ return null;
+}
+function lifeIdleWork(p){if(p.action>=8||lifeEmergency(p)||jobs().some(b=>!b.buildPaused)||S.minute>=1050){p.task=null;p.path=[];p.action=0}}
