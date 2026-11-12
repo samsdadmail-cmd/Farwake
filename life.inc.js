@@ -16,7 +16,7 @@ function lifePerson(p){
  }
  return p.life;
 }
-function lifeEvening(p){return S.minute>=1050+((p.id*17)%43)&&S.minute<1230}
+function lifeEvening(p){return S.minute>=1050&&S.minute<1230&&(S.minute>=1050+((p.id*17)%43)||!!p.life?.session)}
 function lifeEncounterKind(session){const b=lifeBuilding(session.building);return b?.type==='garden'?'plants':session.id%3===0?'sky':session.id%3===1?'conversation':'project'}
 function lifeEncounterPhase(session){return !session.started?'waiting':session.progress<3?'greeting':session.progress<6?'settling':session.progress<27?'sharing':'goodbye'}
 function lifeEmergency(p){return !!p.carry||p.energy<35||p.hunger>60||industryFoodEmergency()}
@@ -79,7 +79,7 @@ function lifeTarget(p){
   if(!wet)options.push({kind:'quiet',...place,score:l.quiet+quietFit+affection-travel});
   if(b===home)options.push({kind:'home',...place,score:l.home+(wet?.8:0)+affection-travel});
   if(!wet&&points.length>=2){
-   const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&lifeEvening(q)&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&!q.task?.type?.startsWith('life_')&&Math.hypot(p.x-q.x,p.y-q.y)<14)
+   const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&S.minute>=1035+((q.id*17)%43)&&S.minute<1230&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&!q.task?.type?.startsWith('life_')&&Math.hypot(p.x-q.x,p.y-q.y)<14)
     .sort((a,z)=>((l.bonds.find(q=>q.person===z.id)?.shared||0)-(l.bonds.find(q=>q.person===a.id)?.shared||0))||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y)||a.id-z.id)[0];
    if(partner)options.push({kind:'shared',...place,partner,score:l.company+affection+(l.bonds.find(q=>q.person===partner.id)?.shared>=3?.15:0)-travel});
   }

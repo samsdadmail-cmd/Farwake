@@ -23,3 +23,9 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
  await expect(page.locator('[data-diagnostics-export]')).toBeVisible();
  const sheet=await page.locator('#sheet').boundingBox();expect(sheet.x).toBeGreaterThanOrEqual(0);expect(sheet.y).toBeGreaterThanOrEqual(0);expect(sheet.x+sheet.width).toBeLessThanOrEqual(viewport.width+1);
 });
+
+test('staggered founders can accept a willing invitation before choosing solitary home time',async({page})=>{
+ await page.addInitScript(()=>window.requestAnimationFrame=()=>0);await page.goto('/index.html');
+ const result=await page.evaluate(()=>{const g=FARWAKE_TEST,s=g.state;s.minute=1045;for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;for(const p of s.colonists)Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:5});const starts=[];let previous=0;for(let i=0;i<550;i++){g.tick(.1);const sessions=g.lifeRoot().sessions.length;if(sessions&&!previous)starts.push(s.minute);previous=sessions}return{starts,shared:s.colonists.filter(p=>p.life?.bonds.length).length}});
+ expect(result.starts.length).toBeGreaterThan(0);expect(result.shared).toBe(2);
+});

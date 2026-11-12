@@ -23,3 +23,9 @@ function experienceRender(time){
  const room=$('sheet').querySelector('[data-room]');if(room){const b=S.buildings.find(b=>b.id===+room.dataset.room);if(b)FarwakeInteriors.draw(room,b,S,FarwakeDoors.occupants(S,b),time,FieldPreferences.reduced)}
 }
 function experienceRoom(b){return b.finished&&FarwakeBuildings.entrance(b)?'<canvas class="portrait-scene" width="384" height="216" data-room="'+b.id+'" aria-label="Live cutaway of '+esc(facilityName(b))+'"></canvas><div class="interior-caption">LIVE INTERIOR · ACTUAL OCCUPANTS</div>':''}
+
+function experienceReadouts(){
+ if(!$('sheetbg').classList.contains('open'))return;
+ for(const row of $('sheet').querySelectorAll('[data-action="crew"]')){const p=S.colonists.find(p=>p.id===+row.dataset.id);if(!p)continue;const sub=row.querySelector('.sub');if(sub&&sheetSection==='crew')sub.textContent=p.role+' · '+taskLabel(p)}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
