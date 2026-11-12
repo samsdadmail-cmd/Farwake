@@ -72,3 +72,16 @@ test('completed evenings wind down in real homes without repeating rewards or br
  });
  expect(result).toEqual({returnedToWork:false,homeSeen:true,rewarded:5,asleep:true});
 });
+
+test('mobile discoveries explain locked requirements and retain the optional connected map',async({page})=>{
+ await page.goto('/index.html');await page.locator('[data-nav="research"]').click();
+ await expect(page.locator('.discovery-node')).toHaveCount(26);
+ await expect(page.locator('.research-intro')).toContainText('study and exploration');
+ await page.locator('[data-tech-filter="homes"]').click();await expect(page.locator('.discovery-node')).toHaveCount(2);
+ await page.locator('.discovery-node[data-tech-detail="cabins"]').click();
+ await expect(page.locator('.tech-prerequisites button')).toContainText('Structural timber');
+ const clock=await page.locator('#clock').textContent();await expect(page.locator('#clock')).not.toHaveText(clock);
+ await expect(page.locator('.tech-prerequisites button')).not.toHaveClass(/tech-node/);
+ await page.locator('[data-open="research"]').click();await page.locator('[data-tech-view="map"]').click();
+ expect(await page.locator('.tech-links path').count()).toBeGreaterThan(15);
+});

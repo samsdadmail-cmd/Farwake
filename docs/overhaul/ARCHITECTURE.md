@@ -31,3 +31,7 @@ construction/food/economy/progression; terrain/frame-loop regressions; Chromium 
 WebKit; iPhone portrait/landscape; rendered observations, including five real minutes;
 5/20/40-person profiling. Creative acceptance remains Kyle's. Record actual executed
 checks and limits rather than treating green tests as proof of beauty.
+
+Research now opens as a mobile discoveries journal: field filters, visible knowledge
+costs, unlocks and actual blocked requirements. The full connected map remains an
+explicit deeper view; research accounting and prerequisites share the same data.

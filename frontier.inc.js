@@ -101,13 +101,31 @@ function frontierEra(){
  ];
  let era=0;while(era<4&&capability[era+1])era++;return era;
 }
-let techZoom=1,techBranchTops=[];
-function frontierTree(){
+let techZoom=1,techBranchTops=[],techView='discoveries',techFilter='all';
+function frontierTechNodes(){
  const legacy={
  growth:['food',0],energy:['power',0],medicine:['community',0],signal:['science',1],
  optics:['science',0],irrigation:['food',1],metallurgy:['industry',2],heliostat:['power',2],traverse:['science',3]
  };
- const nodes=Object.entries({...TECHS,...fieldResearch,...FRONTIER_TECH}).map(([id,t])=>({id,t,branch:t.branch||legacy[id]?.[0]||'freight',era:t.era??legacy[id]?.[1]??0}));
+ return Object.entries({...TECHS,...fieldResearch,...FRONTIER_TECH}).map(([id,t])=>({id,t,branch:t.branch||legacy[id]?.[0]||'freight',era:t.era??legacy[id]?.[1]??0}));
+}
+function frontierResearchViews(){return '<div class="research-views" aria-label="Research presentation"><button class="pill '+(techView==='discoveries'?'active':'')+'" data-tech-view="discoveries" aria-pressed="'+(techView==='discoveries')+'">Discoveries</button><button class="pill '+(techView==='map'?'active':'')+'" data-tech-view="map" aria-pressed="'+(techView==='map')+'">Connection map</button></div>'}
+function frontierDiscoveries(){
+ const nodes=frontierTechNodes(),active=frontierState().research;
+ const filter='<div class="discovery-filters" aria-label="Research fields">'+[['all',['All fields']],...Object.entries(FRONTIER_BRANCHES)].map(([id,label])=>'<button class="pill '+(techFilter===id?'active':'')+'" data-tech-filter="'+id+'" aria-pressed="'+(techFilter===id)+'">'+label[0]+'</button>').join('')+'</div>';
+ const groups=FRONTIER_ERAS.map((name,era)=>{
+  const list=nodes.filter(n=>n.era===era&&(techFilter==='all'||n.branch===techFilter));if(!list.length)return '';
+  return '<section class="discovery-era"><h3>'+name+'</h3>'+list.map(({id,t,branch})=>{
+   const done=S.research.includes(id),studying=active?.id===id,reason=researchReason(id),state=done?'complete':studying?'studying':reason?'locked':'available';
+   const status=done?'Completed':studying?'Studying · '+Math.floor(100*active.progress/active.effort)+'%':t.cost+' knowledge';
+   return '<button class="discovery-node '+state+'" data-tech-detail="'+id+'"><span class="discovery-icon">'+uiIcon(FRONTIER_BRANCHES[branch][1],22)+'</span><span class="discovery-copy"><b>'+esc(t.name)+'</b><small>'+status+'</small><span class="discovery-unlock">'+esc((t.unlocks||[]).map(k=>TYPES[k].name).join(' · ')||t.description||t.requirement||'New colony capability')+'</span><span class="discovery-requirement">'+esc(done?'Available to the colony':studying?'Colonists are carrying out this study':reason||'Ready to begin')+'</span></span><span aria-hidden="true">›</span></button>';
+  }).join('')+'</section>';
+ }).join('');
+ return frontierResearchViews()+'<p class="research-intro"><strong>'+Math.floor(S.resources.knowledge)+' knowledge</strong> · Colonists earn knowledge through study and exploration. Choose a discovery to see its requirements and unlocks.</p>'+filter+'<div class="discovery-list">'+groups+'</div>';
+}
+function frontierTree(){
+ if(techView==='discoveries')return frontierDiscoveries();
+ const nodes=frontierTechNodes();
  const slots={},positions={},branchY={};const branches=Object.keys(FRONTIER_BRANCHES),colWidth=230;let nextY=70;
  for(const branch of branches){branchY[branch]=nextY;const rows=Math.max(...FRONTIER_ERAS.map((_,era)=>nodes.filter(n=>n.branch===branch&&n.era===era).length));nextY+=Math.max(300,rows*156+34)}
  techBranchTops=branches.map(id=>branchY[id]);
@@ -118,15 +136,15 @@ function frontierTree(){
   return '<path d="M'+(a.x+188)+' '+(a.y+68)+' C'+(a.x+210)+' '+(a.y+68)+','+(b.x-24)+' '+(b.y+68)+','+b.x+' '+(b.y+68)+'" data-prerequisite="'+k+'" class="'+(S.research.includes(k)?'connected':'')+'"/>';
  })).join('');
  const active=frontierState().research;
- return '<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<button class="'+(i===frontierEra()?'current':'')+'" data-tech-era="'+i+'">'+n+'</button>').join('')+'</div>'+
+ return frontierResearchViews()+'<div class="era-rail">'+FRONTIER_ERAS.map((n,i)=>'<button class="'+(i===frontierEra()?'current':'')+'" data-tech-era="'+i+'">'+n+'</button>').join('')+'</div>'+
  '<div class="tree-controls"><span>Drag the tree to explore · '+S.resources.knowledge+' knowledge</span><button class="secondary" data-tech-zoom="-1" aria-label="Zoom technology tree out">−</button><button class="secondary" data-tech-zoom="1" aria-label="Zoom technology tree in">+</button></div>'+
  '<div class="tree-branches">'+branches.map((id,i)=>'<button class="secondary" data-tech-branch="'+i+'">'+FRONTIER_BRANCHES[id][0]+'</button>').join('')+'</div><div class="tech-viewport" tabindex="0" aria-label="Technology tree, scroll to explore"><div class="tech-space" style="width:'+width*techZoom+'px;height:'+height*techZoom+'px"><div class="tech-board" style="width:'+width+'px;height:'+height+'px;transform:scale('+techZoom+')">'+
  '<svg class="tech-links" width="'+width+'" height="'+height+'" aria-hidden="true">'+lines+'</svg>'+
  FRONTIER_ERAS.map((n,i)=>'<h3 class="tech-era" style="left:'+(136+i*colWidth)+'px">'+n+'</h3>').join('')+
  branches.map((id,i)=>'<div class="tech-branch" style="top:'+branchY[id]+'px">'+uiIcon(FRONTIER_BRANCHES[id][1],22)+'<b>'+FRONTIER_BRANCHES[id][0]+'</b></div>').join('')+
- nodes.map(({id,t})=>{const p=positions[id],done=S.research.includes(id),studying=active?.id===id,available=!researchReason(id),state=done?'complete':studying?'studying':available?'available':'locked',building=t.unlocks?.[0];
+ nodes.map(({id,t,branch})=>{const p=positions[id],done=S.research.includes(id),studying=active?.id===id,available=!researchReason(id),state=done?'complete':studying?'studying':available?'available':'locked',building=t.unlocks?.[0];
  return '<button class="tech-node '+state+'" style="left:'+p.x+'px;top:'+p.y+'px" data-tech-detail="'+id+'">'+
- (building?'<img alt="" src="'+FarwakeBuildings.thumbnail(building)+'">':uiIcon(FRONTIER_BRANCHES[t.branch||legacy[id]?.[0]||'science'][1],22))+
+ (building?'<img alt="" src="'+FarwakeBuildings.thumbnail(building)+'">':uiIcon(FRONTIER_BRANCHES[branch][1],22))+
  '<b>'+t.name+'</b><small>'+ (done?'Completed':studying?'Studying · '+Math.floor(100*active.progress/active.effort)+'%':available?t.cost+' knowledge': 'Locked')+'</small>'+
  '<span>'+(t.unlocks||[]).map(id=>TYPES[id].name).join(' · ')+'</span></button>';
  }).join('')+'</div></div></div>';
@@ -140,6 +158,8 @@ function frontierTechDetail(id){
  '<div class="tech-prerequisites">'+(Array.isArray(t.requires)?t.requires:t.requires?[t.requires]:[]).map(k=>'<button class="secondary" data-tech-detail="'+k+'">'+(S.research.includes(k)?'Completed · ':'Requires · ')+researchDefinition(k).name+'</button>').join('')+'</div><p>'+ (t.requirement||'Founding expedition knowledge')+'</p>'+ (active?'<p>Stopping this study returns its unused knowledge budget.</p><button class="secondary" data-research-cancel>Stop study</button>':'')+'<button class="primary" data-tech-start="'+id+'" '+(missing||active?'disabled':'')+'>'+(active?'Researchers are studying this':missing||'Begin study · '+t.cost+' knowledge')+'</button><button class="secondary" data-open="research">Back to tree</button>');
 }
 document.addEventListener('click',e=>{
+ const view=e.target.closest('[data-tech-view]');if(view){techView=view.dataset.techView;openSection('research');return}
+ const filter=e.target.closest('[data-tech-filter]');if(filter){techFilter=filter.dataset.techFilter;openSection('research');return}
  const era=e.target.closest('[data-tech-era]');if(era){$('sheet').querySelector('.tech-viewport').scrollLeft=(110+Number(era.dataset.techEra)*230)*techZoom;return}
  const branch=e.target.closest('[data-tech-branch]');if(branch){$('sheet').querySelector('.tech-viewport').scrollTop=techBranchTops[Number(branch.dataset.techBranch)]*techZoom-10;return}
  const detail=e.target.closest('[data-tech-detail]');if(detail){frontierTechDetail(detail.dataset.techDetail);return}
@@ -240,11 +260,12 @@ function frontierTick(step){
 function frontierRefreshTree(){
  if(sheetSection!=='research')return;
  for(const edge of $('sheet').querySelectorAll('[data-prerequisite]'))edge.classList.toggle('connected',S.research.includes(edge.dataset.prerequisite));
- for(const node of $('sheet').querySelectorAll('[data-tech-detail]')){
+ for(const node of $('sheet').querySelectorAll('.tech-node[data-tech-detail],.discovery-node[data-tech-detail]')){
   const id=node.dataset.techDetail,active=frontierState().research,done=S.research.includes(id),studying=active?.id===id;
-  node.className='tech-node '+(done?'complete':studying?'studying':!researchReason(id)?'available':'locked');
+  node.className=(node.classList.contains('discovery-node')?'discovery-node':'tech-node')+' '+(done?'complete':studying?'studying':!researchReason(id)?'available':'locked');
   const status=node.querySelector('small');
-  if(status)status.textContent=done?'Completed':studying?'Studying · '+Math.floor(100*active.progress/active.effort)+'%':researchReason(id)?'Locked':researchDefinition(id).cost+' knowledge';
+  if(status)status.textContent=done?'Completed':studying?'Studying · '+Math.floor(100*active.progress/active.effort)+'%':node.classList.contains('discovery-node')?researchDefinition(id).cost+' knowledge':researchReason(id)?'Locked':researchDefinition(id).cost+' knowledge';
+  const reason=node.querySelector('.discovery-requirement');if(reason)reason.textContent=done?'Available to the colony':studying?'Colonists are carrying out this study':researchReason(id)||'Ready to begin';
  }
 }
 function frontierMealTarget(p){
