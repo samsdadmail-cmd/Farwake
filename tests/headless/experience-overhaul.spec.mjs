@@ -35,3 +35,21 @@ test('explicit personal standby blocks and interrupts optional daytime pauses',a
  const result=await page.evaluate(()=>{const g=FARWAKE_TEST,s=g.state,p=s.colonists[0];s.minute=720;for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:0,work:'auto',workWeights:{build:0,haul:0,gather:0,field:0,factory:0,research:0,survey:0}});g.tick(.1);const blocked=p.task===null;p.workWeights.build=1;g.tick(.1);const paused=p.task?.type==='idle_pause';p.workWeights.build=0;g.tick(.6);return{blocked,paused,interrupted:p.task===null,noReward:!p.life.memories.length}});
  expect(result).toEqual({blocked:true,paused:true,interrupted:true,noReward:true});
 });
+
+test('Build first interrupts an attended evening without rewards and respects disabled work lanes',async({page})=>{
+ await page.addInitScript(()=>window.requestAnimationFrame=()=>0);await page.goto('/index.html');
+ const result=await page.evaluate(()=>{
+  const g=FARWAKE_TEST,s=g.state;s.minute=1093;for(const k of Object.keys(g.industryPolicy().weights))g.industryPolicy().weights[k]=0;
+  for(const p of s.colonists)Object.assign(p,{task:null,path:[],carry:null,energy:95,hunger:5});
+  for(let i=0;i<70;i++)g.tick(.1);
+  const meeting=g.lifeRoot().sessions[0];if(!meeting?.started)throw Error('No genuinely attended meeting');
+  const pair=meeting.people.map(id=>s.colonists.find(p=>p.id===id));
+  // Retain an explicitly disabled founder as a guard against overriding policy.
+  const standby=s.colonists.find(p=>!meeting.people.includes(p.id));standby.workWeights={build:0,haul:0,gather:0,field:0,factory:0,research:0,survey:0};
+  let site;for(let y=32;y<40&&!site;y++)for(let x=20;x<38&&!site;x++)if(g.clearFootprint(x,y,3,2)&&!g.frontierPlacementReason('shelter',x,y)&&g.buildAt('shelter',x,y))site=s.buildings.at(-1);
+  if(!site)throw Error('No funded reachable construction site');site.buildPriority=true;g.industryPolicy().weights.build=1;g.industryPolicy().weights.haul=1;
+  for(let i=0;i<20;i++)g.tick(.1);
+  return{canceled:!g.lifeRoot().sessions.length,noReward:pair.every(p=>!p.life.bonds.length&&!p.life.memories.length),released:pair.every(p=>!p.task?.type?.startsWith('life_')),working:s.colonists.some(p=>['build','haul_pickup','haul_dropoff'].includes(p.task?.type)),standby:!['build','haul_pickup','haul_dropoff'].includes(standby.task?.type)};
+ });
+ expect(result).toEqual({canceled:true,noReward:true,released:true,working:true,standby:true});
+});
