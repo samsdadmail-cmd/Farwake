@@ -18,3 +18,6 @@
 .sheet .iconbtn{min-width:44px;width:44px;min-height:44px;height:44px;font-size:22px;border:1px solid #65756b;border-radius:2px}.supply-guidance{border-left:2px solid #d6b278;padding-left:13px}.supply-guidance button{margin-top:9px}
 
 .app:has(.sheetbg.open) .inspector{visibility:hidden;pointer-events:none}
+/* Keep the authored cutaway and its live actors in the same proportions when
+   orientation changes; drawers scroll rather than flattening the room. */
+.portrait-scene{display:block;height:auto;aspect-ratio:16/9}

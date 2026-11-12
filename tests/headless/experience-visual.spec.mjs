@@ -23,6 +23,6 @@ test('render the field interface, real social phases and occupied home in phone 
  await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(200000));await image;
  await page.evaluate(async()=>{const w=document.querySelector('iframe').contentWindow,im=new w.Image();im.src=new URL('interior-home.webp',w.document.baseURI).href;await im.decode();w.FARWAKE_TEST.draw(200100)});
  await expect(world.locator('#facility-readout')).toContainText('Inside: Aya Mercer, Tomas Venn');await phone.screenshot({path:info.outputPath('06-occupied-home.png')});
- await page.locator('#viewport').selectOption('844,390');await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(210000));await phone.screenshot({path:info.outputPath('07-home-landscape.png')});
+ await page.locator('#viewport').selectOption('844,390');await page.evaluate(()=>document.querySelector('iframe').contentWindow.FARWAKE_TEST.draw(210000));const room=await world.locator('[data-room]').boundingBox();expect(room.width/room.height).toBeCloseTo(16/9,2);await phone.screenshot({path:info.outputPath('07-home-landscape.png')});
  await info.attach('actual-scene-history.json',{body:JSON.stringify({note:'Isolated fed/evening and home fixtures. Real pathfinding, attendance and reward logic; simulation time advanced manually. These are rendered gameplay screenshots, not physical-device evidence.',phases},null,2),contentType:'application/json'});
 });
