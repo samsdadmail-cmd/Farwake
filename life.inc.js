@@ -120,7 +120,7 @@ function lifeTick(step){
   if(!b||session.day!==S.day||people.some(p=>!p||lifeEmergency(p))||S.minute>=1230||['rain','storm'].includes(S.weather)){lifeCancel(session);continue}
   const present=people.every(p=>p.task?.type==='life_share'&&p.task.session===session.id&&!p.path.length)&&Math.hypot(people[0].x-people[1].x,people[0].y-people[1].y)<2.5;
   if(!present){if(r.time>=session.expires)lifeCancel(session);continue}
-  if(!session.started){session.started=true;lifeCue(people[0],'Good to have a quiet minute together.')}session.progress+=elapsed;
+  if(!session.started){session.started=true;localSound('greeting',people[0]);lifeCue(people[0],'Good to have a quiet minute together.')}session.progress+=elapsed;
   if(session.progress>=32){
    lifeRemember(people[0],'shared',b,people[1]);lifeRemember(people[1],'shared',b,people[0]);
    lifeCue(people[1],'Same place another evening?');for(const p of people)lifeClear(p);

@@ -35,7 +35,7 @@ window.FarwakeInteriors=(()=>{
    c.save();c.translate(x,y);if(sleep)c.rotate(-Math.PI/2);
    const sway=reduced||sleep?0:Math.sin(time*.002+p.id)*2;
    box(-6,-6,13,17,p.coat);box(-5,-19,11,12,p.hair);box(-3,-16,9,8,p.hue);box(-8,1,3,9,p.coat);box(6,0+sway,3,8,p.hue);box(-5,11,4,8,'#343d3b');box(2,11,4,8,'#343d3b');
-   if(!sleep){box(-2,8,13,6,'#c6b58b');box(4,8,1,6,'#76684e')}
+   if(!sleep){const job=p.task?.type;if(job==='eat'){box(-2,8,11,4,'#b9c3ad');box(6,3+Math.sin(time*.003+p.id)*2,3,2,p.hue)}else if(job==='craft'){box(-2,8,13,5,'#5c7b7e');box(5,4,2,8,'#d4b785')}else if(job==='research'||job==='align'||job==='investigate'){box(-2,6,12,8,'#39575c');box(0,7,8,4,'#8faeaa')}else{box(-2,8,13,6,'#c6b58b');box(4,8,1,6,'#76684e')}}
    c.restore();
   });
   if(!lit){box(27,42,330,156,'#152a354a')}
