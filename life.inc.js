@@ -16,7 +16,9 @@ function lifePerson(p){
  }
  return p.life;
 }
-function lifeEvening(p){return S.minute>=1050&&S.minute<1230}
+function lifeEvening(p){return S.minute>=1050+((p.id*17)%43)&&S.minute<1230}
+function lifeEncounterKind(session){const b=lifeBuilding(session.building);return b?.type==='garden'?'plants':session.id%3===0?'sky':session.id%3===1?'conversation':'project'}
+function lifeEncounterPhase(session){return !session.started?'waiting':session.progress<3?'greeting':session.progress<6?'settling':session.progress<27?'sharing':'goodbye'}
 function lifeEmergency(p){return !!p.carry||p.energy<35||p.hunger>60||industryFoodEmergency()}
 function lifeBuilding(id){return S.buildings.find(b=>b.id===id&&b.finished&&!b.editOrder)}
 function lifeClear(p){
@@ -29,7 +31,7 @@ function lifeCancel(session){
 }
 function lifePlaces(p){
  const home=lifeBuilding(p.home),quiet=lifePerson(p).interest;
- const buildings=S.buildings.filter(b=>b.finished&&!b.editOrder&&(b===home||b.type==='camp'||FRONTIER_BUILDINGS[b.type]?.community||quiet==='plants'&&b.type==='garden'));
+ const buildings=S.buildings.filter(b=>b.finished&&!b.editOrder&&(b===home||b.type==='camp'||quiet==='tinkering'&&['workshop','fabricator','sawmill'].includes(b.type)||FRONTIER_BUILDINGS[b.type]?.community||quiet==='plants'&&b.type==='garden'));
  return buildings.map(b=>{
   const points=neighborGoals(b.x,b.y,b.w,b.h).map(a=>({x:a.x+.5,y:a.y+.5})).filter(a=>
    !lifeRoot().sessions.some(s=>s.points.some(q=>q.x===a.x&&q.y===a.y))&&
@@ -73,13 +75,13 @@ function lifeTarget(p){
  const options=[];
  for(const place of places){
   const {b,points}=place,affection=lifeAttachment(p,b)*.06,travel=Math.hypot(p.x-points[0].x,p.y-points[0].y)*.018;
-  const quietFit=l.interest==='plants'&&b.type==='garden'?.25:b===home?.08:0;
+  const quietFit=l.interest==='plants'&&b.type==='garden'?.65:l.interest==='tinkering'&&['workshop','fabricator','sawmill'].includes(b.type)?.35:b===home?.08:0;
   if(!wet)options.push({kind:'quiet',...place,score:l.quiet+quietFit+affection-travel});
   if(b===home)options.push({kind:'home',...place,score:l.home+(wet?.8:0)+affection-travel});
   if(!wet&&points.length>=2){
    const partner=S.colonists.filter(q=>q!==p&&!lifeEmergency(q)&&lifeEvening(q)&&lifePerson(q).doneDay!==S.day&&!q.life.session&&q.life.company>=.55&&!q.task?.type?.startsWith('life_')&&Math.hypot(p.x-q.x,p.y-q.y)<14)
     .sort((a,z)=>((l.bonds.find(q=>q.person===z.id)?.shared||0)-(l.bonds.find(q=>q.person===a.id)?.shared||0))||Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(z.x-p.x,z.y-p.y)||a.id-z.id)[0];
-   if(partner)options.push({kind:'shared',...place,partner,score:l.company+affection-travel});
+   if(partner)options.push({kind:'shared',...place,partner,score:l.company+affection+(l.bonds.find(q=>q.person===partner.id)?.shared>=3?.15:0)-travel});
   }
  }
  options.sort((a,z)=>z.score-a.score||a.b.id-z.b.id);
@@ -89,7 +91,7 @@ function lifeTarget(p){
    // Choose adjacent places; two opposite building edges are not a conversation.
    const pair=points.slice(1).find(q=>Math.hypot(q.x-points[0].x,q.y-points[0].y)<1.6);
    if(!pair)continue;
-   const session={id:++r.serial,day:S.day,building:b.id,people:[p.id,option.partner.id],points:[points[0],pair],progress:0,expires:r.time+18};
+   const session={id:++r.serial,day:S.day,building:b.id,people:[p.id,option.partner.id],points:[points[0],pair],progress:0,expires:r.time+28};
    const task=lifeTaskAt(session,p);
    if(!setTask(p,task))continue;
    r.sessions.push(session);l.session=session.id;lifePerson(option.partner).session=session.id;return task;
@@ -106,7 +108,7 @@ function lifeWork(p,work){
  if(t.type==='life_share')return; // Only joint, actual attendance advances a meeting.
  if(t.type==='life_home'&&p.visit?.stage!=='inside'){lifeClear(p);lifePerson(p).retryAt=lifeRoot().time+12;return}
  if(p.action<1+work)lifeCue(p,t.type==='life_home'?'A little time to myself.':lifePerson(p).interest==='plants'?'Look how the leaves catch this light.':lifePerson(p).interest==='sky'?'A whole sky we have barely begun to know.':'Finally, time for my own little project.');
- if(p.action>=20){lifeRemember(p,t.type==='life_home'?'home':'quiet',b);lifeClear(p)}
+ if(p.action>=28){lifeRemember(p,t.type==='life_home'?'home':'quiet',b);lifeClear(p)}
 }
 let lifeTickState=null,lifeElapsed=0;
 function lifeTick(step){
@@ -119,7 +121,7 @@ function lifeTick(step){
   const present=people.every(p=>p.task?.type==='life_share'&&p.task.session===session.id&&!p.path.length)&&Math.hypot(people[0].x-people[1].x,people[0].y-people[1].y)<2.5;
   if(!present){if(r.time>=session.expires)lifeCancel(session);continue}
   if(!session.started){session.started=true;lifeCue(people[0],'Good to have a quiet minute together.')}session.progress+=elapsed;
-  if(session.progress>=20){
+  if(session.progress>=32){
    lifeRemember(people[0],'shared',b,people[1]);lifeRemember(people[1],'shared',b,people[0]);
    lifeCue(people[1],'Same place another evening?');for(const p of people)lifeClear(p);
    r.sessions=r.sessions.filter(s=>s!==session);
@@ -148,13 +150,16 @@ function lifeDescription(p){
  const l=lifePerson(p);
  if(t.type==='life_quiet')return p.path.length?'Finding a quiet spot':({plants:'Watching the evening garden',sky:'Watching the evening sky',tinkering:'Tinkering with personal equipment',conversation:'Taking a quiet breath'})[l.interest];
  const s=lifeRoot().sessions.find(s=>s.id===t.session),other=s&&S.colonists.find(q=>q.id===s.people.find(id=>id!==p.id));
- return (s?.started?'Sharing an evening with ':'Meeting ')+(other?.name.split(' ')[0]||'a neighbour');
+ return (s?.started?(lifeEncounterPhase(s)==='greeting'?'Greeting ':lifeEncounterPhase(s)==='goodbye'?'Saying goodbye to ':'Sharing an evening with '):'Meeting ')+(other?.name.split(' ')[0]||'a neighbour');
 }
 function lifeView(p){
  const t=p.task;if(!t?.type?.startsWith('life_')||p.path.length)return null;
  const session=t.type==='life_share'&&lifeRoot().sessions.find(s=>s.id===t.session);
  const other=session&&S.colonists.find(q=>q.id===session.people.find(id=>id!==p.id));
- return {kind:t.type==='life_share'?'conversation':lifePerson(p).interest,look:other&&session.started?other:null};
+ const kind=session?lifeEncounterKind(session):t.type==='life_home'?'reading':lifePerson(p).interest;
+ const phase=session?lifeEncounterPhase(session):p.action<3?'settling':p.action>25?'finishing':'active';
+ return {kind,phase,progress:session?session.progress:p.action,look:other||null,shared:!!session,
+  familiar:!!other&&lifePerson(p).bonds.some(b=>b.person===other.id&&b.shared>=3),building:t.id};
 }
 function lifePanel(p){
  const l=lifePerson(p),memories=l.memories.slice(0,4),bonds=l.bonds.map(q=>({q,p:S.colonists.find(p=>p.id===q.person)})).filter(q=>q.p);
