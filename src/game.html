@@ -326,14 +326,36 @@ function renderBuilding(b,time){
    return;
  }
  const progress=clamp(b.progress/TYPES[b.type].time,0,1);
- ctx.save();
- ctx.globalAlpha=.25+.65*progress;
- FarwakeBuildings.draw(ctx,b.type,x,y,w,h,false,b);
- ctx.restore();
- ctx.strokeStyle='#ffdc9e';ctx.lineWidth=1;ctx.setLineDash([6,3]);
+ // Sites become foundations, frames and enclosed shells as real work advances.
+ // Delivered material stacks show the actual site inventory, never decorative output.
+ const inset=6,baseY=y+h-8;
+ rect(x+inset,y+inset,w-inset*2,h-inset*2,'#514d43');
+ stroke(x+inset,y+inset,w-inset*2,h-inset*2,'#aaa28b',2);
+ for(let i=0;i<4;i++)rect(x+inset+i*(w-inset*2)/4,y+inset,1,h-inset*2,'#777365');
+ if(progress>.15){
+  const frameHeight=Math.min(h-16,(progress-.15)/.4*(h-16));
+  ctx.strokeStyle='#b5a27b';ctx.lineWidth=3;
+  ctx.beginPath();
+  for(const px of [x+9,x+w/2,x+w-9]){ctx.moveTo(px,baseY);ctx.lineTo(px,baseY-frameHeight)}
+  ctx.moveTo(x+9,baseY-frameHeight);ctx.lineTo(x+w-9,baseY-frameHeight);ctx.stroke();
+  ctx.strokeStyle='#756c58';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+9,baseY);ctx.lineTo(x+w-9,baseY-frameHeight);ctx.stroke();
+ }
+ if(progress>.48){
+  ctx.save();ctx.beginPath();ctx.rect(x,y+h*(1-(progress-.48)/.52),w,h);ctx.clip();
+  FarwakeBuildings.draw(ctx,b.type,x,y,w,h,false,b);ctx.restore();
+ }
+ let stack=0;
+ for(const [kind,amount] of Object.entries(b.siteStock||{})){
+  if(!amount||stack>=4)continue;
+  const px=x+7+stack*12,py=y+h-4;
+  rect(px,py-5,10,5,kind==='wood'||kind==='boards'?'#b28a54':kind==='alloy'||kind==='metal'?'#8dabb0':'#778b77');
+  rect(px+1,py-7,8,2,'#d1be91');stack++;
+ }
+ ctx.strokeStyle='#d2b47a';ctx.lineWidth=1;ctx.setLineDash([3,5]);
  ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.setLineDash([]);
- rect(x+4,y+h-7,w-8,4,'#262622');
- rect(x+4,y+h-7,(w-8)*progress,4,'#f3c382');
+ if(selectedBuilding===b.id){rect(x+4,y+h-7,w-8,3,'#262622');rect(x+4,y+h-7,(w-8)*progress,3,'#f3c382')}
+
 }
 function renderWorkMarker(f){const x=f.x*TS+25,y=f.y*TS+7,order=S.designations[f.id],pct=clamp((order.progress||0)/NATURAL[f.type].workTime,0,1);
  disk(x,y+5,10,'#0d2b26bd');ctx.strokeStyle='#d4e6b5';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#bce88e';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,7,-Math.PI/2,-Math.PI/2+Math.PI*2*pct);ctx.stroke();rect(x-2,y-2,4,4,'#d9e9b7')}

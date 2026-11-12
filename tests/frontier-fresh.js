@@ -13,7 +13,9 @@ async function verifyFrontierFresh(frame,out){
    const geometry=s.buildings.length+':'+s.harvested.length+':'+s.piles.map(q=>q.id).join(',');if(geometry===lastGeometry)return false;lastGeometry=geometry;
    for(let y=30;y<52;y++)for(let x=21;x<52;x++)if(g.clearFootprint(x,y,def.w,def.h)&&!g.frontierPlacementReason(type,x,y)&&g.buildAt(type,x,y)){b=s.buildings.at(-1);return true}
    return false};
-  ok(await run(search,20000),'fund and place '+type);ok(await run(()=>b.finished,40000),'crew completes '+type);return b;
+  // The workshop can be twenty tiles from the central store. Allow the real
+  // producer/hauler round trips across several staggered work/sleep cycles.
+  ok(await run(search,40000),'fund and place '+type);ok(await run(()=>b.finished,40000),'crew completes '+type);return b;
  }
  async function study(id){ok(await run(()=>!g.researchReason(id),60000),'satisfy '+id+' prerequisites');g.frontierBeginResearch(id);ok(await run(()=>s.research.includes(id),20000),'staff research '+id)}
  try{
