@@ -9,17 +9,21 @@ test('Aya lives one genuine evening: same saved colony outside, standing, readin
   const g=FARWAKE_TEST;if(!g.buildAt('shelter',30,30))throw Error('No funded home site');
   const b=g.state.buildings.at(-1);for(let i=0;i<5000&&!b.finished;i++)g.tick(.1);
   if(!b.finished)throw Error('Real construction failed');g.save();if(!g.load())throw Error('Real colony reload failed');
+  document.querySelector('#pause').click(); // Loading/rendering speed must not alter the observation setup.
   return b.id;
  });
  await page.waitForFunction(()=>FarwakeHomeResident.ready());
  // Find a genuine walking/idle moment. Only the camera is moved for framing.
  await page.evaluate(()=>{
+  document.querySelector('#pause').click();
   const g=FARWAKE_TEST,p=g.state.colonists[0];for(let i=0;i<400;i++){g.tick(.05);g.advanceWorld(.05);if(p.path.length&&FarwakePeople.pose(p).work<.01)break}
+  document.querySelector('#pause').click();
   Object.assign(g.camera,{x:p.x*32,y:p.y*32,z:1.7});g.draw(performance.now());
  });
  await page.waitForFunction(()=>FarwakeHomeResident.worldInfo().rendered);
  await page.screenshot({path:info.outputPath('aya-outdoors-390.png')});
  const evening=await page.evaluate(home=>{
+  document.querySelector('#pause').click();
   const g=FARWAKE_TEST,p=g.state.colonists[0],b=g.state.buildings.find(b=>b.id===home);
   for(let i=0;i<30000;i++){
    g.tick(.05);
@@ -29,8 +33,10 @@ test('Aya lives one genuine evening: same saved colony outside, standing, readin
     return{day:g.state.day,minute:g.state.minute,action:p.action,task:p.task.type,visit:{...p.visit},home:p.home,memories:p.life.memories.length};
    }
   }
-  throw Error('Aya never autonomously attended an awake home wind-down');
+  throw Error('Aya never autonomously attended an awake home wind-down: '+JSON.stringify({day:g.state.day,minute:g.state.minute,task:p.task,visit:p.visit,home:p.home,energy:p.energy,hunger:p.hunger,life:p.life}));
  },home);
+ await page.evaluate(()=>FARWAKE_TEST.save());
+ await info.attach('same-colony-before-home',{body:await page.evaluate(()=>Object.keys(localStorage).map(k=>localStorage.getItem(k)).find(v=>{try{const s=JSON.parse(v);return s.v===4&&s.seed==='FW-10402'&&s.colonists?.length===5}catch{return false}})),contentType:'application/json'});
  expect(evening.task).toBe('life_home');expect(evening.visit.stage).toBe('inside');expect(evening.home).toBe(home);expect(evening.memories).toBeGreaterThan(0);
  await page.evaluate(id=>FARWAKE_TEST.showBuilding(id),home);await page.locator('[data-home-enter]').click();
  await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='inside'&&FARWAKE_TEST.homeDiagnostics.residents[0]?.pose==='standing');
