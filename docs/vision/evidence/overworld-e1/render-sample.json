@@ -1,0 +1,25 @@
+{
+  "environment": "remote desktop Chromium, 390x844 iframe, 8 real residents",
+  "measurement": "40 synchronous paused world draws after camera framing; CPU submission cost, not end-to-end FPS",
+  "pilot": {
+    "median_ms": 0.6,
+    "p95_ms": 2.2,
+    "max_ms": 2.6,
+    "minute": 1252.3576199994534
+  },
+  "preserved_b1": {
+    "commit": "b48c52131bd9d8ce5a7d89f857263e8cb7cacec2",
+    "median_ms": 0.6,
+    "p95_ms": 2.6,
+    "max_ms": 2.6,
+    "minute": 1254.9613099994538
+  },
+  "ordinary_play_sample": {
+    "elapsed_ms": 15284.9,
+    "outer_raf_frames": 32,
+    "median_interval_ms": 599.9,
+    "p95_interval_ms": 616.5,
+    "max_interval_ms": 616.5
+  },
+  "interpretation": "Low synchronous draw costs do not establish smooth gameplay. Remote browser scheduling may explain long frame intervals; that is an inference, not verified. Sustained device and large-colony performance remain open."
+}
