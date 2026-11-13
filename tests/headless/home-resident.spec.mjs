@@ -32,7 +32,9 @@ test('Aya lives one genuine evening: same saved colony outside, standing, readin
  const evening=await page.evaluate(home=>{
   document.querySelector('#pause').click();
   const g=FARWAKE_TEST,p=g.state.colonists[0],b=g.state.buildings.find(b=>b.id===home);
-  for(let i=0;i<30000;i++){
+  // Optional evenings have no guaranteed day. Follow a bounded longer normal
+  // simulation window; never force a routine merely to fit the capture clock.
+  for(let i=0;i<90000;i++){
    g.tick(.05);
    const q=FarwakeHomeResident.plan(g.state,b,g.lifeView);
    if(p.task?.afterLeisure&&q?.pose==='standing'){
