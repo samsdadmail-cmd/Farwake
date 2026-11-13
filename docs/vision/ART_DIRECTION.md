@@ -1,6 +1,8 @@
-# Unified visual art direction — proposed specification
+# Unified visual art direction — current checkpoint specification
 
-This is a production proposal for checkpoint A, not creative approval. The world
+A2 composition is approved at `8107fb6c79780e6fe7787bb65fa6e98f93afd590`.
+Checkpoint B (Aya artwork and identity continuity) is implemented for review, not
+creatively approved. Earlier proposals and rejected framing are retained below as history. The world
 and homes are different views of the same settlement, with shared identities,
 materials and palette. References describe complete compositions, not a checklist
 of objects to enlarge and paste into a phone.
@@ -11,14 +13,14 @@ of objects to enlarge and paste into a phone.
 | Exterior people | Preserve founder identity mapping; replace primitive final artwork only at the approved character checkpoint. |
 | Home | One complete shelter diorama: roof, walls, both bunks, chairs/table, desk, stove, foundation and alien surroundings. No repeated floor or axis stretching. |
 | Composition | Portrait keeps the complete house. Landscape can trim surplus sky/foreground, never the building or furniture. Negative space must establish the surrounding world. |
-| Art source | Paired 768×1152 WebP composition assets, nearest-neighbour sampling. Do not generate a new style for each object. |
-| Characters, checkpoint B | Authored sprite sheet; proposed 72–96 source-pixel standing bodies against the revised high-resolution room art, founder coat/hair/skin/role identity, standing/seated/bed poses; establish final scale against the accepted furniture before rollout. |
+| Art source | Current paired 768×1660 continuous WebP plates, nearest-neighbour sampling; older 768×1152 A1 assets retained for recovery. Do not generate a new style for each object. |
+| Characters, checkpoint B | Aya only: generated authored transparent frames, cached to 124 scene-pixel standing height and 104 scene-pixel sleeping length; exterior walking/idle miniatures at 26 world-pixel height. Short dark bob, peach skin, ochre jacket, slate trousers and brown boots in both views. Standing/seated/bed fit requires B review before rollout. |
 | Perspective | Interior front cutaway with shallow floor depth, coherent with the furnished reference; building shell and exterior scene share that viewpoint. |
 | Palette | Cold slate/blue/teal surroundings; lichen/stone vegetation; worn timber, ceramic, fabric and restrained warm lamplight. Avoid luxury dashboard gold. |
 | Lighting | Read real time, weather, actual indoor occupancy, sleeping/awake state and available grid power. Warm occupied homes contrast with cold outside. No fabricated fire/fuel/smoke state. |
 | Layering | Background/shell → room back → furniture backs → residents sorted by anchor y → authored furniture-front masks → subtle lighting. Masks and poses come after framing approval. |
 | Motion | Low-amplitude authored cycles, roughly 4–8 fps per sprite pose; walking/transition separate from simulation. Reduced Motion removes decorative cycles and transition travel. |
-| Controls | Field labels and equipment-like sans/monospace marks; 44 CSS-pixel targets; safe-area margins; concise context. Separate inspect, enter and manage. No large dashboard over the room. |
+| Controls | Field labels and equipment-like sans/monospace marks; 48 CSS-pixel minimum home-control targets; safe-area margins; concise context. Separate inspect, enter and manage. No large dashboard over the room. |
 | Budget | Interior surface capped at one million backing pixels, balanced density ≤1.5, performance density 1; one same-sized cache. Re-measure on resize/entry, not every frame. Honour 30-Hz performance draw limit. |
 
 The composition assets contain no residents or smoke. Painted furnishings do not
@@ -52,7 +54,7 @@ A separate edit removed painted chimney smoke. Real gameplay captures must show
 these assets consumed by the actual home-view system. Geometry drift between
 variants remains a visual-review risk; do not build resident anchors until approved.
 
-## A2 revision after Kyle/Atlas review — not yet approved
+## A2 revision history — subsequently approved with conditions
 
 A1's direction was welcomed, but its scale, plain margins and generic controls were
 rejected. Preserve A1 at `recovery/home-composition-a1` / `988e3ac629d1b0e0e09edabd851a88c3c7570af7`.
@@ -72,5 +74,21 @@ creative review. No fixed 16:9 requirement applies.
 
 Controls are small field marks with one consistent line-icon system and readable
 labels over scene-aware shading. No filled button tray, gold dashboard borders or
-serif headings in home mode. Resident artwork remains prohibited until approval.
+serif headings in home mode. At the time of A2 implementation, resident artwork was held pending approval. A2 has since been approved; the current permission is a single Aya pilot, with further rollout held pending B approval.
 The paired continuous portrait assets are introduced by this revision; no save fields are added.
+
+
+## Checkpoint B: identity continuity and layering review
+
+Actual 390×844 evidence lives in `evidence/resident-b/`. Exterior and interior
+images follow one real constructed, saved/reloaded starting colony, rather than
+separate character showcases. Aya's new walking/idle art is coordinated with her
+interior identity. Existing specialised exterior work/leisure rigs are deliberately
+retained; these still constrain continuity outside the pilot's walking/idle states.
+
+Standing and chair poses share a common height scale; the side-lying pose uses the
+lower bunk. Chair arms/table and bedding/ladder restore original lit foreground
+pixels over the body. The book remains small in the complete-home view; use the
+optional closer camera to judge it, rather than claiming overview detail that the
+390-pixel screen cannot resolve. These placements have been inspected in captured
+gameplay but remain subject to Kyle/Atlas's creative review.
