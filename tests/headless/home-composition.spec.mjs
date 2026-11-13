@@ -22,7 +22,7 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
  await expect(page.locator('#homevisit')).toBeVisible();await expect(page.locator('.top')).not.toBeVisible();
  await page.waitForFunction(()=>document.querySelector('#homevisit').dataset.loading!=='true'&&FARWAKE_TEST.homeDiagnostics.draws>2);
  const d=await page.evaluate(()=>FARWAKE_TEST.homeDiagnostics);
- expect(d.cachePixels).toBeLessThanOrEqual(1000000);expect(d.residentsRendered).toBe(0);
+ expect(d.cachePixels).toBeLessThanOrEqual(1000000);expect(d.residentsRendered).toBeLessThanOrEqual(1);
  expect(await page.evaluate(()=>FARWAKE_TEST.state.minute)).toBeGreaterThan(before.minute);
  expect(d.layout.dw/d.layout.dh).toBeCloseTo(d.layout.source.w/d.layout.source.h,3);
  // Actual architecture bounds remain in view, even when surplus sky/ground crops.

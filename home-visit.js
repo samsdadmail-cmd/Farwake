@@ -99,6 +99,7 @@ window.FarwakeHomeVisit = (() => {
   }
   function refreshNotes(){
     const b=building();if(!b)return;const s=api.getState(),people=api.occupants(b),light=lightState(s,people);
+    $('homepauselabel').textContent=api.paused()?'Resume':'Pause';$('homepause').setAttribute('aria-label',api.paused()?'Resume simulation':'Pause simulation');
     $('homecaption').textContent=api.homeName(b)+' · '+clock(s.minute);
     $('homestate').textContent=light.mode==='awake'?'A light at home':light.mode==='sleeping'?'The household is resting':light.mode==='empty'?'The house is quiet':light.mode==='unpowered'?'No spare power for lighting':'Daylight at home';
     if(!card.hidden){$('homewho').textContent=people.length?people.map(p=>p.name).join(', '):'Nobody is inside';$('homenow').textContent='Day '+s.day+' · '+clock(s.minute)+' · '+s.weather;}
@@ -114,8 +115,7 @@ window.FarwakeHomeVisit = (() => {
     const c=canvas.getContext('2d',{alpha:false});c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;
     if(cache)c.drawImage(cache,0,0);else{c.fillStyle='#13252f';c.fillRect(0,0,L.pw,L.ph)}
     draws++;
-    // No resident positions/hit targets exist before checkpoint B artwork.
-    hits=[];
+    hits=cache?FarwakeHomeResident.draw(c,s,b,L,cache,api.lifeView,light.mode,api.reduced()):[];
     const open=phase==='inside'?1:phase==='reveal'?revealed:phase==='close'?1-revealed:phase==='cover'?0:1;
     veil.style.opacity=String(1-open);
     canvas.style.clipPath=open>.98?'none':'circle('+(8+open*140).toFixed(1)+'% at 50% 55%)';
@@ -252,6 +252,8 @@ window.FarwakeHomeVisit = (() => {
     veil = $('homeveil');
     card = $('homecard');
     infoBtn = $('homeinfo');
+    FarwakeHomeResident.preload();
+    $('homepause').addEventListener('click',()=>{api.togglePause();refreshNotes()});
     $('homeexit').addEventListener('click', () => exit());
     $('homemanage').addEventListener('click',()=>{manageAfterExit=buildingId;exit()});
     window.addEventListener('resize',invalidate);
@@ -282,7 +284,7 @@ window.FarwakeHomeVisit = (() => {
     bind, enter, exit, frame, paint,
     phase: () => phase,
     ownsCamera: () => phase !== 'idle',
-    diagnostics:()=>({phase,draws,lightMode:root?.dataset.lightMode,layout:layoutNow,view,panX,panY,cachePixels:cache?cache.width*cache.height:0,residentsRendered:0}),
+    diagnostics:()=>({phase,draws,lightMode:root?.dataset.lightMode,layout:layoutNow,view,panX,panY,cachePixels:cache?cache.width*cache.height:0,residentsRendered:hits.length,residents:hits,artReady:FarwakeHomeResident.ready()}),
     savedCamera: () => saved ? {x: saved.x, y: saved.y, z: saved.z} : null,
     // Present so CP2 can attach poses without a new shell. Empty until then.
     residents: () => hits

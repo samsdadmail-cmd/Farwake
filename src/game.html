@@ -23,10 +23,10 @@
  <div id="homevisit" class="homevisit" hidden data-phase="idle" data-view="home" role="region" aria-label="Inside the home">
   <canvas id="homecanvas" aria-label="Complete home cutaway and surrounding alien landscape" tabindex="0"></canvas><div class="homeveil" id="homeveil"></div>
   <header class="home-heading"><button type="button" id="homeexit" class="home-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6"/></svg><span>Outside</span></button><button type="button" id="homeinfo" class="home-mark" aria-label="Home notes" aria-expanded="false" aria-controls="homecard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3m3 5h6m-6 4h6"/></svg><span>Home notes</span></button></header>
-  <div class="home-label"><span id="homecaption"></span><span id="homestate"></span></div>
+  <div class="home-label"><span id="homecaption"></span><span id="homestate"></span></div><button type="button" id="homepause" class="home-mark home-time" aria-label="Pause simulation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14m8-14v14"/></svg><span id="homepauselabel">Pause</span></button>
   <nav class="home-tools" aria-label="Home visit"><button type="button" id="homeview" class="home-mark" aria-pressed="false" aria-label="Look closer at the room"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5m5-6h6v6H9z"/></svg><span id="homeviewlabel">Look closer</span></button><button type="button" id="homemanage" class="home-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13M2 21h20M8 21v-8h8v8m-4-5v2"/></svg><span>Manage</span></button></nav>
   <p id="homepan" class="home-pan" hidden>Drag to look around · arrows also work</p>
-  <section id="homecard" class="homecard" hidden><div class="home-note-index">HOUSEHOLD / FIELD NOTES</div><h2>At home</h2><p id="homenow"></p><p id="homewho"></p><p class="home-checkpoint">Composition review · resident artwork follows approval.</p></section><p class="home-loading">Opening the home…</p>
+  <section id="homecard" class="homecard" hidden><div class="home-note-index">HOUSEHOLD / FIELD NOTES</div><h2>At home</h2><p id="homenow"></p><p id="homewho"></p><p class="home-checkpoint">Quiet routines, recorded as they happen.</p></section><p class="home-loading">Opening the home…</p>
  </div>
 </div>
 <script src="frontier-art.js"></script><script src="buildings.js"></script><script src="hearth.js"></script>
@@ -37,7 +37,7 @@
 <script src="moments.js"></script>
 <script src="audio.js"></script>
 <script src="preferences.js"></script>
-<script src="save-migration.js"></script><script src="interiors.js"></script><script src="home-visit.js"></script>
+<script src="save-migration.js"></script><script src="interiors.js"></script><script src="home-resident.js"></script><script src="home-visit.js"></script>
 <script>
 'use strict';
 (()=>{
@@ -578,7 +578,7 @@ window.addEventListener('storage',e=>{if(!S||saveLocked||(e.key!==SAVE&&e.key!==
 // FOUNDATION MODULES
 // Surface a small test API for deterministic headless input tests; not shown in the UI.
 window.FARWAKE_TEST={lifeRoot,lifePerson,lifeTarget,lifeTick,lifeView,lifeDescription,lifePlaces,lifeAttachment,lifePanel,lifeCancel,lifeRestore,healthSnapshot,frontierOrderExtraction,frontierPlacementReason,TYPES,frontierCancelResearch,refreshCommandReadouts,frontierOrderSite,frontierSiteReason,frontierSiteReach,frontierInvestigateTarget,frontierUpgrade,frontierUpgradeCost,frontierInvite,frontierArrivalReason,frontierChangeRecipe,frontierTick,FRONTIER_TECH,FRONTIER_BUILDINGS,FRONTIER_RECIPES,frontierState,frontierMigrate,frontierBeginResearch,frontierStudy,frontierEra,research,researchReason,researchDefinition,surveyGrid,surveyGridTick,surveyRadius,showBuilding,showCommand,showGuide,housingCounts,housingRecovery,productionRecord,productionBlock,productionCandidate,industryPolicy,performProduction,advanceCrops,get editor(){return editor},editorBegin,editorConfirm,editorOrder,editorPlan,editorCancelSite,freightReserve,freightSiteReady,freightInit,freightAvailable,housingAllocate,housingAssign,setTask,load,advanceWorld,get settings(){return prefs},get state(){return S},get camera(){return camera},get terrain(){return terrain},get preview(){return preview},get tab(){return tab},screenToWorld,clearFootprint,buildAt,selectTap,save,renderUI,draw,setZoom,centerCamera,tick,featureAt,featureFromPoint,designateFeature,cancelDesignation,dispatchFieldWork,queuedWork,get features(){return features},homeEnter:id=>FarwakeHomeVisit.enter(id),homeExit:()=>FarwakeHomeVisit.exit(),get homePhase(){return FarwakeHomeVisit.phase()},get homeSavedCamera(){return FarwakeHomeVisit.savedCamera()},get homeDiagnostics(){return FarwakeHomeVisit.diagnostics()}};
-FarwakeHomeVisit.bind({getState:()=>S,getCamera:()=>camera,grid:power,quality:()=>prefs.preset,manage:showBuilding,isNight,reduced:()=>FieldPreferences.reduced,closeSheet,homeName:b=>TYPES[b.type]?.name||(b.type==='camp'?'Expedition camp':b.type),occupants:b=>FarwakeDoors.occupants(S,b),portal:b=>FarwakeDoors.portalFor(b)});
+FarwakeHomeVisit.bind({getState:()=>S,getCamera:()=>camera,grid:power,quality:()=>prefs.preset,manage:showBuilding,lifeView,paused:()=>paused,togglePause:()=>{$('pause').click()},isNight,reduced:()=>FieldPreferences.reduced,closeSheet,homeName:b=>TYPES[b.type]?.name||(b.type==='camp'?'Expedition camp':b.type),occupants:b=>FarwakeDoors.occupants(S,b),portal:b=>FarwakeDoors.portalFor(b)});
 $('panel').classList.add('collapsed');if(!load()){
  if(localStorage.getItem(SAVE)){
    importedNavigation=true;S=null;

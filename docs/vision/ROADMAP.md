@@ -56,3 +56,15 @@ Checkpoint A1 was **not approved**. Correct portrait legibility, flat margins an
 home control design. A2 explores the whole-home/closer-room framing described in
 ART_DIRECTION.md. Submit actual 390×844 gameplay views before resident artwork.
 Save-export delivery remains open in TECHNICAL_ISSUES.md.
+
+### Kyle & Atlas approval, 13 November 2026
+
+**A2 approved as the visual foundation at 8107fb6c79780e6fe7787bb65fa6e98f93afd590.**
+Complete home remains default. The optional 1.7× camera stays reversible and bounded.
+Refine control contrast/touch targets; landscape side blending, physical iPhone
+usability and SAVE-EXPORT-01 remain open. This is not complete-interior acceptance.
+
+Checkpoint B is authorised for **Aya Mercer only**: authored standing, seated and
+sleeping art, real attendance/task state, convincing furniture integration, same
+identity outdoors/indoors, actual 390×844 captures and a short genuine transition
+recording. Do not expand to other residents before Kyle/Atlas's visual approval.

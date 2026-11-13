@@ -184,6 +184,7 @@ window.FarwakePeople = (() => {
   // sequence; changing the camera or skipping frames cannot advance a meeting.
   function draw(ctx,p,tileSize,time,selected,zoom){
     const v=pose(p),life=v.leisure,arrived=!p.path?.length;
+    if(window.FarwakeHomeResident?.drawWorld(ctx,p,v,tileSize,selected))return;
     const need=arrived&&['eat','rest','social'].includes(p.task?.type);
     if(!life&&!need){drawClassic(ctx,p,tileSize,time,selected,zoom);return}
     const kind=life?.kind||(p.task.type==='eat'?'eating':p.task.type==='rest'?'resting':'conversation');

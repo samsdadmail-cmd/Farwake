@@ -44,3 +44,9 @@ body.in-home .top,body.in-home .lower,body.in-home .field-save,body.in-home .map
 .homecard[hidden]{display:none}.home-note-index{font:9px ui-monospace,monospace;letter-spacing:.1em;color:#566850;border-bottom:1px solid #8b9b7c;padding-bottom:9px}.homecard h2{font:600 15px system-ui,sans-serif;margin:12px 0 10px;color:#243a30}.homecard p{font:12px/1.6 system-ui,sans-serif;color:#344a3b;margin:6px 0}.homecard .home-checkpoint{font-size:10px;color:#5c6e56;border-top:1px solid #98a78a;padding-top:9px}
 .home-loading{display:none;position:absolute;left:20px;top:40%;font-size:13px;color:#c3d8cb}.homevisit[data-loading=true] .home-loading{display:block}
 @media(orientation:landscape) and (max-height:520px){.home-heading{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:26px}.home-label{top:calc(52px + env(safe-area-inset-top));left:calc(20px + env(safe-area-inset-left));max-width:165px}.homecard{top:62px;max-width:225px}.home-tools{padding-top:12px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}.home-pan{bottom:55px;font-size:9px}}
+/* Approved A2 controls: stronger contrast and generous touch areas for B review. */
+.home-mark{min-height:48px;min-width:48px;font-size:13px!important;padding:8px 6px!important;color:#f6f2df!important}
+.home-mark span{background:#10242bb3;padding:4px 6px;border-bottom-color:#e5ebd0aa;border-radius:2px;text-shadow:0 1px 2px #07151b}
+.home-label span{background:#10242ba8;width:fit-content;padding:3px 6px;border-radius:2px}.home-label span:last-child{font-size:12px;color:#edf0dd}
+.home-time{position:absolute;right:calc(14px + env(safe-area-inset-right));top:calc(62px + env(safe-area-inset-top))}
+@media(orientation:landscape) and (max-height:520px){.home-time{top:calc(50px + env(safe-area-inset-top))}}
