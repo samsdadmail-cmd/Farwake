@@ -28,12 +28,13 @@ test('E3-A real environmental composition before further lighting work',async({p
 
 test('E3-A repeated cold bakes versus cached burst and paced live draws',async({page},info)=>{
  test.setTimeout(150000);
- await page.addInitScript(()=>{window.E3_NATIVE_RAF=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=()=>0});
  await colony(page);
+ await page.evaluate(()=>{window.E3_NATIVE_RAF=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=()=>0});
+ await page.waitForTimeout(80); // Let the already scheduled final frame drain before measurement.
  const sources={before:await readFile('tests/fixtures/environment-e3-a-before.js','utf8'),refined:await readFile('frontier-environment.js','utf8')},runs=[];
  const prior=await page.evaluate(()=>JSON.stringify({state:FARWAKE_TEST.state,terrain:FARWAKE_TEST.terrain,features:FARWAKE_TEST.features}));
  for(let repeat=0;repeat<3;repeat++)for(const version of ['before','refined']){
-  await page.addScriptTag({content:sources[version]});await page.waitForFunction(()=>FarwakeEnvironment.ready());
+  await page.addScriptTag({content:sources[version]});await page.waitForFunction(()=>FarwakeEnvironment.ready(),null,{polling:25});
   runs.push(await page.evaluate(({version,repeat})=>{
    const g=FARWAKE_TEST,stats=a=>{a.sort((a,b)=>a-b);return{median:a[Math.floor(a.length*.5)],p95:a[Math.floor(a.length*.95)],max:a.at(-1)}};
    const start=performance.now();g.draw(start);const coldTotal=performance.now()-start,cold=FarwakeEnvironment.diagnostics(),burst=[];
