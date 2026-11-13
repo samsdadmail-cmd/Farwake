@@ -1,0 +1,32 @@
+name: Home composition checkpoint
+on:
+  push:
+    branches: [home-composition-checkpoint]
+permissions:
+  contents: read
+jobs:
+  targeted-home-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build and save protections
+        run: |
+          python3 build.py --check
+          node tests/frontier-content.cjs
+          node tests/life-migration.cjs
+          node tests/housing.cjs
+      - name: Install browser test tools
+        run: npm ci && npx playwright install --with-deps chromium webkit
+      - name: Home, camera and recovered regressions
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/home-composition.spec.mjs tests/headless/experience-overhaul.spec.mjs tests/headless/living-evening.spec.mjs tests/headless/baseline-risks.spec.mjs
+      - name: Keep actual gameplay screenshots and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-composition-evidence
+          path: test-results/
