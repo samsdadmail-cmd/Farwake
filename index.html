@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>FARWAKE · The Living Colony</title>
 
-<link rel="stylesheet" href="field.css"><link rel="stylesheet" href="frontier.css"><link rel="stylesheet" href="experience.css">
+<link rel="stylesheet" href="field.css"><link rel="stylesheet" href="frontier.css"><link rel="stylesheet" href="experience.css"><link rel="stylesheet" href="neighbourhood.css">
 </head>
 <body>
 <div class="app" id="app">
@@ -29,7 +29,7 @@
   <section id="homecard" class="homecard" hidden><div class="home-note-index">HOUSEHOLD / FIELD NOTES</div><h2>At home</h2><p id="homenow"></p><p id="homewho"></p><p class="home-checkpoint">Quiet routines, recorded as they happen.</p></section><p class="home-loading">Opening the home…</p>
  </div>
 </div>
-<script src="frontier-art.js"></script><script src="buildings.js"></script><script src="hearth.js"></script><script src="lamplight.js"></script>
+<script src="frontier-art.js"></script><script src="buildings.js"></script><script src="hearth.js"></script><script src="lamplight.js"></script><script src="neighbourhood.js"></script>
 <script src="landscape.js"></script>
 <script src="doors.js"></script>
 <script src="work-fx.js"></script>
@@ -330,7 +330,7 @@ function disk(x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r,r*.
 function renderBuilding(b,time){
  const x=b.x*TS,y=b.y*TS,w=b.w*TS,h=b.h*TS;
  if(b.finished){
-   const door=FarwakeDoors.state(b);if(FarwakeLamplight.draw(ctx,b,door)){return}const lit=isNight()&&(door.occupied>0||['lander','comms','lamppost'].includes(b.type));FarwakeBuildings.draw(ctx,b.type,x,y,w,h,lit,b,door);drawProduction(b,x,y);FarwakeHearth.configure(prefs.preset);FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,FarwakeDoors.state(b),FieldPreferences.reduced);
+   const door=FarwakeDoors.state(b);if(FarwakeNeighbourhood.draw(ctx,b,door)){drawProduction(b,x,y);return}const lit=isNight()&&(door.occupied>0||['lander','comms','lamppost'].includes(b.type));FarwakeBuildings.draw(ctx,b.type,x,y,w,h,lit,b,door);drawProduction(b,x,y);FarwakeHearth.configure(prefs.preset);FarwakeHearth.draw(ctx,b,time,S.minute,S.weather,FarwakeDoors.state(b),FieldPreferences.reduced);
    return;
  }
  const progress=clamp(b.progress/TYPES[b.type].time,0,1);
@@ -383,9 +383,9 @@ function renderWorldSelection(time){
  if(selectedFeature){const f=featureById(selectedFeature);if(f){const x=f.x*TS+16,y=f.y*TS+21;ctx.strokeStyle='#d0f49d';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,15+Math.sin(time*.004)*1.3,8,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#f0f8d0';ctx.lineWidth=1;ctx.strokeRect(f.x*TS+2.5,f.y*TS+1.5,27,29)}}else if(selectedTerrain){ctx.strokeStyle='#c8e0cb';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.strokeRect(selectedTerrain.x*TS+2,selectedTerrain.y*TS+2,28,28);ctx.setLineDash([])}}
 function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,0,0);rect(0,0,cw,ch,'#1a4241');ctx.save();ctx.translate(cw/2,ch/2);ctx.scale(camera.z,camera.z);ctx.translate(-camera.x,-camera.y);
  const left=Math.max(0,Math.floor((camera.x-cw/(2*camera.z))/TS)-2),right=Math.min(VW,Math.ceil((camera.x+cw/(2*camera.z))/TS)+2),top=Math.max(0,Math.floor((camera.y-ch/(2*camera.z))/TS)-2),bottom=Math.min(VH,Math.ceil((camera.y+ch/(2*camera.z))/TS)+2);
- FarwakeLamplight.prepare(S,power());
+ FarwakeNeighbourhood.prepare(S,power());
  FarwakeLandscape.ground(ctx,terrain,VW,VH,S.seed,left,top,right,bottom,time,{state:S,fog,onThunder:()=>FarwakeAudio.play("thunder")});
- for(const b of S.buildings)if(FarwakeLamplight.matches(b))FarwakeLamplight.ground(ctx,b,terrain,VW,VH);
+ FarwakeNeighbourhood.ground(ctx,terrain,VW,VH);
  editorPaths(time,left,top,right,bottom);frontierSitesDraw(left,top,right,bottom,time);
  for(const f of features)if(f.x>=left&&f.x<right&&f.y>=top&&f.y<bottom&&fog[index(f.x,f.y)]){FarwakeWorkFX.feature(ctx,f,time,S.minute);if(S.designations?.[f.id])renderWorkMarker(f)}
  for(const b of S.buildings)if(b.finished&&b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)FarwakeBuildings.shadow(ctx,b.type,b.x*TS,b.y*TS,b.w*TS,b.h*TS,S.minute,b);
@@ -402,7 +402,7 @@ function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,
  for(let y=top;y<bottom;y++)for(let x=left;x<right;x++)if(!fog[index(x,y)]){rect(x*TS,y*TS,32,32,'#091c23eb');if(hash(x,y,16)>.94)rect(x*TS+13,y*TS+8,2,2,'#294244')}
  if(selectedType){const step=TYPES[selectedType];if(preview){let good=clearFootprint(preview.x,preview.y,step.w,step.h)&&!frontierPlacementReason(selectedType,preview.x,preview.y);let x=preview.x*TS,y=preview.y*TS,w=step.w*TS,h=step.h*TS;rect(x,y,w,h,good?'#c0f3975d':'#f48e886a');ctx.strokeStyle=good?'#d4ffab':'#ffc0b0';ctx.lineWidth=3;ctx.strokeRect(x+2,y+2,w-4,h-4);ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.strokeRect(x+8,y+8,w-16,h-16);ctx.setLineDash([]);ctx.font='bold 11px system-ui';ctx.fillStyle=good?'#e2ffd2':'#ffe1d7';ctx.textAlign='center';ctx.fillText(good?'✓ BUILD SITE':'× BLOCKED',x+w/2,y-8);} }
  ctx.restore();
- FarwakeLandscape.light(ctx,cw,ch,S,camera,sx,sy,time);FarwakeLamplight.screenLight(ctx,camera,sx,sy);experienceRender(time);FarwakeMoments.draw(ctx,S,cw,ch,sx,sy,camera.z);
+ FarwakeLandscape.light(ctx,cw,ch,S,camera,sx,sy,time);FarwakeNeighbourhood.screenLight(ctx,camera,sx,sy);experienceRender(time);FarwakeMoments.draw(ctx,S,cw,ch,sx,sy,camera.z);
 }
 function paintHUD(){if(!S)return;experienceReadouts();const r=S.resources,p=power();$('clock').innerHTML='DAY '+String(S.day).padStart(2,'0')+'<br>'+timeString();$('pause').innerHTML=uiIcon(paused?'play':'pause',16);$('pause').setAttribute('aria-label',paused?'Resume simulation':'Pause simulation');$('pause').classList.toggle('on',paused);$('speed').textContent=speed+'×';const data=[['food','FOOD',(r.food||0)+(r.meals||0)],['wood','WOOD',r.wood||0],['energy','POWER',p.supply-p.used]];$('resbar').innerHTML=data.map(([icon,name,num])=>'<button class="resource" type="button" data-resource-open="true" aria-label="'+name+' '+Math.floor(num)+', open inventory"><span class="resicon">'+uiIcon(icon,14)+'</span><span class="k">'+name+'</span><span class="v">'+Math.floor(num)+'</span></button>').join('')+'<button class="resource-expand" type="button" data-resource-open="true" aria-label="View all resources">'+uiIcon('more',16)+'</button>'; const goals=['Construct a permanent home','Establish a food-producing garden','Power a workshop with solar energy','Build the long-range Signal Beacon','Establish a thriving frontier settlement'];$('missionline').textContent=frontierObjective();$('missionlabel').textContent=FRONTIER_ERAS[frontierEra()].toUpperCase();$('weather').textContent=S.weather==='rain'?'RAIN':S.weather==='wind'?'WIND':'CLEAR';const hint=preview?'Confirm or adjust the building site below.':selectedType?'Tap the map to choose a construction site.':selectedColonist?'Crew member selected · Tap to inspect':'Inspect trees, deposits and supply piles · Drag to explore';$('maphint').textContent=hint;refreshInspect();}
 function setTab(to){tab=to;renderUI(true)}

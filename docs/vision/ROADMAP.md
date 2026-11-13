@@ -98,3 +98,16 @@ real routes and saved colony. Submit daylight/evening 390×844 gameplay captures
 before extending the language to a district, other building types or the HUD.
 The old HUD, neighbouring architecture and specialist activity rigs still need
 separate review. This is an initial visual checkpoint, not overworld acceptance.
+
+### E1 direction accepted; E2 neighbourhood checkpoint, 13 November 2026
+
+Kyle and Atlas accept E1's roof/timber/lamplight direction and simulation-driven
+lived-in windows. They do not approve the overworld, environmental richness,
+neighbour cohesion, HUD or final visual identity. Preserve E1 as a pilot.
+
+E2 extends one 9.5-tile-radius neighbourhood around Aya's actual address: adjacent
+sawmill, homes/dining, solar and turbines; terrain, access ground and settlement
+edges; genuine night attendance; first replacement of the idle HUD. Retain real
+footprints, crops, routes, resources, saves, day/night and power. Demonstrate the
+same area at 390×844 by day/night and in a short uninterrupted 1× gameplay take.
+Stop for creative review before extending to further districts or biomes.

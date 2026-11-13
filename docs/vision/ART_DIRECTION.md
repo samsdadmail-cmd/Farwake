@@ -99,3 +99,17 @@ B1 uses a revised, less chibi exterior atlas, distance-driven contact/passing be
 and a lower tucked bunk anchor. Interior art and room plates are retained.
 There is no indoor navigation graph: settling/seated/rest are explicit real-state
 pose cuts, not a claimed continuous indoor walk. See `evidence/resident-b1/`.
+
+## E2 neighbourhood pilot
+
+E1 materials and occupancy/power-driven lamplight are accepted as a direction,
+not overworld approval. One local district reuses slate, timber, weathered metal
+and cool lichen ground. Keep recognisable sawmill/solar/wind silhouettes and
+existing entrances. Terrain dressing and thin cleared access tracks are visual
+surfacing, not new road buildings, resource deposits or movement bonuses. Crops
+still use real production stages. Empty/unpowered facilities stay dark.
+
+The first HUD replacement uses restrained field marks, sans/monospace labels,
+contextual controls and 44px touch areas. It preserves existing navigation and
+management while removing the idle black/gold dashboard. Overall richness and
+final UI identity still require review; no landscape or physical-phone approval.
