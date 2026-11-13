@@ -2,7 +2,8 @@
 
 A2 composition is approved at `8107fb6c79780e6fe7787bb65fa6e98f93afd590`.
 Checkpoint B received conditional direction approval on 13 November 2026.
-Focused B1 identity/movement/bedding refinement is implemented for review;
+B1's outdoor walking foundation is approved by Kyle and Atlas on 13 November 2026;
+other character limits remain documented;
 population-wide expansion is not approved. Earlier proposals and rejected framing are retained below as history. The world
 and homes are different views of the same settlement, with shared identities,
 materials and palette. References describe complete compositions, not a checklist

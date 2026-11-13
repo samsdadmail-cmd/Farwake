@@ -85,3 +85,16 @@ language and detail. Coordinate materials, palette, lighting and pixel treatment
 in a separately scoped visual milestone while preserving the top-down management
 view and approved home composition. This is tracked direction, not permission
 for an overworld art overhaul during Aya's walking refinement.
+
+### B1 outdoor foundation approved; E1 pilot, 13 November 2026
+
+Kyle and Atlas approve B1's outdoor walking foundation at `b48c521`. Keep its
+stylised gait; no further footstep pass or resident rollout is authorised here.
+
+E1 “Lamplight Lane” starts with Aya's real completed Prefab Home and its immediate
+ground: native pixel architecture, a soft grass-only clearing, door-aligned
+entrance, and power/occupancy-aware window light. Retain the top-down camera,
+real routes and saved colony. Submit daylight/evening 390×844 gameplay captures
+before extending the language to a district, other building types or the HUD.
+The old HUD, neighbouring architecture and specialist activity rigs still need
+separate review. This is an initial visual checkpoint, not overworld acceptance.

@@ -279,6 +279,7 @@ window.FarwakeLandscape = (() => {
       box(c,0,0,w,h,'rgba(17,31,58,'+dark*.59+')');
       c.globalCompositeOperation='screen';
       for(const b of state.buildings){
+        if(window.FarwakeLamplight?.matches(b))continue;
         if(!b.finished||!(['lander','comms','lamppost'].includes(b.type)||window.FarwakeDoors?.state(b).occupied>0))continue;
         const x=sx((b.x+b.w*.51)*32),y=sy((b.y+b.h*.78)*32),radius=72*camera.z;
         if(x+radius<0||x-radius>w||y+radius<0||y-radius>h)continue;

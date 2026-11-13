@@ -20,6 +20,7 @@ jobs:
           node tests/frontier-content.cjs
           node tests/life-migration.cjs
           node tests/housing.cjs
+          node tests/lamplight.cjs
           node tests/home-resident.cjs
           node tests/aya-gait.cjs
       - name: Install browser test tools
