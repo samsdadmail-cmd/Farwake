@@ -49,3 +49,10 @@ activity animation, genuine social encounters, relationships/memories, contextua
 research/construction/inspection, environment/audio, accessibility, save protection
 and performance. Future Home/Unknown/Legacy systems remain design research until
 these foundations pass review.
+
+### Review update, 13 November 2026
+
+Checkpoint A1 was **not approved**. Correct portrait legibility, flat margins and
+home control design. A2 explores the whole-home/closer-room framing described in
+ART_DIRECTION.md. Submit actual 390×844 gameplay views before resident artwork.
+Save-export delivery remains open in TECHNICAL_ISSUES.md.

@@ -51,3 +51,22 @@ landscape, no people/UI/repeated floors; produce matched day/night lighting.
 A separate edit removed painted chimney smoke. Real gameplay captures must show
 these assets consumed by the actual home-view system. Geometry drift between
 variants remains a visual-review risk; do not build resident anchors until approved.
+
+## A2 revision after Kyle/Atlas review — not yet approved
+
+A1's direction was welcomed, but its scale, plain margins and generic controls were
+rejected. Preserve A1 at `recovery/home-composition-a1` / `988e3ac629d1b0e0e09edabd851a88c3c7570af7`.
+
+The same authored art now forms three scene regions: distant sky, the complete
+roof-through-foundation home, and near terrain. Scale every region uniformly;
+never tile, mirror or stretch an axis. Feather only surplus sky/ground around the
+house; furniture and architecture remain opaque. The actual house is already
+nearly phone-width, so portrait has a physical limit to full-room detail. Provide
+an explicit 1.7× Room camera with bounded drag/keyboard navigation and a one-tap
+Whole home return. Do not represent a cropped close view as a full-house view.
+Both views require actual 390×844 gameplay evidence and creative review.
+
+Controls are small field marks with one consistent line-icon system and readable
+labels over scene-aware shading. No filled button tray, gold dashboard borders or
+serif headings in home mode. Resident artwork remains prohibited until approval.
+No new art assets or save fields are introduced by this revision.

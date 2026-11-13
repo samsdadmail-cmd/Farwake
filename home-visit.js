@@ -5,7 +5,7 @@ window.FarwakeHomeVisit = (() => {
   const DUR={approach:.7,cover:.28,reveal:.46,close:.28,restore:.6};
   let api,phase='idle',buildingId=null,saved=null,door=null,fromCam=null,phaseT=0,revealed=0;
   let root,canvas,veil,card,infoBtn,cache=null,cacheKey='',layoutNow=null,hits=[],manageAfterExit=null;
-  let draws=0,lastNotes=-1;
+  let draws=0,lastNotes=-1,view='home',panX=0,panY=0,dragging=null;
   const images={day:null,night:null};
   const $=id=>document.getElementById(id);
   const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -21,12 +21,40 @@ window.FarwakeHomeVisit = (() => {
     const w=root.clientWidth||innerWidth,h=root.clientHeight||innerHeight;
     const quality=api.quality(),limit=quality==='performance'?1:quality==='cinematic'?2:1.5;
     const d=Math.min(devicePixelRatio||1,limit,Math.sqrt(1000000/(w*h)));
-    // Portrait retains the whole authored composition. Landscape trims only
-    // surplus sky/foreground; every part of the house remains inside the crop.
-    const source=w>h?{x:0,y:345,w:768,h:615}:{x:0,y:0,w:768,h:1152};
-    const scale=Math.min(w/source.w,h/source.h);
+    // The complete roof-through-foundation composition remains in Home view.
+    // Room view is an explicit, reversible camera with bounded drag navigation.
+    const source={x:8,y:350,w:752,h:615};
+    const fit=Math.min(w/source.w,(h-12)/source.h),scale=fit*(view==='room'?1.7:1);
     const dw=source.w*scale,dh=source.h*scale;
-    return{w,h,d,pw:Math.round(w*d),ph:Math.round(h*d),source,x:(w-dw)/2,y:(h-dh)*.4,dw,dh};
+    const rangeX=Math.max(0,(dw-w)/2),rangeY=Math.max(0,(dh-h)/2);
+    panX=Math.max(-rangeX,Math.min(rangeX,panX));panY=Math.max(-rangeY,Math.min(rangeY,panY));
+    return{w,h,d,pw:Math.round(w*d),ph:Math.round(h*d),source,
+      x:(w-dw)/2+panX,y:(h-dh)*.5+panY,dw,dh,view,rangeX,rangeY};
+  }
+  function invalidate(){layoutNow=null;cacheKey=''}
+  function setView(next){
+    view=next;panX=panY=0;dragging=null;invalidate();root.dataset.view=view;
+    $('homeview').setAttribute('aria-pressed',String(view==='room'));
+    $('homeview').setAttribute('aria-label',view==='room'?'Return to whole home':'Look closer at the room');
+    $('homeviewlabel').textContent=view==='room'?'Whole home':'Look closer';
+    $('homepan').hidden=view!=='room';
+  }
+  function coverImage(c,im,r,x,y,w,h){
+    if(w<=0||h<=0)return;
+    const scale=Math.max(w/r.w,h/r.h),sw=w/scale,sh=h/scale;
+    c.drawImage(im,r.x+(r.w-sw)/2,r.y+(r.h-sh)/2,sw,sh,x,y,w,h);
+  }
+  function homePlate(c,im,L){
+    // Only surplus sky/terrain edges feather into their corresponding scene
+    // layers. The complete house is in the opaque middle; no furniture fades.
+    const r=L.source,edge=24,steps=12,part=edge/steps,scale=L.dh/r.h;
+    c.drawImage(im,r.x,r.y+edge,r.w,r.h-2*edge,L.x,L.y+edge*scale,L.dw,L.dh-2*edge*scale);
+    for(let i=0;i<steps;i++){
+      c.globalAlpha=(i+.5)/steps;
+      c.drawImage(im,r.x,r.y+i*part,r.w,part,L.x,L.y+i*part*scale,L.dw,part*scale+.2);
+      c.drawImage(im,r.x,r.y+r.h-(i+1)*part,r.w,part,L.x,L.y+L.dh-(i+1)*part*scale,L.dw,part*scale+.2);
+    }
+    c.globalAlpha=1;
   }
   function lightState(s,people){
     const night=api.isNight(),grid=api.grid();
@@ -42,16 +70,16 @@ window.FarwakeHomeVisit = (() => {
     if(!cache)cache=document.createElement('canvas');
     if(cache.width!==L.pw||cache.height!==L.ph){cache.width=L.pw;cache.height=L.ph}
     const c=cache.getContext('2d',{alpha:false});c.setTransform(L.d,0,0,L.d,0,0);c.imageSmoothingEnabled=false;
-    const bg=c.createLinearGradient(0,0,0,L.h);
-    bg.addColorStop(0,light.night?'#0c1b2d':'#8ba6bb');bg.addColorStop(.6,light.night?'#132b36':'#8d9a96');bg.addColorStop(1,light.night?'#10212b':'#546b6c');
-    c.fillStyle=bg;c.fillRect(0,0,L.w,L.h);
-    // Pixel-art is never stretched independently along either axis.
-    c.save();
-    const r=L.source;c.drawImage(im,r.x,r.y,r.w,r.h,L.x,L.y,L.dw,L.dh);c.restore();
-    // Canvas filters are inconsistently supported in mobile WebKit. A simple
-    // composited wash keeps empty and sleeping homes dark in both engines.
+    // Three non-repeating regions of the same authored landscape. Each keeps
+    // its aspect ratio. Sky and near ground fill the phone; no flat padding,
+    // mirrored textures, stretched axes or duplicate houses are introduced.
+    const seam=Math.max(0,Math.min(L.h,L.y+L.dh*.52));
+    coverImage(c,im,{x:0,y:0,w:768,h:405},0,0,L.w,Math.max(1,seam+24));
+    coverImage(c,im,{x:0,y:965,w:768,h:187},0,seam,L.w,Math.max(1,L.h-seam));
+    homePlate(c,im,L);
+    // Portable shadow wash: mobile WebKit can silently ignore canvas filters.
     const dim=light.night&&['empty','unpowered'].includes(light.mode)?.75:light.mode==='sleeping'?.44:0;
-    if(dim){c.fillStyle='rgba(3,10,18,'+dim+')';c.fillRect(L.x,L.y,L.dw,L.dh)}
+    if(dim){c.fillStyle='rgba(3,10,18,'+dim+')';c.fillRect(0,0,L.w,L.h)}
     // These washes respond to actual weather; no invented chimney/working effects.
     if(['rain','storm'].includes(weather)){c.fillStyle=light.night?'#18344129':'#38577122';c.fillRect(0,0,L.w,L.h)}
     root.dataset.lightMode=light.mode;root.dataset.weather=weather;
@@ -68,7 +96,7 @@ window.FarwakeHomeVisit = (() => {
     const L=layoutNow||(layoutNow=measure()),s=api.getState(),b=building();
     if(!b){if(!['close','restore'].includes(phase))exit();return}
     const people=api.occupants(b),light=lightState(s,people),weather=s.weather;
-    const key=[L.pw,L.ph,light.mode,weather].join(':');
+    const key=[L.pw,L.ph,view,L.x,L.y,light.mode,weather].join(':');
     if(key!==cacheKey&&compose(L,light,weather))cacheKey=key;
     if(canvas.width!==L.pw||canvas.height!==L.ph){canvas.width=L.pw;canvas.height=L.ph}
     const c=canvas.getContext('2d',{alpha:false});c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;
@@ -181,7 +209,7 @@ window.FarwakeHomeVisit = (() => {
     door = {x: port.x * TS, y: (port.y - 0.05) * TS, z: Math.min(2.2, 2.05)};
     card.hidden = true;
     if (infoBtn) infoBtn.setAttribute('aria-expanded', 'false');
-    sceneImage('day');sceneImage('night');layoutNow=null;cacheKey='';refreshNotes();
+    setView('home');sceneImage('day');sceneImage('night');invalidate();refreshNotes();
     setPhase('approach');
     if (api.closeSheet) api.closeSheet();
     return true;
@@ -214,13 +242,26 @@ window.FarwakeHomeVisit = (() => {
     infoBtn = $('homeinfo');
     $('homeexit').addEventListener('click', () => exit());
     $('homemanage').addEventListener('click',()=>{manageAfterExit=buildingId;exit()});
-    window.addEventListener('resize',()=>{layoutNow=null;cacheKey=''});
-    window.visualViewport?.addEventListener('resize',()=>{layoutNow=null;cacheKey=''});
+    window.addEventListener('resize',invalidate);
+    window.visualViewport?.addEventListener('resize',invalidate);
+    $('homeview').addEventListener('click',()=>setView(view==='home'?'room':'home'));
     infoBtn.addEventListener('click', () => toggleCard());
-    canvas.addEventListener('pointerdown', () => {
-      if (!card.hidden) { card.hidden = true; infoBtn.setAttribute('aria-expanded', 'false'); }
+    canvas.addEventListener('pointerdown',e=>{
+      if(!card.hidden){card.hidden=true;infoBtn.setAttribute('aria-expanded','false')}
+      if(view!=='room'||phase!=='inside')return;
+      dragging={id:e.pointerId,x:e.clientX,y:e.clientY,px:panX,py:panY};
+      canvas.setPointerCapture(e.pointerId);e.preventDefault();
     });
+    canvas.addEventListener('pointermove',e=>{
+      if(!dragging||dragging.id!==e.pointerId)return;
+      panX=dragging.px+e.clientX-dragging.x;panY=dragging.py+e.clientY-dragging.y;invalidate();e.preventDefault();
+    });
+    const stopDrag=e=>{if(dragging?.id===e.pointerId){dragging=null;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}};
+    canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);
     document.addEventListener('keydown', e => {
+      if(phase==='inside'&&view==='room'&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+        e.preventDefault();e.stopImmediatePropagation();panX+=e.key==='ArrowLeft'?32:e.key==='ArrowRight'?-32:0;panY+=e.key==='ArrowUp'?32:e.key==='ArrowDown'?-32:0;invalidate();return;
+      }
       if (e.key === 'Escape' && phase !== 'idle') { e.preventDefault();e.stopImmediatePropagation();exit(); }
     },true);
   }
@@ -229,7 +270,7 @@ window.FarwakeHomeVisit = (() => {
     bind, enter, exit, frame, paint,
     phase: () => phase,
     ownsCamera: () => phase !== 'idle',
-    diagnostics:()=>({phase,draws,lightMode:root?.dataset.lightMode,layout:layoutNow,cachePixels:cache?cache.width*cache.height:0,residentsRendered:0}),
+    diagnostics:()=>({phase,draws,lightMode:root?.dataset.lightMode,layout:layoutNow,view,panX,panY,cachePixels:cache?cache.width*cache.height:0,residentsRendered:0}),
     savedCamera: () => saved ? {x: saved.x, y: saved.y, z: saved.z} : null,
     // Present so CP2 can attach poses without a new shell. Empty until then.
     residents: () => hits
