@@ -3,6 +3,20 @@ window.FarwakeHomeResident=(()=>{
  'use strict';
  const HOME_FRAMES=[{"x": 154, "y": 13, "w": 132, "h": 417}, {"x": 561, "y": 16, "w": 214, "h": 410}, {"x": 990, "y": 19, "w": 226, "h": 407}, {"x": 1460, "y": 36, "w": 167, "h": 381}, {"x": 129, "y": 479, "w": 171, "h": 382}, {"x": 469, "y": 575, "w": 391, "h": 184}, {"x": 913, "y": 574, "w": 391, "h": 185}, {"x": 1486, "y": 456, "w": 133, "h": 417}],WORLD_FRAMES=[{"x":137,"y":47,"w":104,"h":285},{"x":490,"y":48,"w":105,"h":285},{"x":852,"y":48,"w":102,"h":285},{"x":1210,"y":47,"w":104,"h":286},{"x":129,"y":407,"w":118,"h":289},{"x":490,"y":407,"w":118,"h":289},{"x":841,"y":407,"w":123,"h":286},{"x":1207,"y":407,"w":122,"h":290},{"x":121,"y":767,"w":130,"h":265},{"x":481,"y":767,"w":117,"h":265},{"x":838,"y":767,"w":141,"h":268},{"x":1198,"y":767,"w":118,"h":266}];
  const images={},cutouts=new Map(),worldInfo={rendered:false};
+ // Source-space pelvis centres, rather than changing silhouette bounding-box
+ // centres. Extended arms/boots must not shove the torso sideways every step.
+ const WORLD_HIPS=[188,543,894,1255,188,546,896,1261,177,532,887,1244];
+ function gait(v){
+  const direction=v.dir==='back'?'up':v.dir==='left'?'left':v.dir==='right'?'right':'down';
+  const pair={down:[4,5],up:[6,7],left:[8,9],right:[10,11]},idle={down:0,up:1,left:2,right:3};
+  // A 16.75-world-pixel step (one tile is 32 px), paced by actual distance.
+  // Each support/contact lasts 36% of the cycle; the passing pose only 14%.
+  // Preserve support-leg phase through turns. Do not restart a cycle on facing.
+  const cycle=((v.phase*.75)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)/(Math.PI*2);
+  const beat=cycle<.36?0:cycle<.5?1:cycle<.86?2:3;
+  const walking=(v.travelSpeed??0)>.08;
+  return{direction,walking,beat,cycle,frame:walking?(beat%2?idle[direction]:pair[direction][beat/2]):idle[direction]};
+ }
  const identity=p=>p?.id===1&&p.name==='Aya Mercer'&&p.role==='Commander'&&p.coat?.toLowerCase()==='#ecb872'&&p.hair?.toLowerCase()==='#302c37'&&p.hue?.toLowerCase()==='#ffc79e';
  function atlas(kind){if(!images[kind]){const im=new Image();im.src=new URL('assets/residents/aya-'+(kind==='world'?'world-b1':kind)+'.png',document.baseURI).href;images[kind]=im}return images[kind]}
  function eligible(s,b){
@@ -67,18 +81,15 @@ window.FarwakeHomeResident=(()=>{
  }
  function drawWorld(c,p,v,tileSize,selected){
   if(!identity(p))return false;
-  if(!p.path?.length&&(v.work>.02||v.leisure||['eat','rest','social'].includes(p.task?.type))){worldInfo.rendered=false;return false;}
-  const direction=v.dir==='back'?'up':v.dir==='left'?'left':v.dir==='right'?'right':'down',walking=v.walk>.15;
-  const pair={down:[4,5],up:[6,7],left:[8,9],right:[10,11]},idle={down:0,up:1,left:2,right:3};
-  // Shared presentation phase advances with distance, not elapsed time.
-  // Neutral passing beats avoid holding two splayed contact poses throughout.
-  const beat=Math.floor(v.phase/(Math.PI/2))%4;
-  const i=walking?(beat%2?idle[direction]:pair[direction][beat/2]):idle[direction],im=sprite('world',i);if(!im)return false;
+  const standingPause=v.leisure&&['settling','finishing'].includes(v.leisure.phase);
+  if(!p.path?.length&&(v.travelSpeed??0)<.08&&v.walk<.08&&(v.work>.02||v.leisure&&!standingPause||['eat','rest','social'].includes(p.task?.type))){worldInfo.rendered=false;return false;}
+  const {direction,walking,beat,cycle,frame:i}=gait(v),im=sprite('world',i);if(!im)return false;
   c.save();c.translate(v.x*tileSize,v.y*tileSize);c.imageSmoothingEnabled=false;
   c.fillStyle='#18221f50';c.beginPath();c.ellipse(1,3,7,2.5,0,0,Math.PI*2);c.fill();
   if(selected){c.strokeStyle='#f2ca86';c.lineWidth=1.5;c.beginPath();c.ellipse(0,3,9,4,0,0,Math.PI*2);c.stroke()}
-  const bob=walking&&!v.reduced&&beat%2?-.5:0;
-  c.drawImage(im,-Math.round(im.width/2),4-im.height+bob);c.restore();Object.assign(worldInfo,{rendered:true,id:p.id,frame:i,direction,walking,beat,x:v.x,y:v.y,phase:v.phase});return true;
+  const bob=walking&&!v.reduced?-.5*Math.sin(cycle*Math.PI*4)**2*Math.min(1,v.travelSpeed/.7):0;
+  const hip=(WORLD_HIPS[i]-WORLD_FRAMES[i].x)*28/WORLD_FRAMES[i].h;
+  c.drawImage(im,-Math.round(hip),4-im.height+bob);c.restore();Object.assign(worldInfo,{rendered:true,id:p.id,frame:i,direction,walking,beat,cycle,speed:v.travelSpeed||0,x:v.x,y:v.y,phase:v.phase});return true;
  }
- return{identity,eligible,plan,draw,drawWorld,preload:()=>{atlas('home');atlas('world')},ready:()=>!!images.home?.complete&&!!images.home?.naturalWidth,cacheCount:()=>cutouts.size,worldInfo:()=>worldInfo};
+ return{identity,eligible,plan,draw,drawWorld,gait,preload:()=>{atlas('home');atlas('world')},ready:()=>!!images.home?.complete&&!!images.home?.naturalWidth,cacheCount:()=>cutouts.size,worldInfo:()=>worldInfo};
 })();

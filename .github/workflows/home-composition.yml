@@ -21,6 +21,7 @@ jobs:
           node tests/life-migration.cjs
           node tests/housing.cjs
           node tests/home-resident.cjs
+          node tests/aya-gait.cjs
       - name: Install browser test tools
         run: npm ci && npx playwright install --with-deps chromium webkit
       - name: Home, camera and recovered regressions

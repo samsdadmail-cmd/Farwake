@@ -50,3 +50,8 @@ body.in-home .top,body.in-home .lower,body.in-home .field-save,body.in-home .map
 .home-label span{background:#10242ba8;width:fit-content;padding:3px 6px;border-radius:2px}.home-label span:last-child{font-size:12px;color:#edf0dd}
 .home-time{position:absolute;right:calc(14px + env(safe-area-inset-right));top:calc(62px + env(safe-area-inset-top))}
 @media(orientation:landscape) and (max-height:520px){.home-time{top:calc(50px + env(safe-area-inset-top))}}
+
+/* Home selection is a small entry choice; management stays optional. */
+.inspecthome{display:grid;grid-template-columns:minmax(0,1fr) auto auto;border-left:1px solid #a0b6ab60}
+.inspecthome>div{grid-column:1/-1}.inspecthome .label{font-family:inherit}.inspecthome button{min-height:48px;padding:0 12px;font-size:12px}
+.inspecthome [data-inspect="enter"]{background:#d2ddd0;color:#172a30;border-color:#d2ddd0}

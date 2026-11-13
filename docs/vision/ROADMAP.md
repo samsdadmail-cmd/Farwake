@@ -76,3 +76,12 @@ residents or population-wide animation rollout is approved. Refine exterior/inte
 identity, pixel density, sleeping/bedding, phone readability and real walking/turning
 before further review. B1 evidence is in `evidence/resident-b1/`. No continuous
 indoor navigation is claimed; it requires a separate approved scope.
+
+## Future visual milestone — exterior/interior environmental coherence
+
+Recorded from Kyle and Atlas's B1 gameplay review on 13 November 2026. The map's
+terrain/buildings and the richer authored home scenes currently differ in visual
+language and detail. Coordinate materials, palette, lighting and pixel treatment
+in a separately scoped visual milestone while preserving the top-down management
+view and approved home composition. This is tracked direction, not permission
+for an overworld art overhaul during Aya's walking refinement.
