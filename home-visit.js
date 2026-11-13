@@ -47,9 +47,11 @@ window.FarwakeHomeVisit = (() => {
     c.fillStyle=bg;c.fillRect(0,0,L.w,L.h);
     // Pixel-art is never stretched independently along either axis.
     c.save();
-    if(light.night&&['empty','unpowered'].includes(light.mode))c.filter='brightness(.25) saturate(.55)';
-    else if(light.mode==='sleeping')c.filter='brightness(.56) saturate(.8)';
     const r=L.source;c.drawImage(im,r.x,r.y,r.w,r.h,L.x,L.y,L.dw,L.dh);c.restore();
+    // Canvas filters are inconsistently supported in mobile WebKit. A simple
+    // composited wash keeps empty and sleeping homes dark in both engines.
+    const dim=light.night&&['empty','unpowered'].includes(light.mode)?.75:light.mode==='sleeping'?.44:0;
+    if(dim){c.fillStyle='rgba(3,10,18,'+dim+')';c.fillRect(L.x,L.y,L.dw,L.dh)}
     // These washes respond to actual weather; no invented chimney/working effects.
     if(['rain','storm'].includes(weather)){c.fillStyle=light.night?'#18344129':'#38577122';c.fillRect(0,0,L.w,L.h)}
     root.dataset.lightMode=light.mode;root.dataset.weather=weather;

@@ -44,6 +44,16 @@ test('night lighting follows real sleeping occupants and grid state without save
  await page.locator('[data-home-enter]').click();await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='inside');
  await expect(page.locator('#homevisit')).toHaveAttribute('data-light-mode','sleeping');
  await page.locator('#homeinfo').click();await expect(page.locator('#homewho')).not.toHaveText('Nobody is inside');
+ // Verify rendered pixels, rather than merely the lighting-state label. Mobile
+ // WebKit may silently ignore CanvasRenderingContext2D.filter.
+ const shade=await page.evaluate(async()=>{
+  const L=FARWAKE_TEST.homeDiagnostics.layout,im=new Image();im.src='/assets/home-composition/night.webp';await im.decode();
+  const sample=document.createElement('canvas');sample.width=sample.height=1;const c=sample.getContext('2d');
+  c.drawImage(im,384,820,1,1,0,0,1,1);const original=[...c.getImageData(0,0,1,1).data].slice(0,3).reduce((a,b)=>a+b,0);
+  const x=Math.floor((L.x+384/768*L.dw)*L.d),y=Math.floor((L.y+820/1152*L.dh)*L.d);
+  const rendered=[...document.querySelector('#homecanvas').getContext('2d').getImageData(x,y,1,1).data].slice(0,3).reduce((a,b)=>a+b,0);
+  return rendered/original;
+ });expect(shade).toBeLessThan(.8);expect(shade).toBeGreaterThan(.3);
  expect(await page.evaluate(()=>FARWAKE_TEST.state.v)).toBe(4);
  await page.locator('#homeinfo').click();await page.screenshot({path:info.outputPath('home-night-real-occupancy.png')});
  await page.locator('#homeexit').click();await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='idle');
