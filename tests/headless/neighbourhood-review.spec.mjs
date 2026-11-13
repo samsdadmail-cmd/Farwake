@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
+test.use({viewport:{width:390,height:844},video:{mode:'on',size:{width:390,height:844}}});
 async function loadColony(page){
  await page.goto('/index.html?review=1');page.on('dialog',d=>d.accept());
  await page.getByRole('button',{name:'Game and Save',exact:true}).click();
@@ -54,7 +55,6 @@ test('E2 pairs real day/night neighbourhoods and keeps touch controls usable',as
 });
 
 test.describe('actual neighbourhood movement recording',()=>{
- test.use({viewport:{width:390,height:844},video:{mode:'on',size:{width:390,height:844}}});
  test('E2 neighbourhood stays alive at ordinary 1x without task/route grants',async({page},info)=>{
   test.setTimeout(150000);const testWallStart=Date.now(),errors=[];page.on('pageerror',e=>errors.push(e.message));await loadColony(page);
   const start=await page.evaluate(()=>{
