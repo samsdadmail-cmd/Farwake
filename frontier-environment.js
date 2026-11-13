@@ -6,23 +6,20 @@ window.FarwakeEnvironment=(()=>{
  let revision=0;atlas.onload=()=>revision++;
  let mapRef=null,key='',surface=null,originX=0,originY=0,visible=false;
  let waterMarks=[],sway=[],bakes=0,lastBakeMs=0,maxBakeMs=0,phases={},plantCount=0,clusterCount=0,trackCount=0;
- const sprites=[];
+ let spriteAtlas=null;
  const hash=(x,y,s=0)=>{let n=Math.imul(x^s,1597334677)^Math.imul(y,3812015801);n=Math.imul(n^n>>>16,2246822519);return((n^n>>>13)>>>0)/4294967296};
  function noise(x,y,scale,s=0){x/=scale;y/=scale;const a=Math.floor(x),b=Math.floor(y);let u=x-a,v=y-b;u=u*u*(3-2*u);v=v*v*(3-2*v);return(hash(a,b,s)*(1-u)+hash(a+1,b,s)*u)*(1-v)+(hash(a,b+1,s)*(1-u)+hash(a+1,b+1,s)*u)*v}
  const rect=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)};
  const make=(size=SIZE)=>{const c=document.createElement('canvas');c.width=c.height=size;return c};
  function prepareSprites(){
-  if(sprites.length)return;
-  // Shared 32px clusters and quieter highlights. Original atlas remains intact;
-  // no new assets or per-frame colour processing.
-  const cw=atlas.naturalWidth/4,ch=atlas.naturalHeight/4;
-  for(let i=0;i<16;i++){
-   const out=make(32),c=out.getContext('2d');c.imageSmoothingEnabled=false;
-   c.drawImage(atlas,Math.floor(i%4*cw),Math.floor(i/4)*ch,cw,ch,0,0,32,32);
-   const im=c.getImageData(0,0,32,32),d=im.data;
-   for(let p=0;p<d.length;p+=4){if(!d[p+3])continue;d[p]=d[p]*.77+12;d[p+1]=d[p+1]*.78+16;d[p+2]=d[p+2]*.79+18}
-   c.putImageData(im,0,0);sprites.push(out);
-  }
+  if(spriteAtlas)return;
+  // One 128px atlas and ONE readback, rather than 16 synchronous canvas
+  // readbacks (39ms in the measured WebKit cold path). No per-frame processing.
+  const out=make(128),c=out.getContext('2d',{willReadFrequently:true});c.imageSmoothingEnabled=false;
+  c.drawImage(atlas,0,0,128,128);
+  const im=c.getImageData(0,0,128,128),d=im.data;
+  for(let p=0;p<d.length;p+=4){if(!d[p+3])continue;d[p]=d[p]*.77+12;d[p+1]=d[p+1]*.78+16;d[p+2]=d[p+2]*.79+18}
+  c.putImageData(im,0,0);spriteAtlas=out;
  }
  function bake(map,width,height,home,members,stamp,state,features){
   const start=performance.now();prepareSprites();const prepared=performance.now();
@@ -152,7 +149,7 @@ window.FarwakeEnvironment=(()=>{
   plants.sort((a,b)=>a.y-b.y);
   for(const a of plants){
    const edge=Math.hypot((a.x-HALF)/(HALF-22),(a.y-HALF)/(HALF-22));c.save();c.globalAlpha=Math.min(1,(1-edge)*7);c.translate(Math.round(a.x),Math.round(a.y));c.rotate(a.angle);c.scale(a.flip?-1:1,1);
-   const flat=a.index>=4&&a.index<12?.8:1;c.drawImage(sprites[a.index],-Math.round(a.size/2),-Math.round(a.size*.74*flat),Math.round(a.size),Math.round(a.size*flat));c.restore();
+   const flat=a.index>=4&&a.index<12?.8:1;c.drawImage(spriteAtlas,a.index%4*32,Math.floor(a.index/4)*32,32,32,-Math.round(a.size/2),-Math.round(a.size*.74*flat),Math.round(a.size),Math.round(a.size*flat));c.restore();
    if(a.index<4||a.index>=12)if(sway.length<14)sway.push({x:originX+a.x,y:originY+a.y,phase:a.index+a.x*.1});
   }
   // Foundations and understated scuffs share the earth. No bright doormat.
