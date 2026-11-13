@@ -74,8 +74,7 @@ window.FarwakeEnvironment=(()=>{
    const wx=originX+x*8,wy=originY+y*8,tx=Math.floor(wx/32),ty=Math.floor(wy/32),tile=get(tx,ty);if(!tile)continue;
    const broad=noise(wx,wy,150,28),patch=noise(wx,wy,53,91),fine=noise(wx,wy,14,73),wf=water(wx+(noise(wx,wy,28,3)-.5)*5,wy+(noise(wx,wy,29,7)-.5)*5);
    let r,g,b;
-   if(wf>.5){const depth=Math.min(1,(landDistance[ty*width+tx]||0)/3),shine=(patch-.5)*9;r=31-depth*10+shine;g=75-depth*24+shine;b=83-depth*19+shine;if(wf<.68){r+=13;g+=17;b+=12}}
-   else{
+   {
     const moisture=tile.moisture??.5,stone=tile.kind==='stone'||(patch>.69&&fine>.53),lichen=Math.max(0,(noise(wx,wy,34,17)-.54)*2.5);
     if(stone){r=75+broad*17;g=94+broad*17;b=101+broad*19}
     else if(tile.kind==='sand'||wf>.18){r=91+broad*18;g=111+broad*14;b=103+broad*15}
@@ -91,8 +90,11 @@ window.FarwakeEnvironment=(()=>{
    const wx=originX+x*STEP,wy=originY+y*STEP;if(!get(Math.floor(wx/32),Math.floor(wy/32)))continue;
    const nx=(x*STEP-HALF)/(HALF-6),ny=(y*STEP-HALF)/(HALF-6),sq=nx*nx+ny*ny;if(sq>=1)continue;
    const alpha=sq<.5625?1:Math.min(1,(1-Math.sqrt(sq))*4),i=(y>>2)*COLS+(x>>2),u=(x%4)/4,v=(y%4)/4,at=(y*N+x)*4;
-   const fine=sample(fields[3],i,u,v),worn=Math.max(0,track[y*N+x]-(fine-.35)*.4)*.43;
-   for(let ch=0;ch<3;ch++){const base=sample(fields[ch],i,u,v);D[at+ch]=base+(earth[ch]-base)*worn+(fine-.5)*3}
+   const fine=sample(fields[3],i,u,v),wf=water(wx+(fine-.5)*3,wy+(fine-.5)*3),worn=Math.max(0,track[y*N+x]-(fine-.35)*.4)*.43;
+   // Never interpolate colours across land/water: the exact water field selects
+   // a crisp 2px shore edge while the slow land colours share lattice samples.
+   if(wf>.5){const depth=Math.min(1,(landDistance[Math.floor(wy/32)*width+Math.floor(wx/32)]||0)/3),shine=(fine-.5)*6;D[at]=31-depth*10+shine;D[at+1]=75-depth*24+shine;D[at+2]=83-depth*19+shine;if(wf<.68){D[at]+=13;D[at+1]+=17;D[at+2]+=12}}
+   else for(let ch=0;ch<3;ch++){const base=sample(fields[ch],i,u,v);D[at+ch]=base+(earth[ch]-base)*worn+(fine-.5)*3}
    D[at+3]=alpha*255;
   }p.putImageData(im,0,0);const out=make(),c=out.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(low,0,0,SIZE,SIZE);
   const terrainDone=performance.now();
@@ -107,8 +109,21 @@ window.FarwakeEnvironment=(()=>{
   // Uneven habitat patches, sparse singles and negative space. Moisture changes
   // density/species alongside actual shore proximity and settlement clearance.
   const clusters=[],plants=[];waterMarks=[];sway=[];
-  for(let i=0;i<112;i++){
-   const x=22+hash(i,19,37)*(SIZE-44),y=22+hash(i,31,53)*(SIZE-44),wx=originX+x,wy=originY+y,tile=get(Math.floor(wx/32),Math.floor(wy/32));if(!tile)continue;
+  const candidates=[];
+  for(let i=0;i<260;i++)candidates.push({x:22+hash(i,19,37)*(SIZE-44),y:22+hash(i,31,53)*(SIZE-44)});
+  // Additional nonuniform habitat seeds follow real shore cells, so a narrow
+  // wet margin is not missed by random samples of the much larger dry land.
+  for(let ty=Math.max(0,Math.floor(originY/32));ty<Math.min(height,Math.ceil((originY+SIZE)/32));ty++)for(let tx=Math.max(0,Math.floor(originX/32));tx<Math.min(width,Math.ceil((originX+SIZE)/32));tx++){
+   if(wet(tx,ty)||hash(tx,ty,219)<.34)continue;
+   for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]])if(wet(tx+dx,ty+dy)){
+    const along=(hash(tx,ty,93)-.5)*23,toward=8+hash(tx,ty,71)*5;
+    candidates.push({x:(tx+.5)*32-originX+dx*toward-dy*along,y:(ty+.5)*32-originY+dy*toward+dx*along});break;
+   }
+  }
+  // Shore candidates get first claim; dry plants never crowd out wetland roots.
+  candidates.reverse();
+  for(let i=0;i<candidates.length;i++){
+   const {x,y}=candidates[i],wx=originX+x,wy=originY+y,tile=get(Math.floor(wx/32),Math.floor(wy/32));if(!tile)continue;
    const wf=water(wx,wy),moisture=tile.moisture??.5,v=hash(i,47,81),habitat=noise(wx,wy,115,66);
    if(wf>.76){if(v<.5&&waterMarks.length<22)waterMarks.push({x:wx,y:wy,phase:v*20,w:5+v*12});continue}
    const shore=wf>.08,rock=tile.kind==='stone'||(!shore&&v>.76&&habitat>.45);
@@ -120,7 +135,7 @@ window.FarwakeEnvironment=(()=>{
    for(let j=0;j<count;j++){
     const angle=hash(i,j,93)*Math.PI*2,rr=j?Math.sqrt(hash(i,j,29))*radius:0,xx=x+Math.cos(angle)*rr,yy=y+Math.sin(angle)*rr*.7;
     const wxx=originX+xx,wyy=originY+yy,t=get(Math.floor(wxx/32),Math.floor(wyy/32));if(!t)continue;const w=water(wxx,wyy);if(w>.63)continue;
-    const q=hash(i,j,74),index=shore&&w>.06?12+Math.floor(q*4):rock&&j===0?4+Math.floor(q*4):j>0||q>.61?8+Math.floor(q*4):Math.floor(q*4);
+    const q=hash(i,j,74),index=(shore&&w>.06)||(!rock&&moisture>.57&&q<.18)?12+Math.floor(q*4):rock&&j===0?4+Math.floor(q*4):j>0||q>.61?8+Math.floor(q*4):Math.floor(q*4);
     const size=(index>=8&&index<12?24:32)+(j===0?8:0)+hash(i,j,51)*11;
     if(!clear(xx,yy,size)||plants.some(p=>Math.hypot(xx-p.x,yy-p.y)<(size+p.size)*.2))continue;
     plants.push({x:xx,y:yy,index,size,flip:q>.5,angle:index>=8&&index<12?(q-.5)*.7:(q-.5)*.16});
