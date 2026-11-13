@@ -29,7 +29,7 @@
   <section id="homecard" class="homecard" hidden><div class="home-note-index">HOUSEHOLD / FIELD NOTES</div><h2>At home</h2><p id="homenow"></p><p id="homewho"></p><p class="home-checkpoint">Quiet routines, recorded as they happen.</p></section><p class="home-loading">Opening the home…</p>
  </div>
 </div>
-<script src="frontier-art.js"></script><script src="buildings.js"></script><script src="hearth.js"></script><script src="lamplight.js"></script><script src="neighbourhood.js"></script>
+<script src="frontier-art.js"></script><script src="buildings.js"></script><script src="hearth.js"></script><script src="lamplight.js"></script><script src="frontier-environment.js"></script><script src="neighbourhood.js"></script>
 <script src="landscape.js"></script>
 <script src="doors.js"></script>
 <script src="work-fx.js"></script>
@@ -385,7 +385,8 @@ function draw(time){if(!S||!cw||!ch)return;const D=dpr;ctx.setTransform(D,0,0,D,
  const left=Math.max(0,Math.floor((camera.x-cw/(2*camera.z))/TS)-2),right=Math.min(VW,Math.ceil((camera.x+cw/(2*camera.z))/TS)+2),top=Math.max(0,Math.floor((camera.y-ch/(2*camera.z))/TS)-2),bottom=Math.min(VH,Math.ceil((camera.y+ch/(2*camera.z))/TS)+2);
  FarwakeNeighbourhood.prepare(S,power());
  FarwakeLandscape.ground(ctx,terrain,VW,VH,S.seed,left,top,right,bottom,time,{state:S,fog,onThunder:()=>FarwakeAudio.play("thunder")});
- FarwakeNeighbourhood.ground(ctx,terrain,VW,VH);
+ FarwakeNeighbourhood.ground(ctx,terrain,VW,VH,features,left,top,right,bottom);
+ FarwakeEnvironment.motion(ctx,S.minute,S.weather,FieldPreferences.reduced,prefs.preset);
  editorPaths(time,left,top,right,bottom);frontierSitesDraw(left,top,right,bottom,time);
  for(const f of features)if(f.x>=left&&f.x<right&&f.y>=top&&f.y<bottom&&fog[index(f.x,f.y)]){FarwakeWorkFX.feature(ctx,f,time,S.minute);if(S.designations?.[f.id])renderWorkMarker(f)}
  for(const b of S.buildings)if(b.finished&&b.x+b.w>=left&&b.x<right&&b.y+b.h>=top&&b.y<bottom)FarwakeBuildings.shadow(ctx,b.type,b.x*TS,b.y*TS,b.w*TS,b.h*TS,S.minute,b);

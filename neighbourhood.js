@@ -103,8 +103,9 @@ window.FarwakeNeighbourhood=(()=>{
   if(!masks.has(key)){const out=canvas(b.w*32,b.h*32),p=out.getContext('2d');p.drawImage(plate(b),0,0);if(b.type==='wind')p.drawImage(rotor(0),2,0);p.globalCompositeOperation='source-in';box(p,0,0,out.width,out.height,'#142e39');masks.set(key,out)}
   c.save();c.translate(b.x*32,(b.y+b.h)*32);c.transform(1,0,-Math.cos((minute-360)*Math.PI/720)*.33,.7,0,2);c.globalAlpha=.3;c.drawImage(masks.get(key),0,-b.h*32);c.restore();return true;
  }
- function ground(c,map,width,height){
+ function ground(c,map,width,height,features,left,top,right,bottom){
   if(!home)return;
+  if(window.FarwakeEnvironment){FarwakeEnvironment.ground(c,map,width,height,home,members,layoutKey,state,features,left,top,right,bottom);return}
   const ox=Math.floor((home.x+home.w/2)*32-HALF+48),oy=Math.floor((home.y+home.h/2)*32-HALF+32);
   if(terrainRef!==map||!groundCache||groundKey!==layoutKey){
    terrainRef=map;groundKey=layoutKey;groundCache=canvas(SIZE,SIZE);const p=groundCache.getContext('2d'),im=p.createImageData(SIZE,SIZE);
