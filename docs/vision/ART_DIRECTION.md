@@ -1,8 +1,9 @@
 # Unified visual art direction — current checkpoint specification
 
 A2 composition is approved at `8107fb6c79780e6fe7787bb65fa6e98f93afd590`.
-Checkpoint B (Aya artwork and identity continuity) is implemented for review, not
-creatively approved. Earlier proposals and rejected framing are retained below as history. The world
+Checkpoint B received conditional direction approval on 13 November 2026.
+Focused B1 identity/movement/bedding refinement is implemented for review;
+population-wide expansion is not approved. Earlier proposals and rejected framing are retained below as history. The world
 and homes are different views of the same settlement, with shared identities,
 materials and palette. References describe complete compositions, not a checklist
 of objects to enlarge and paste into a phone.
@@ -14,7 +15,7 @@ of objects to enlarge and paste into a phone.
 | Home | One complete shelter diorama: roof, walls, both bunks, chairs/table, desk, stove, foundation and alien surroundings. No repeated floor or axis stretching. |
 | Composition | Portrait keeps the complete house. Landscape can trim surplus sky/foreground, never the building or furniture. Negative space must establish the surrounding world. |
 | Art source | Current paired 768×1660 continuous WebP plates, nearest-neighbour sampling; older 768×1152 A1 assets retained for recovery. Do not generate a new style for each object. |
-| Characters, checkpoint B | Aya only: generated authored transparent frames, cached to 124 scene-pixel standing height and 104 scene-pixel sleeping length; exterior walking/idle miniatures at 26 world-pixel height. Short dark bob, peach skin, ochre jacket, slate trousers and brown boots in both views. Standing/seated/bed fit requires B review before rollout. |
+| Characters, checkpoint B | Aya only: generated authored transparent frames, cached to 124 scene-pixel standing height and 104 scene-pixel sleeping length; exterior walking/idle miniatures at 28 world-pixel height. Short dark bob, peach skin, ochre jacket, slate trousers and brown boots in both views. Standing/seated/bed fit requires B review before rollout. |
 | Perspective | Interior front cutaway with shallow floor depth, coherent with the furnished reference; building shell and exterior scene share that viewpoint. |
 | Palette | Cold slate/blue/teal surroundings; lichen/stone vegetation; worn timber, ceramic, fabric and restrained warm lamplight. Avoid luxury dashboard gold. |
 | Lighting | Read real time, weather, actual indoor occupancy, sleeping/awake state and available grid power. Warm occupied homes contrast with cold outside. No fabricated fire/fuel/smoke state. |
@@ -92,3 +93,8 @@ pixels over the body. The book remains small in the complete-home view; use the
 optional closer camera to judge it, rather than claiming overview detail that the
 390-pixel screen cannot resolve. These placements have been inspected in captured
 gameplay but remain subject to Kyle/Atlas's creative review.
+
+B1 uses a revised, less chibi exterior atlas, distance-driven contact/passing beats,
+and a lower tucked bunk anchor. Interior art and room plates are retained.
+There is no indoor navigation graph: settling/seated/rest are explicit real-state
+pose cuts, not a claimed continuous indoor walk. See `evidence/resident-b1/`.

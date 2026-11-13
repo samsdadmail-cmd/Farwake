@@ -24,7 +24,7 @@ jobs:
       - name: Install browser test tools
         run: npm ci && npx playwright install --with-deps chromium webkit
       - name: Home, camera and recovered regressions
-        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/home-composition.spec.mjs tests/headless/experience-overhaul.spec.mjs tests/headless/living-evening.spec.mjs tests/headless/baseline-risks.spec.mjs tests/headless/home-resident.spec.mjs
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/home-composition.spec.mjs tests/headless/experience-overhaul.spec.mjs tests/headless/living-evening.spec.mjs tests/headless/baseline-risks.spec.mjs tests/headless/home-resident.spec.mjs tests/headless/aya-walk-review.spec.mjs
       - name: Keep actual gameplay screenshots and failures
         if: always()
         uses: actions/upload-artifact@v4

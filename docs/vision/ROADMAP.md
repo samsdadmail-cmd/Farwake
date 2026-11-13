@@ -68,3 +68,11 @@ Checkpoint B is authorised for **Aya Mercer only**: authored standing, seated an
 sleeping art, real attendance/task state, convincing furniture integration, same
 identity outdoors/indoors, actual 390×844 captures and a short genuine transition
 recording. Do not expand to other residents before Kyle/Atlas's visual approval.
+
+### Kyle & Atlas conditional B approval, 13 November 2026
+
+Aya’s first integration is conditionally approved as a direction. No additional
+residents or population-wide animation rollout is approved. Refine exterior/interior
+identity, pixel density, sleeping/bedding, phone readability and real walking/turning
+before further review. B1 evidence is in `evidence/resident-b1/`. No continuous
+indoor navigation is claimed; it requires a separate approved scope.

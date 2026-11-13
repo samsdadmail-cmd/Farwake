@@ -26,6 +26,9 @@ test('Aya lives one genuine evening: same saved colony outside, standing, readin
  });
  await page.waitForFunction(()=>FarwakeHomeResident.worldInfo().rendered);
  await page.screenshot({path:info.outputPath('aya-outdoors-390.png')});
+ await page.evaluate(()=>{FARWAKE_TEST.camera.z=1;FARWAKE_TEST.draw(performance.now())});
+ await page.screenshot({path:info.outputPath('aya-outdoors-normal-390.png')});
+ await page.evaluate(()=>{FARWAKE_TEST.camera.z=1.7;FARWAKE_TEST.draw(performance.now())});
  const evening=await page.evaluate(home=>{
   document.querySelector('#pause').click();
   const g=FARWAKE_TEST,p=g.state.colonists[0],b=g.state.buildings.find(b=>b.id===home);
