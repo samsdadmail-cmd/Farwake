@@ -58,7 +58,10 @@ window.FarwakeEnvironment=(()=>{
    for(const b of members){if(!['shelter','cabin','sawmill','workshop','dining','camp'].includes(b.type))continue;const p=FarwakeDoors.portalFor(b);if(!p)continue;let a={x:Math.floor(p.streetX),y:Math.floor(p.streetY)},guard=0;if(!visited.has(a.x+','+a.y))continue;
     while(a&&guard++<120){const q=visited.get(a.x+','+a.y);if(!q)break;const id=[a.x+','+a.y,q.x+','+q.y].sort().join(':');if(!used.has(id)){used.add(id);segments.push({x:(a.x+.5)*32,y:(a.y+.5)*32,px:(q.x+.5)*32,py:(q.y+.5)*32})}a=q}
    }
-   for(const s of segments){c.beginPath();c.moveTo(s.x-originX,s.y-originY);c.lineTo(s.px-originX,s.py-originY);c.strokeStyle='#7f81684a';c.lineWidth=15;c.stroke();c.strokeStyle='#aaa08350';c.lineWidth=7;c.stroke();c.strokeStyle='#beb08c20';c.lineWidth=2;c.stroke()}
+   // Stroke each full network once per width: translucent segment caps must
+   // not accumulate into bright circular knots at every tile junction.
+   c.beginPath();for(const s of segments){c.moveTo(s.x-originX,s.y-originY);c.lineTo(s.px-originX,s.py-originY)}
+   for(const [color,width] of [['#7f81684a',15],['#aaa08350',7],['#beb08c20',2]]){c.strokeStyle=color;c.lineWidth=width;c.stroke()}
   }
   const nearTrack=(wx,wy,r)=>segments.some(s=>{const dx=s.px-s.x,dy=s.py-s.y,t=Math.max(0,Math.min(1,((wx-s.x)*dx+(wy-s.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(wx-s.x-t*dx,wy-s.y-t*dy)<r});
   // Contact occlusion and soil shoulders are cached under real foundations.
