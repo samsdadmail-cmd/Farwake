@@ -25,8 +25,9 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
  expect(d.cachePixels).toBeLessThanOrEqual(1000000);expect(d.residentsRendered).toBe(0);
  expect(await page.evaluate(()=>FARWAKE_TEST.state.minute)).toBeGreaterThan(before.minute);
  expect(d.layout.dw/d.layout.dh).toBeCloseTo(d.layout.source.w/d.layout.source.h,3);
- // Every home part is inside the crop (roof/chimney through foundations).
- expect(d.layout.source.y).toBeLessThanOrEqual(400);expect(d.layout.source.y+d.layout.source.h).toBeGreaterThanOrEqual(920);
+ // Actual architecture bounds remain in view, even when surplus sky/ground crops.
+ expect(d.layout.house.left).toBeGreaterThanOrEqual(0);expect(d.layout.house.right).toBeLessThanOrEqual(viewport.width);
+ expect(d.layout.house.top).toBeGreaterThanOrEqual(0);expect(d.layout.house.bottom).toBeLessThanOrEqual(viewport.height);
  await page.locator('#homeinfo').click();await expect(page.locator('#homewho')).toHaveText('Nobody is inside');
  await page.locator('#homeinfo').click();
  await page.screenshot({path:info.outputPath('home-day-'+viewport.width+'.png')});
@@ -35,11 +36,9 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
   const c=document.querySelector('#homecanvas'),ctx=c.getContext('2d'),L=FARWAKE_TEST.homeDiagnostics.layout;
   return [110,L.h-110].map(y=>{const colours=new Set();for(let x=16;x<L.w-16;x+=3){const p=ctx.getImageData(Math.floor(x*L.d),Math.floor(y*L.d),1,1).data;colours.add([...p].join(','))}return colours.size});
  });expect(sceneDetail.every(n=>n>12)).toBe(true);
- expect(d.layout.x).toBeGreaterThanOrEqual(-.01);expect(d.layout.y).toBeGreaterThanOrEqual(-.01);
- expect(d.layout.x+d.layout.dw).toBeLessThanOrEqual(viewport.width+.01);
- expect(d.layout.y+d.layout.dh).toBeLessThanOrEqual(viewport.height+.01);
+ expect(d.layout.landscape||d.layout.dw>=viewport.width).toBe(true);
  await page.locator('#homeview').click();
- await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.view==='room'&&FARWAKE_TEST.homeDiagnostics.layout.view==='room');
+ await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.view==='room'&&FARWAKE_TEST.homeDiagnostics.layout?.view==='room');
  const close=await page.evaluate(()=>FARWAKE_TEST.homeDiagnostics);
  expect(close.layout.dw/d.layout.dw).toBeCloseTo(1.7,2);
  await page.locator('#homecanvas').press(viewport.width<viewport.height?'ArrowRight':'ArrowDown');
@@ -49,11 +48,12 @@ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,
   await page.mouse.move(viewport.width*.3,viewport.height*.5,{steps:5});await page.mouse.up();
  }
  await page.screenshot({path:info.outputPath('home-room-'+viewport.width+'.png')});
+ await page.waitForFunction(()=>!!FARWAKE_TEST.homeDiagnostics.layout);
  const moved=await page.evaluate(()=>FARWAKE_TEST.homeDiagnostics);
  expect(Math.abs(moved.panX)).toBeLessThanOrEqual(moved.layout.rangeX+.01);
  expect(Math.abs(moved.panY)).toBeLessThanOrEqual(moved.layout.rangeY+.01);
  await page.locator('#homeview').click();await expect(page.locator('#homeview')).toHaveAttribute('aria-pressed','false');
- await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.layout.view==='home');
+ await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.layout?.view==='home');
  expect(await page.evaluate(()=>FARWAKE_TEST.homeDiagnostics.panX)).toBe(0);
  expect(await page.evaluate(()=>FARWAKE_TEST.homeDiagnostics.panY)).toBe(0);
 
@@ -74,10 +74,10 @@ test('night lighting follows real sleeping occupants and grid state without save
  // Verify rendered pixels, rather than merely the lighting-state label. Mobile
  // WebKit may silently ignore CanvasRenderingContext2D.filter.
  const shade=await page.evaluate(async()=>{
-  const L=FARWAKE_TEST.homeDiagnostics.layout,im=new Image();im.src='/assets/home-composition/night.webp';await im.decode();
+  const L=FARWAKE_TEST.homeDiagnostics.layout,im=new Image();im.src='/assets/home-composition/portrait-night.webp';await im.decode();
   const sample=document.createElement('canvas');sample.width=sample.height=1;const c=sample.getContext('2d');
-  c.drawImage(im,384,820,1,1,0,0,1,1);const original=[...c.getImageData(0,0,1,1).data].slice(0,3).reduce((a,b)=>a+b,0);
-  const x=Math.floor((L.x+(384-L.source.x)/L.source.w*L.dw)*L.d),y=Math.floor((L.y+(820-L.source.y)/L.source.h*L.dh)*L.d);
+  c.drawImage(im,384,970,1,1,0,0,1,1);const original=[...c.getImageData(0,0,1,1).data].slice(0,3).reduce((a,b)=>a+b,0);
+  const x=Math.floor((L.x+(384-L.source.x)/L.source.w*L.dw)*L.d),y=Math.floor((L.y+(970-L.source.y)/L.source.h*L.dh)*L.d);
   const rendered=[...document.querySelector('#homecanvas').getContext('2d').getImageData(x,y,1,1).data].slice(0,3).reduce((a,b)=>a+b,0);
   return rendered/original;
  });expect(shade).toBeLessThan(.8);expect(shade).toBeGreaterThan(.3);
@@ -99,7 +99,7 @@ test('Day-58 imported colony presents whole home and navigable room at iPhone si
  await page.locator('[data-home-enter]').click();await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='inside');
  await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.cachePixels>0&&FARWAKE_TEST.homeDiagnostics.draws>2);
  await page.screenshot({path:info.outputPath('day58-whole-home-390.png')});
- await page.locator('#homeview').click();await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.layout.view==='room');
+ await page.locator('#homeview').click();await page.waitForFunction(()=>FARWAKE_TEST.homeDiagnostics.layout?.view==='room');
  await page.screenshot({path:info.outputPath('day58-room-centre-390.png')});
  await page.locator('#homecanvas').press('ArrowLeft');
  await page.screenshot({path:info.outputPath('day58-room-left-390.png')});

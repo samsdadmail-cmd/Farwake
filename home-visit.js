@@ -14,22 +14,26 @@ window.FarwakeHomeVisit = (() => {
   const durations=()=>api?.reduced()?{approach:0,cover:0,reveal:0,close:0,restore:0}:DUR;
   const building=()=>api.getState()?.buildings.find(b=>b.id===buildingId)||null;
   function sceneImage(kind){
-    if(!images[kind]){const im=new Image();im.onload=()=>{cacheKey=''};im.src=new URL('assets/home-composition/'+kind+'.webp',document.baseURI).href;images[kind]=im}
+    if(!images[kind]){const im=new Image();im.onload=()=>{cacheKey=''};im.src=new URL('assets/home-composition/portrait-'+kind+'.webp',document.baseURI).href;images[kind]=im}
     return images[kind];
   }
   function measure(){
     const w=root.clientWidth||innerWidth,h=root.clientHeight||innerHeight;
     const quality=api.quality(),limit=quality==='performance'?1:quality==='cinematic'?2:1.5;
     const d=Math.min(devicePixelRatio||1,limit,Math.sqrt(1000000/(w*h)));
-    // The complete roof-through-foundation composition remains in Home view.
-    // Room view is an explicit, reversible camera with bounded drag navigation.
-    const source={x:8,y:350,w:752,h:615};
-    const fit=Math.min(w/source.w,(h-12)/source.h),scale=fit*(view==='room'?1.7:1);
-    const dw=source.w*scale,dh=source.h*scale;
-    const rangeX=Math.max(0,(dw-w)/2),rangeY=Math.max(0,(dh-h)/2);
+    const landscape=w>h;
+    // Portrait is a continuous authored scene. Cover can trim only surplus
+    // sky/ground at shorter phone ratios; the complete house remains visible.
+    const source=landscape?{x:0,y:580,w:768,h:570}:{x:0,y:0,w:768,h:1660};
+    const fit=landscape?Math.min(w/source.w,(h-12)/source.h):Math.max(w/source.w,h/source.h);
+    const scale=fit*(view==='room'?1.7:1),dw=source.w*scale,dh=source.h*scale;
+    const rangeX=view==='room'?Math.max(0,(dw-w)/2):0;
+    const rangeY=view==='room'&&landscape?Math.max(0,(dh-h)/2):0;
     panX=Math.max(-rangeX,Math.min(rangeX,panX));panY=Math.max(-rangeY,Math.min(rangeY,panY));
-    return{w,h,d,pw:Math.round(w*d),ph:Math.round(h*d),source,
-      x:(w-dw)/2+panX,y:(h-dh)*.5+panY,dw,dh,view,rangeX,rangeY};
+    const x=(w-dw)/2+panX,y=(h-dh)*.5+panY;
+    const house={left:x+(16-source.x)/source.w*dw,right:x+(752-source.x)/source.w*dw,
+      top:y+(610-source.y)/source.h*dh,bottom:y+(1130-source.y)/source.h*dh};
+    return{w,h,d,pw:Math.round(w*d),ph:Math.round(h*d),source,x,y,dw,dh,view,rangeX,rangeY,house,landscape};
   }
   function invalidate(){layoutNow=null;cacheKey=''}
   function setView(next){
@@ -70,13 +74,21 @@ window.FarwakeHomeVisit = (() => {
     if(!cache)cache=document.createElement('canvas');
     if(cache.width!==L.pw||cache.height!==L.ph){cache.width=L.pw;cache.height=L.ph}
     const c=cache.getContext('2d',{alpha:false});c.setTransform(L.d,0,0,L.d,0,0);c.imageSmoothingEnabled=false;
-    // Three non-repeating regions of the same authored landscape. Each keeps
-    // its aspect ratio. Sky and near ground fill the phone; no flat padding,
-    // mirrored textures, stretched axes or duplicate houses are introduced.
-    const seam=Math.max(0,Math.min(L.h,L.y+L.dh*.52));
-    coverImage(c,im,{x:0,y:0,w:768,h:405},0,0,L.w,Math.max(1,seam+24));
-    coverImage(c,im,{x:0,y:965,w:768,h:187},0,seam,L.w,Math.max(1,L.h-seam));
-    homePlate(c,im,L);
+    if(!L.landscape){
+      const r=L.source;c.drawImage(im,r.x,r.y,r.w,r.h,L.x,L.y,L.dw,L.dh);
+    }else{
+      // Landscape keeps the complete house too. Wider exterior context comes
+      // from sky and near-ground regions, uniformly scaled, never repeated.
+      const seam=L.h*.52,blend=40,ground={x:0,y:1150,w:768,h:510};
+      coverImage(c,im,{x:0,y:0,w:768,h:570},0,0,L.w,seam+blend);
+      c.save();c.beginPath();c.rect(0,seam+blend,L.w,L.h);c.clip();
+      coverImage(c,im,ground,0,seam,L.w,L.h-seam);c.restore();
+      for(let i=0;i<10;i++){
+        c.save();c.beginPath();c.rect(0,seam+i*blend/10,L.w,blend/10+.2);c.clip();c.globalAlpha=(i+.5)/10;
+        coverImage(c,im,ground,0,seam,L.w,L.h-seam);c.restore();
+      }
+      homePlate(c,im,L);
+    }
     // Portable shadow wash: mobile WebKit can silently ignore canvas filters.
     const dim=light.night&&['empty','unpowered'].includes(light.mode)?.75:light.mode==='sleeping'?.44:0;
     if(dim){c.fillStyle='rgba(3,10,18,'+dim+')';c.fillRect(0,0,L.w,L.h)}
