@@ -111,3 +111,15 @@ edges; genuine night attendance; first replacement of the idle HUD. Retain real
 footprints, crops, routes, resources, saves, day/night and power. Demonstrate the
 same area at 390×844 by day/night and in a short uninterrupted 1× gameplay take.
 Stop for creative review before extending to further districts or biomes.
+
+
+### E3-A environmental direction accepted; integration refinement, 13 November 2026
+
+Kyle & Atlas approve the environmental art direction for continued development,
+but do not yet creatively approve its integration. Refine the existing atlas,
+root contact, habitat composition, negative space and travelled ground within the
+same neighbourhood. Investigate cold-bake and cached-draw spikes with repeated,
+separate measurements. Preserve all gameplay and saves. Present actual 390×844
+same-colony day/night, E2/E3 comparison and a contextual close view. E3-B remains
+held until environmental coherence and technical verification are established;
+no world-wide rollout or new asset catalogue is authorised by this refinement.
