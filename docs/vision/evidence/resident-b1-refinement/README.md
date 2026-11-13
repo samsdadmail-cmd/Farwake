@@ -35,14 +35,42 @@ sheet. Other building inspectors and facility management remain available.
 
 ## Evidence and verification
 
-Pending the branch's Chromium/WebKit workflow capture. The main additional take
-must show a naturally selected outdoor route, turns, arrival and an actual stop
-at ordinary 1x, with the supported 2.35x camera zoom. Search may advance normal
-simulation before capture; never grant tasks, routes, stock, attendance or rewards.
-A separate home-route take verifies map selection and direct entry.
+Source/capture commit: `205b8ac72a48eaef2769868c4f07fad1625aaee0`.
+Pinned ready preview: https://farwake-founders-21ttntqlu-atlas-8c31.vercel.app/
+[Chromium/WebKit workflow](https://github.com/samsdadmail-cmd/Farwake/actions/runs/43474466803): **74 passed** in 4.4 minutes, including both new genuine routes.
+
+- `aya-walk-turn-stop.mp4`: **11.20 seconds**, 390×844, normal 1× simulation
+  and playback, supported 2.35× camera zoom. Aya follows a naturally selected
+  Day-58 `life_quiet` route near home #7, with three turns, then really stops.
+  Only the first 1.40 seconds of import/search/framing setup and the last 0.44
+  seconds of the 13.04-second Chromium browser recording are omitted. No
+  mid-take cuts, reordered frames, overlays, time scaling or route/task grants.
+- `aya-stopped-390.png`: actual authored standing pose after arrival, still in
+  the genuine settling phase. Her visible thought is produced by the simulation.
+- `aya-outdoor-stop-state.json`: route and per-frame presentation samples;
+  destination is (22.5, 32.5), final walking=false with negligible residual speed.
+- `home-direct-entry-390.png`: actual map selection card, with direct Enter home
+  and separate Manage action. No management sheet is required.
+- `aya-home-route-state.json`: separate genuine Day-63 home-route evidence;
+  the browser test taps the real map and direct entry button. Interior attendance
+  and seated reading are genuine; there is no invented indoor walk.
+
+The original browser videos, both engines' screenshots and state samples remain
+in workflow artifact `home-composition-evidence` (ID `14062681498`). Source ZIP
+SHA-256: `2fc85981da3dfab78313e175b46bbc6cfb532ba0279bb35df3447353b784760c`.
+All captures import the same unmodified historical Day-58 fixture through the
+normal UI. Pre-take scene search advances normal simulation only. All movement,
+attendance and activity after the take begins run normally at 1×.
+
+Visual inspection of the actual captured frame sequences shows clearer alternating
+contacts, continuous turns and stable idle after arrival. The cycle is still
+sparse and stylised; no claim of perfect foot locking or final creative approval.
+A separate live cloud-browser check imported a review copy and confirmed map tap
+→ compact home card → Enter home → genuine seated Aya without opening Manage.
 
 Local build parity, content reachability, save migration/recovery, housing,
-resident identity/attendance and 30/60Hz gait/stop checks pass. Local Chromium
+resident identity/attendance and 30/60Hz gait/stop checks pass. The corresponding
+CI build/save and browser gates pass too. Local Chromium
 cannot launch because the execution environment blocks Unix-domain sockets;
 use CI browser results rather than claiming a local visual pass.
 
