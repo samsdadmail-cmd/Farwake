@@ -12,7 +12,7 @@ of objects to enlarge and paste into a phone.
 | Home | One complete shelter diorama: roof, walls, both bunks, chairs/table, desk, stove, foundation and alien surroundings. No repeated floor or axis stretching. |
 | Composition | Portrait keeps the complete house. Landscape can trim surplus sky/foreground, never the building or furniture. Negative space must establish the surrounding world. |
 | Art source | Paired 768×1152 WebP composition assets, nearest-neighbour sampling. Do not generate a new style for each object. |
-| Characters, checkpoint B | Authored sprite sheet; proposed 20–24 source-pixel bodies, founder coat/hair/skin/role identity, standing/seated/bed poses; establish final scale against the accepted furniture before rollout. |
+| Characters, checkpoint B | Authored sprite sheet; proposed 72–96 source-pixel standing bodies against the revised high-resolution room art, founder coat/hair/skin/role identity, standing/seated/bed poses; establish final scale against the accepted furniture before rollout. |
 | Perspective | Interior front cutaway with shallow floor depth, coherent with the furnished reference; building shell and exterior scene share that viewpoint. |
 | Palette | Cold slate/blue/teal surroundings; lichen/stone vegetation; worn timber, ceramic, fabric and restrained warm lamplight. Avoid luxury dashboard gold. |
 | Lighting | Read real time, weather, actual indoor occupancy, sleeping/awake state and available grid power. Warm occupied homes contrast with cold outside. No fabricated fire/fuel/smoke state. |
