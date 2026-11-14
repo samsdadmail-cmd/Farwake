@@ -271,11 +271,11 @@ window.FarwakeLandscape = (() => {
     const evening=state.minute>720;
     c.save();
     const authored=window.FarwakeArchitecture?.atmosphere(c,w,h,state);
-    const sky=c.createLinearGradient(evening?w:0,0,evening?0:w,h);
+    if(!authored){const sky=c.createLinearGradient(evening?w:0,0,evening?0:w,h);
     sky.addColorStop(0,'rgba(255,176,98,'+(.06+.31*amber)+')');
     sky.addColorStop(.55,'rgba(226,206,146,'+(.025+.09*amber)+')');
     sky.addColorStop(1,'rgba(68,96,110,.12)');
-    if(!authored)box(c,0,0,w,h,sky);
+    box(c,0,0,w,h,sky);}
     if(dark>.01){
       if(!authored)box(c,0,0,w,h,'rgba(17,31,58,'+dark*.59+')');
       c.globalCompositeOperation='screen';

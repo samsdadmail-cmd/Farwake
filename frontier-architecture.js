@@ -2,8 +2,8 @@
 // are read-only; the existing neighbourhood owns selection, routes and placement.
 window.FarwakeArchitecture=(()=>{
  'use strict';
- const enabledTypes=new Set(['shelter','cabin','sawmill']); // Inspect this pilot before the district extension.
- const base=new Map(),shadows=new Map(),spills=new Map(),washes=new Map();
+ const enabledTypes=new Set(['shelter','cabin','sawmill','workshop','dining','solar','wind','garden','camp','supplies','lander']); // Same bounded E2/E3-A district.
+ const base=new Map(),shadows=new Map(),spills=new Map(),washes=new Map(),rotors=new Map();
  const homePanes=[[[10,40,12,5],[34,42,12,5],[71,42,10,5]],[[68,41,11,5],[39,40,10,5]],[[13,42,18,5]],[[17,41,12,5],[60,41,14,5]]];
  const panes={cabin:[[17,44,15,7],[65,44,14,7]],sawmill:[[12,42,18,7]],workshop:[[54,42,16,7]],dining:[[18,59,13,9],[38,59,13,9],[78,59,13,9],[98,59,13,9]],camp:[[79,38,6,8]],lander:[[35,36,25,5]]};
  let state=null,members=[],lights=new Map(),layout='',tone=null,toneKey='',toneBakes=0;
@@ -15,8 +15,8 @@ window.FarwakeArchitecture=(()=>{
  const windowFor=b=>b.type==='shelter'?homePanes[Math.abs(b.id)%4]:(panes[b.type]||[]);
  const matches=b=>members.includes(b);
  function prepare(s,grid,nearby,stamp){
-  state=s;members=nearby.filter(b=>enabledTypes.has(b.type));
-  if(layout!==stamp){layout=stamp;spills.clear()}
+  const replaced=state!==s;state=s;members=nearby.filter(b=>enabledTypes.has(b.type));
+  if(replaced||layout!==stamp){layout=stamp;spills.clear();lights.clear()}
   const people=new Map();for(const p of s.colonists){const v=p.visit;if(v?.stage!=='inside'||p.task?.type!==v.job)continue;let a=people.get(v.building);if(!a){a=[];people.set(v.building,a)}a.push(p)}
   // Local electrical light gradually becomes visible at actual dusk/dawn.
   const m=s.minute,exposure=m>720?clamp((m-1040)/100):1-clamp((m-300)/100);
@@ -89,7 +89,7 @@ window.FarwakeArchitecture=(()=>{
     // A raised, practical roof monitor and the existing fixed saw bench.
     B(22,7,28,9,'#2c4550');B(23,6,26,2,'#a8b5a6');for(let x=25;x<48;x+=5){B(x,10,3,3,'#709092');B(x,13,3,1,'#344e55')}
     B(13,49,30,8,'#2b4548');B(14,49,28,2,'#b0a07b');B(15,51,2,6,'#728678');B(38,51,2,6,'#728678');
-    for(let i=0;i<11;i++)B(24+i,44+Math.abs(5-i)*.6,1,6-Math.abs(5-i)*.4,i%2?'#c0c1aa':'#7c9595');B(21,51,19,1,'#3b555b');
+    for(let i=0;i<11;i++)B(32+i,44+Math.abs(5-i)*.6,1,6-Math.abs(5-i)*.4,i%2?'#c0c1aa':'#7c9595');B(21,51,19,1,'#3b555b');
    }
    if(b.type==='workshop'){B(w-35,9,21,10,'#2a424c');for(let x=w-33;x<w-16;x+=4)B(x,11,2,5,'#7a9291');B(w-36,18,23,2,'#acb6a4')}
    if(b.type==='dining'){
@@ -99,26 +99,42 @@ window.FarwakeArchitecture=(()=>{
    for(const p of windowFor(b))window(...p);entrance();
   }else{
    // Retained functional silhouettes; structural surface details only.
-   FarwakeBuildings.draw(c,b.type,0,0,w,h,false,b);
+   if(b.type==='wind'){
+    B(15,52,37,8,'#344f51');B(17,52,33,2,'#9caa9e');
+    P('#283f48',[[24,25],[33,25],[38,53],[21,53]]);P('#6d8990',[[26,26],[30,26],[33,52],[23,52]]);B(27,29,2,22,'#b0bbb0');for(let y=34;y<51;y+=5)B(25,y,7,1,'#3e5e67');
+    B(22,21,15,10,'#243d48');B(23,22,13,7,'#8ca3a1');B(25,23,7,1,'#d6d0af');
+   }else if(b.type==='garden'){
+    // Bare beds only: drawProduction owns every real crop stage.
+    for(let row=0;row<3;row++){const y=6+row*18;B(6,y,72,14,'#2d4340');B(7,y,70,2,'#b6a47d');B(8,y+2,68,11,'#604e3c');B(7,y+13,70,1,'#96a58d')}
+    B(81,16,11,24,'#29464f');B(82,16,9,2,'#b5b9a2');B(82,19,9,17,'#648889');for(let y=22;y<36;y+=5)B(83,y,7,1,'#9ab2ab');B(78,38,3,17,'#8ba4a0');
+   }else{
+    FarwakeBuildings.draw(c,b.type,0,0,w,h,false,b);c.globalCompositeOperation='source-atop';B(0,0,w,h,'#48676b24');c.globalCompositeOperation='source-over';
+   }
    if(b.type==='solar'){for(const y of [8,35]){B(5,y+19,w-10,2,'#283f4b');for(let x=8;x<w-7;x+=7){B(x,y,1,17,'#9bafab80');B(x+1,y+13,4,1,'#71919b60')}}B(26,58,14,2,'#879c8f')}
    if(b.type==='wind'){B(17,53,34,3,'#829688');for(const x of [19,45]){B(x,54,2,2,'#c3c1a0');B(x+1,55,1,1,'#3c5c5a')}B(38,45,14,9,'#344f59');B(39,46,12,2,'#a1b1a2');for(let x=41;x<50;x+=3)B(x,50,1,3,'#79948b')}
-   if(b.type==='camp'){for(let x=13;x<72;x+=11){B(x,30,1,15,'#52635e65');B(x,46,3,1,'#b9ad86')}B(70,33,3,17,'#64786e')}
-   if(b.type==='supplies'){for(const [x,y] of [[5,13],[33,13],[5,38],[33,38]]){B(x,y,22,1,'#c2b38a');B(x+3,y+2,2,17,'#475c5d');B(x+17,y+2,2,17,'#475c5d');B(x+4,y+17,14,1,'#a39874')} }
+   if(b.type==='camp'){for(const [x,y] of [[4,11],[48,23]])for(let k=0;k<15;k+=3){B(x+12+k,y+10+k*.5,2,1,'#c3b693');B(x+20+k*.4,y+12+k,1,2,'#746f5960')}}
+   if(b.type==='supplies'){for(const [x,y,ww,hh] of [[10,12,21,15],[32,14,19,14],[23,31,25,16],[44,43,15,12]]){B(x+1,y,ww-2,1,'#b4b397');B(x+3,y+2,2,hh-3,'#476267');B(x+ww-5,y+2,2,hh-3,'#476267');B(x+4,y+hh-2,ww-8,1,'#9d9e81')}}
    if(b.type==='lander'){B(30,28,36,1,'#a9b9ae');for(const x of [24,69])for(let y=34;y<59;y+=5)B(x,y,2,2,'#819d99');B(36,51,25,2,'#314f58');B(34,77,29,3,'#9aa58e')}
    if(b.type==='garden'){for(let y=7;y<58;y+=18){B(6,y,73,1,'#b4a581');B(8,y+12,70,1,'#293f38')}B(82,17,10,1,'#b2bca6')}
   }
   base.set(key,im);return im;
  }
+ function rotor(frame){
+  if(rotors.has(frame))return rotors.get(frame);const im=canvas(54,54),c=im.getContext('2d');
+  for(let i=0;i<3;i++){const a=frame*Math.PI/8+i*Math.PI*2/3,point=(r,side)=>[27+Math.cos(a)*r-Math.sin(a)*side,27+Math.sin(a)*r+Math.cos(a)*side];poly(c,'#b8c9c3',[point(1,-2),point(23,-1),point(24,2),point(8,3)]);poly(c,'#7e9da5',[point(1,-2),point(23,-1),point(21,0),point(5,1)])}
+  box(c,24,24,7,7,'#243f4a');box(c,26,26,3,3,'#c5bea0');rotors.set(frame,im);return im;
+ }
  function draw(c,b,d){
   if(!matches(b))return false;
   c.save();c.translate(b.x*32,b.y*32);c.imageSmoothingEnabled=false;c.drawImage(plate(b),0,0);FarwakeHearth.history(c,b);
+  if(b.type==='wind'){const active=!b.editOrder&&!b.production?.paused,phase=FieldPreferences.reduced||!active?0:Math.floor(state.minute*(state.weather==='wind'?2.2:1.3)+Number(b.id))%16;c.drawImage(rotor(phase),2,0)}
   const p=FarwakeBuildings.entrance(b);
   if(p&&d.openness>.01){box(c,p.x,p.y,p.w,p.h,'#243e43');const f=1-clamp(d.openness);if(p.kind==='roller')box(c,p.x,p.y,p.w,Math.ceil(p.h*f),'#788c84');else if(p.kind==='split'){const q=Math.ceil(p.w*f/2);box(c,p.x,p.y,q,p.h,'#788c84');box(c,p.x+p.w-q,p.y,q,p.h,'#788c84')}else box(c,p.x,p.y,Math.ceil(p.w*f),p.h,'#788c84')}
   c.restore();return true;
  }
  function shadow(c,b,minute){
   if(!matches(b))return false;const key=keyFor(b);
-  if(!shadows.has(key)){const p=plate(b),im=canvas(p.width,p.height),g=im.getContext('2d');g.drawImage(p,0,0);g.globalCompositeOperation='source-in';box(g,0,0,p.width,p.height,'#16313a');shadows.set(key,im)}
+  if(!shadows.has(key)){const p=plate(b),im=canvas(p.width,p.height),g=im.getContext('2d');g.drawImage(p,0,0);if(b.type==='wind')g.drawImage(rotor(0),2,0);g.globalCompositeOperation='source-in';box(g,0,0,p.width,p.height,'#16313a');shadows.set(key,im)}
   const sun=Math.max(0,Math.sin((minute-360)*Math.PI/720));c.save();
   // Contact stays short at night; directional cast belongs to the actual sun.
   c.translate(b.x*32,(b.y+b.h)*32);c.transform(1,0,-Math.cos((minute-360)*Math.PI/720)*.3,sun>.03?.46:.12,0,2);c.globalAlpha=sun>.03?.28:.23;c.drawImage(shadows.get(key),0,-b.h*32);c.restore();return true;
@@ -129,7 +145,7 @@ window.FarwakeArchitecture=(()=>{
   // Sources project from actual panes onto their own wall/ground; neighbouring
   // building footprints clip the cached ground falloff rather than glowing roofs.
   for(const [x,y,ww,hh] of windowFor(b)){
-   const g=c.createRadialGradient(pad+x+ww/2,h-3,1,pad+x+ww/2,h-3,32);g.addColorStop(0,'#e9b87850');g.addColorStop(.45,'#cba26927');g.addColorStop(1,'#ac936000');c.save();c.translate(0,h-3);c.scale(1,.48);c.translate(0,-h+3);c.fillStyle=g;c.fillRect(pad+x+ww/2-33,h-36,66,72);c.restore();
+   c.save();c.translate(0,h-3);c.scale(1,.48);c.translate(0,-h+3);const g=c.createRadialGradient(pad+x+ww/2,h-3,1,pad+x+ww/2,h-3,32);g.addColorStop(0,'#e9b87850');g.addColorStop(.45,'#cba26927');g.addColorStop(1,'#ac936000');c.fillStyle=g;c.fillRect(pad+x+ww/2-33,h-36,66,72);c.restore();
   }
   // Clear the wall/roof; wall wash is a separate, narrowly bounded cached layer.
   c.clearRect(0,0,im.width,h-3);
@@ -148,8 +164,13 @@ window.FarwakeArchitecture=(()=>{
    if(x+w+40*camera.z<0||x-40*camera.z>c.canvas?.width||y+h+38*camera.z<0||y>c.canvas?.height)continue;
    c.globalAlpha=l.strength;c.drawImage(wash(b),x,y,w,h);const im=spill(b);c.drawImage(im,x-40*camera.z,y,im.width*camera.z,im.height*camera.z);
    for(const [xx,yy,ww,hh] of windowFor(b)){
-    box(c,sx(b.x*32+xx),sy(b.y*32+yy),ww*camera.z,hh*camera.z,'#f6c78c');box(c,sx(b.x*32+xx+1),sy(b.y*32+yy),Math.max(1,ww-2)*camera.z,camera.z,'#ffedbd');
-    box(c,sx(b.x*32+xx+ww*.5),sy(b.y*32+yy),camera.z,hh*camera.z,'#6b6643');
+    // Leave the structural mullion and curtain edges unlit; screen blending a
+    // dark stripe over a bright pane cannot restore a dark window divider.
+    const mid=Math.floor(ww/2);
+    for(const [offset,width] of [[1,mid-1],[mid+1,ww-mid-2]])if(width>0){
+     box(c,sx(b.x*32+xx+offset),sy(b.y*32+yy+1),width*camera.z,(hh-1)*camera.z,'#efb979');
+     box(c,sx(b.x*32+xx+offset),sy(b.y*32+yy+1),width*camera.z,camera.z,'#ffe0a5');
+    }
    }
    const d=FarwakeDoors.state(b),p=FarwakeBuildings.entrance(b);
    if(p){if(d.openness>.02){c.globalAlpha=l.strength*d.openness;box(c,sx(b.x*32+p.x),sy(b.y*32+p.y),p.w*camera.z,p.h*camera.z,'#d8a66f')}
@@ -163,5 +184,5 @@ window.FarwakeArchitecture=(()=>{
    if(night){p.fillStyle='rgba(12,25,47,'+night*.66+')';p.fillRect(0,0,128,128)}toneKey=key;toneBakes++;
   }c.drawImage(tone,0,0,w,h);return true;
  }
- return{prepare,matches,draw,shadow,screenLight,atmosphere,lightFor:b=>lights.get(b),diagnostics:()=>({buildings:members.map(b=>({id:b.id,type:b.type,...lights.get(b)})),basePlates:base.size,spillPlates:spills.size,washPlates:washes.size,shadowPlates:shadows.size,toneBakes,cachePixels:[...base.values(),...spills.values(),...washes.values(),...shadows.values()].reduce((n,c)=>n+c.width*c.height,0)})};
+ return{prepare,matches,draw,shadow,screenLight,atmosphere,lightFor:b=>lights.get(b),diagnostics:()=>({buildings:members.map(b=>({id:b.id,type:b.type,...lights.get(b)})),basePlates:base.size,spillPlates:spills.size,washPlates:washes.size,shadowPlates:shadows.size,rotorPlates:rotors.size,toneBakes,cachePixels:[...base.values(),...spills.values(),...washes.values(),...shadows.values(),...rotors.values()].reduce((n,c)=>n+c.width*c.height,0)})};
 })();
