@@ -3,7 +3,9 @@ window.FarwakeEnvironment=(()=>{
  'use strict';
  const SIZE=704,HALF=SIZE/2,STEP=2,N=SIZE/STEP,COLS=SIZE/8+1;
  const atlas=new Image();atlas.src='assets/frontier-e3/flora-atlas.png';
- let revision=0;atlas.onload=()=>revision++;
+ // This immutable atlas is already drawable when complete/naturalWidth are true.
+ // A later load event must not invalidate a surface just baked from those pixels.
+ const revision=1;
  let mapRef=null,key='',surface=null,originX=0,originY=0,visible=false;
  let waterMarks=[],sway=[],bakes=0,lastBakeMs=0,maxBakeMs=0,phases={},plantCount=0,clusterCount=0,trackCount=0;
  let spriteAtlas=null;

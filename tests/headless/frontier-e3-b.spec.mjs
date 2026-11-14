@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {writeFile} from 'node:fs/promises';
+import {writeFile,readFile} from 'node:fs/promises';
 test.use({viewport:{width:390,height:844},video:{mode:'on',size:{width:390,height:844}}});
 async function colony(page){
  await page.goto('/index.html?review=1');page.on('dialog',d=>d.accept());
@@ -60,4 +60,28 @@ test('E3-B uninterrupted real neighbourhood activity and normal live CPU draw sa
  const moved=start.people.filter(p=>samples.some(q=>{const v=q.people.find(q=>q.id===p.id);return Math.hypot(v.x-p.x,v.y-p.y)>1}));expect(moved.length).toBeGreaterThan(0);expect(errors).toEqual([]);
  await page.screenshot({path:info.outputPath('e3-b-activity-end-390.png')});
  await writeFile(info.outputPath('e3-b-take.json'),JSON.stringify({testWallStart,takeStart,takeEnd,start,samples,movedIds:moved.map(p=>p.id),profile,errors,note:'Normal unchanged game loop at 1×. No assigned tasks, routes, residents or resource grants. CPU draw regions exclude GPU completion; callback gaps include real simulation/UI/browser scheduling. Desktop CI is not physical iPhone verification.'},null,2));
+});
+
+
+test('E3-B WebKit baseline comparison of ordinary frame scheduling',async({browser},info)=>{
+ if(info.project.name!=='webkit')test.skip(true,'The observed callback-gap concern is WebKit-specific.');test.setTimeout(150000);
+ const oldNeighbourhood=await readFile('tests/fixtures/e3-a-neighbourhood.js','utf8'),oldLandscape=await readFile('tests/fixtures/e3-a-landscape.js','utf8'),reports=[];
+ for(const version of ['E3-A','E3-B']){
+  const context=await browser.newContext({baseURL:'http://127.0.0.1:4173',viewport:{width:390,height:844}}),p=await context.newPage();
+  try{
+   await colony(p);
+   if(version==='E3-A'){await p.evaluate(()=>window.FarwakeArchitecture=undefined);await p.addScriptTag({content:oldNeighbourhood});await p.addScriptTag({content:oldLandscape});await p.evaluate(()=>{FarwakeLandscape.configure(FARWAKE_TEST.settings.preset,FieldPreferences.reduced);FARWAKE_TEST.draw(performance.now())})}
+   await p.waitForTimeout(500);
+   reports.push(await p.evaluate(()=>new Promise(resolve=>{
+    const g=FARWAKE_TEST,times=[],gaps=[];let last=0,start=0;
+    const original=FarwakeNeighbourhood.prepare,finish=FarwakeMoments.draw;
+    FarwakeNeighbourhood.prepare=function(...args){const t=performance.now();if(last)gaps.push(t-last);last=t;start=t;return original.apply(this,args)};
+    FarwakeMoments.draw=function(...args){const r=finish.apply(this,args);times.push(performance.now()-start);return r};
+    const initial=FarwakeEnvironment.diagnostics(),camera={...g.camera};document.querySelector('#pause').click();
+    setTimeout(()=>{document.querySelector('#pause').click();FarwakeNeighbourhood.prepare=original;FarwakeMoments.draw=finish;const stats=a=>{a.sort((a,b)=>a-b);return{n:a.length,median:a[Math.floor(a.length*.5)],p95:a[Math.floor(a.length*.95)],max:a.at(-1)}};resolve({draw:stats(times),callbackGap:stats(gaps),initialEnvironment:initial,environment:FarwakeEnvironment.diagnostics(),health:g.healthSnapshot(),camera,day:g.state.day,minute:g.state.minute})},14000);
+   })));
+  }finally{await context.close()}
+ }
+ for(const r of reports){expect(r.health.saveProtection).toBe(false);expect(r.environment.bakes).toBe(r.initialEnvironment.bakes);expect(r.draw.n).toBeGreaterThan(120)}
+ await writeFile(info.outputPath('e3-b-webkit-baseline.json'),JSON.stringify({sourceBaseline:'de1829df9395ef09af4ff21faa748a00790cba47',note:'One fresh isolated 14-second ordinary-loop sample per version in desktop WebKit, same historical save/camera. E3-A exact neighbourhood and landscape are injected for its sample; E3-B is the normal build. No task/resource/occupancy grants. Host variance and GPU completion are not controlled; this investigates callback gaps, not physical iPhone performance.',versions:['E3-A','E3-B'],reports},null,2));
 });
