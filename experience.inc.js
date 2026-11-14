@@ -28,4 +28,4 @@ function experienceReadouts(){
  if(!$('sheetbg').classList.contains('open'))return;
  for(const row of $('sheet').querySelectorAll('[data-action="crew"]')){const p=S.colonists.find(p=>p.id===+row.dataset.id);if(!p)continue;const sub=row.querySelector('.sub');if(sub&&sheetSection==='crew')sub.textContent=p.role+' · '+taskLabel(p)}
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!window.FarwakeHomeVisit||FarwakeHomeVisit.phase()==='idle'))closeSheet()});

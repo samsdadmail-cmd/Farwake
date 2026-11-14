@@ -122,6 +122,7 @@ window.FarwakeMoments = (() => {
   }
 
   function draw(c,s,width,height,sx,sy,zoom) {
+    if(window.FarwakeHUD){FarwakeHUD.moment(c,s,width,height,sx,sy,zoom,active,currentPose,elapsed);return;}
     if(!active)return;
     const p=s.colonists.find(person=>person.id===active.id);
     if(!p)return;

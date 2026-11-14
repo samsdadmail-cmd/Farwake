@@ -20,15 +20,20 @@ window.FarwakePeople = (() => {
     v.reduced=!!options.reduced;v.leisure=options.life;const settled=options.life&&!['waiting','greeting','settling','goodbye','finishing'].includes(options.life.phase);v.settle=(v.settle||0)+((settled?1:0)-(v.settle||0))*(v.reduced?1:1-Math.exp(-dt*7));
     const blend=1-Math.exp(-dt*23*Math.sqrt(speed||1));
     const dx=x-v.x,dy=y-v.y,dist=Math.hypot(dx,dy);
-    if(dist>2){v.x=x;v.y=y;v.walk=0;return v}
+    if(dist>2){v.x=x;v.y=y;v.walk=0;v.travelSpeed=0;return v}
     const moved=dist*blend;
+    // Actual damped presentation speed, including the final approach to rest.
+    // Kept outside save state; authored locomotion must not use lingering blend
+    // strength as evidence that a stationary person is still taking steps.
+    v.travelSpeed=moved/dt;
     v.x+=dx*blend;v.y+=dy*blend;
     const strength=Math.min(1,moved/Math.max(.001,dt)/(1.15*(speed||1)));
     v.walk+=(strength-v.walk)*(1-Math.exp(-dt*15));
     if(dist>.015)v.dir=face(dx,dy);else if(options.life?.look)v.dir=face(options.life.look.x-p.x,options.life.look.y-p.y);
     const phase=v.phase;
     v.phase+=moved*(p.carry?8.8:8);
-    if(v.walk>.17&&Math.floor(phase/Math.PI)!==Math.floor(v.phase/Math.PI))options.onSound?.('step',p);
+    const stepRate=window.FarwakeHomeResident?.identity(p) ? .75 : 1;
+    if(v.walk>.17&&Math.floor(phase*stepRate/Math.PI)!==Math.floor(v.phase*stepRate/Math.PI))options.onSound?.('step',p);
     if(v.held!==!!p.carry){
       if(p.carry){v.lift=1;v.carry=p.carry.kind;v.drop=0}
       else v.drop=1;
@@ -184,6 +189,7 @@ window.FarwakePeople = (() => {
   // sequence; changing the camera or skipping frames cannot advance a meeting.
   function draw(ctx,p,tileSize,time,selected,zoom){
     const v=pose(p),life=v.leisure,arrived=!p.path?.length;
+    if(window.FarwakeHomeResident?.drawWorld(ctx,p,v,tileSize,selected))return;
     const need=arrived&&['eat','rest','social'].includes(p.task?.type);
     if(!life&&!need){drawClassic(ctx,p,tileSize,time,selected,zoom);return}
     const kind=life?.kind||(p.task.type==='eat'?'eating':p.task.type==='rest'?'resting':'conversation');

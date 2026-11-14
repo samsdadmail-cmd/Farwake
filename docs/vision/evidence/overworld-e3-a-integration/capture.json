@@ -1,0 +1,17 @@
+{
+  "source": "4d2a494f7a6383f8687ab52692e9857d8be61001",
+  "run": "43514076150",
+  "artifact": "14079972022",
+  "digest": "7435a7c810bf173e5478075c366395e54637bf4661ce7936d27e3367ee1c72a6",
+  "preview": "https://farwake-founders-9hwki9quz-atlas-8c31.vercel.app/",
+  "overviewCamera": {
+    "x": 825.6,
+    "y": 1008,
+    "z": 1
+  },
+  "closeCamera": {
+    "x": 820,
+    "y": 1100,
+    "z": 1.6
+  }
+}

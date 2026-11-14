@@ -1,0 +1,371 @@
+{
+  "daylight": {
+    "day": 58,
+    "minute": 700.3037299992378,
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "district": {
+      "home": 7,
+      "radius": 9.5,
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0
+        }
+      ],
+      "plates": 10,
+      "groundPixels": 0,
+      "rotors": 8
+    },
+    "grid": {
+      "supply": 61,
+      "used": 51,
+      "generation": 61,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    }
+  },
+  "evening": {
+    "day": 58,
+    "minute": 1239.3937299994589,
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 52,
+      "used": 51,
+      "generation": 52,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "district": {
+      "home": 7,
+      "radius": 9.5,
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "awake",
+          "strength": 1
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "awake",
+          "strength": 1
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0
+        }
+      ],
+      "plates": 20,
+      "groundPixels": 0,
+      "rotors": 11
+    },
+    "attendance": [
+      {
+        "id": 3,
+        "name": "Mira Solis",
+        "task": {
+          "type": "life_home",
+          "id": 7,
+          "x": 21,
+          "y": 30,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "visit": {
+          "building": 7,
+          "x": 22.40625,
+          "y": 31.6875,
+          "streetX": 22.5,
+          "streetY": 32.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Ari Vale",
+        "task": {
+          "type": "life_home",
+          "id": 55,
+          "x": 29,
+          "y": 32,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "visit": {
+          "building": 55,
+          "x": 30.5,
+          "y": 33.75,
+          "streetX": 30.5,
+          "streetY": 34.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      }
+    ]
+  },
+  "ui": [
+    {
+      "name": "Resume simulation",
+      "x": 246,
+      "y": 7,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "Simulation speed",
+      "x": 290,
+      "y": 7,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "Open more options",
+      "x": 334,
+      "y": 7,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "FOOD 164, open inventory",
+      "x": 14,
+      "y": 52,
+      "w": 77.96875,
+      "h": 44
+    },
+    {
+      "name": "WOOD 254, open inventory",
+      "x": 98.96875,
+      "y": 52,
+      "w": 77.96875,
+      "h": 44
+    },
+    {
+      "name": "POWER 10, open inventory",
+      "x": 183.9375,
+      "y": 52,
+      "w": 77.046875,
+      "h": 44
+    },
+    {
+      "name": "View all resources",
+      "x": 267.984375,
+      "y": 52,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "Open Build",
+      "x": 48,
+      "y": 779,
+      "w": 72,
+      "h": 54
+    },
+    {
+      "name": "Open People",
+      "x": 122,
+      "y": 779,
+      "w": 72,
+      "h": 54
+    },
+    {
+      "name": "Open Command",
+      "x": 196,
+      "y": 779,
+      "w": 72,
+      "h": 54
+    },
+    {
+      "name": "Open Research",
+      "x": 270,
+      "y": 779,
+      "w": 72,
+      "h": 54
+    },
+    {
+      "name": "Zoom in",
+      "x": 337,
+      "y": 110,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "Zoom out",
+      "x": 337,
+      "y": 154,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "Return to landing",
+      "x": 337,
+      "y": 198,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "name": "DEEP FRONTIERA second horizon awaits",
+      "x": 14,
+      "y": 680,
+      "w": 121.4375,
+      "h": 44
+    },
+    {
+      "name": "Game and Save",
+      "x": 251.4375,
+      "y": 722,
+      "w": 124.5625,
+      "h": 44
+    }
+  ],
+  "errors": []
+}

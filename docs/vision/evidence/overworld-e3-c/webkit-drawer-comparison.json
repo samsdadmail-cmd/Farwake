@@ -1,0 +1,410 @@
+{
+  "baseline": "f9c2f4b3524adab48612c29941d45f31d2ff0ffc",
+  "note": "One 30-second 1× take per version in fresh desktop WebKit contexts, same original Day-58 save and evening start/camera. Original E3-B HTML/CSS/Moments are intercepted from exact retained source, with the same unchanged game/render assets. Both record video; neither takes screenshots or samples resident snapshots during collection. Actual People/resources open/close controls at matching intervals. Steady portion begins after 15 seconds. Host variation, random existing dialogue and GPU completion are uncontrolled. This is an investigation, not physical iPhone or full-frame verification.",
+  "reports": [
+    {
+      "version": "E3-B",
+      "start": {
+        "env": {
+          "bakes": 1,
+          "lastBakeMs": 103,
+          "maxBakeMs": 103,
+          "phases": {
+            "sprites": 43,
+            "routes": 6,
+            "lattice": 14,
+            "raster": 35,
+            "composition": 5
+          },
+          "pixels": 495616,
+          "latticeSamples": 7921,
+          "plants": 69,
+          "clusters": 44,
+          "trackSegments": 53,
+          "waterMarks": 17,
+          "sway": 14,
+          "atlasReady": true
+        },
+        "day": 58,
+        "minute": 1236.0571999994545
+      },
+      "profile": {
+        "draw": {
+          "n": 1234,
+          "median": 1,
+          "p95": 2,
+          "max": 163
+        },
+        "callbackGap": {
+          "n": 1233,
+          "median": 24,
+          "p95": 31,
+          "max": 352
+        },
+        "steady": {
+          "draw": {
+            "n": 672,
+            "median": 1,
+            "p95": 2,
+            "max": 3
+          },
+          "callbackGap": {
+            "n": 672,
+            "median": 24,
+            "p95": 30,
+            "max": 71
+          }
+        },
+        "slow": [
+          {
+            "gap": 89,
+            "msIntoTake": 298,
+            "minute": 1237.104999999455,
+            "sheet": false
+          },
+          {
+            "gap": 352,
+            "msIntoTake": 1280,
+            "minute": 1239.2749999994555,
+            "sheet": false
+          },
+          {
+            "gap": 44,
+            "msIntoTake": 2489,
+            "minute": 1243.0197999994548,
+            "sheet": false
+          },
+          {
+            "gap": 69,
+            "msIntoTake": 4252,
+            "minute": 1248.485099999455,
+            "sheet": true
+          },
+          {
+            "gap": 333,
+            "msIntoTake": 4585,
+            "minute": 1248.7020999994552,
+            "sheet": true
+          },
+          {
+            "gap": 86,
+            "msIntoTake": 4671,
+            "minute": 1248.9190999994553,
+            "sheet": true
+          },
+          {
+            "gap": 105,
+            "msIntoTake": 11948,
+            "minute": 1271.366199999461,
+            "sheet": true
+          },
+          {
+            "gap": 57,
+            "msIntoTake": 12005,
+            "minute": 1271.545999999461,
+            "sheet": true
+          },
+          {
+            "gap": 110,
+            "msIntoTake": 13466,
+            "minute": 1275.9479999994617,
+            "sheet": true
+          },
+          {
+            "gap": 45,
+            "msIntoTake": 21350,
+            "minute": 1300.3883999994664,
+            "sheet": false
+          },
+          {
+            "gap": 71,
+            "msIntoTake": 23413,
+            "minute": 1306.7774999994688,
+            "sheet": false
+          },
+          {
+            "gap": 41,
+            "msIntoTake": 27240,
+            "minute": 1318.6442999994717,
+            "sheet": false
+          },
+          {
+            "gap": 43,
+            "msIntoTake": 29472,
+            "minute": 1325.5603999994726,
+            "sheet": false
+          }
+        ],
+        "events": [
+          {
+            "action": "Open People",
+            "ms": 4395
+          },
+          {
+            "action": "Close People",
+            "ms": 7146
+          },
+          {
+            "action": "Open resources",
+            "ms": 11980
+          },
+          {
+            "action": "Close resources",
+            "ms": 14740
+          }
+        ],
+        "environment": {
+          "bakes": 1,
+          "lastBakeMs": 103,
+          "maxBakeMs": 103,
+          "phases": {
+            "sprites": 43,
+            "routes": 6,
+            "lattice": 14,
+            "raster": 35,
+            "composition": 5
+          },
+          "pixels": 495616,
+          "latticeSamples": 7921,
+          "plants": 69,
+          "clusters": 44,
+          "trackSegments": 53,
+          "waterMarks": 17,
+          "sway": 14,
+          "atlasReady": true
+        },
+        "health": {
+          "probe": "freeze-probe-2",
+          "frames": 1241,
+          "ticks": 8152,
+          "saves": 41,
+          "resizes": 2,
+          "contextLosses": 0,
+          "contextRestores": 0,
+          "phase": "idle",
+          "phaseStarted": 35480,
+          "maxPhaseMs": {
+            "tick": 24,
+            "presentation": 10,
+            "draw": 695,
+            "idle": 778,
+            "ui": 6,
+            "save": 1
+          },
+          "error": null,
+          "day": 58,
+          "minute": 1331.1930999994734,
+          "colonists": 8,
+          "buildings": 32,
+          "piles": 0,
+          "canvas": [
+            390,
+            844
+          ],
+          "audio": "running",
+          "paused": true,
+          "saveProtection": false,
+          "heap": null,
+          "visibility": "visible"
+        }
+      },
+      "errors": []
+    },
+    {
+      "version": "E3-C",
+      "start": {
+        "env": {
+          "bakes": 1,
+          "lastBakeMs": 102,
+          "maxBakeMs": 102,
+          "phases": {
+            "sprites": 41,
+            "routes": 5,
+            "lattice": 14,
+            "raster": 37,
+            "composition": 5
+          },
+          "pixels": 495616,
+          "latticeSamples": 7921,
+          "plants": 69,
+          "clusters": 44,
+          "trackSegments": 53,
+          "waterMarks": 17,
+          "sway": 14,
+          "atlasReady": true
+        },
+        "day": 58,
+        "minute": 1236.0354999994543
+      },
+      "profile": {
+        "draw": {
+          "n": 1239,
+          "median": 1,
+          "p95": 2,
+          "max": 7
+        },
+        "callbackGap": {
+          "n": 1238,
+          "median": 24,
+          "p95": 31,
+          "max": 368
+        },
+        "steady": {
+          "draw": {
+            "n": 669,
+            "median": 1,
+            "p95": 2,
+            "max": 4
+          },
+          "callbackGap": {
+            "n": 669,
+            "median": 23,
+            "p95": 31,
+            "max": 43
+          }
+        },
+        "slow": [
+          {
+            "gap": 43,
+            "msIntoTake": 90,
+            "minute": 1236.4570999994544,
+            "sheet": false
+          },
+          {
+            "gap": 87,
+            "msIntoTake": 1021,
+            "minute": 1239.2873999994545,
+            "sheet": false
+          },
+          {
+            "gap": 44,
+            "msIntoTake": 4258,
+            "minute": 1249.3251999994561,
+            "sheet": true
+          },
+          {
+            "gap": 183,
+            "msIntoTake": 4441,
+            "minute": 1249.5421999994562,
+            "sheet": true
+          },
+          {
+            "gap": 68,
+            "msIntoTake": 4509,
+            "minute": 1249.7560999994562,
+            "sheet": true
+          },
+          {
+            "gap": 71,
+            "msIntoTake": 11765,
+            "minute": 1272.2465999994627,
+            "sheet": true
+          },
+          {
+            "gap": 44,
+            "msIntoTake": 11809,
+            "minute": 1272.3860999994627,
+            "sheet": true
+          },
+          {
+            "gap": 41,
+            "msIntoTake": 11850,
+            "minute": 1272.5100999994627,
+            "sheet": true
+          },
+          {
+            "gap": 140,
+            "msIntoTake": 12926,
+            "minute": 1275.6286999994636,
+            "sheet": true
+          },
+          {
+            "gap": 368,
+            "msIntoTake": 14831,
+            "minute": 1280.6072999994649,
+            "sheet": false
+          },
+          {
+            "gap": 43,
+            "msIntoTake": 23420,
+            "minute": 1307.2331999994708,
+            "sheet": false
+          }
+        ],
+        "events": [
+          {
+            "action": "Open People",
+            "ms": 4282
+          },
+          {
+            "action": "Close People",
+            "ms": 7024
+          },
+          {
+            "action": "Open resources",
+            "ms": 11789
+          },
+          {
+            "action": "Close resources",
+            "ms": 14592
+          }
+        ],
+        "environment": {
+          "bakes": 1,
+          "lastBakeMs": 102,
+          "maxBakeMs": 102,
+          "phases": {
+            "sprites": 41,
+            "routes": 5,
+            "lattice": 14,
+            "raster": 37,
+            "composition": 5
+          },
+          "pixels": 495616,
+          "latticeSamples": 7921,
+          "plants": 69,
+          "clusters": 44,
+          "trackSegments": 53,
+          "waterMarks": 17,
+          "sway": 14,
+          "atlasReady": true
+        },
+        "health": {
+          "probe": "freeze-probe-2",
+          "frames": 1247,
+          "ticks": 8157,
+          "saves": 41,
+          "resizes": 2,
+          "contextLosses": 0,
+          "contextRestores": 0,
+          "phase": "idle",
+          "phaseStarted": 33105,
+          "maxPhaseMs": {
+            "tick": 19,
+            "presentation": 11,
+            "draw": 298,
+            "idle": 860,
+            "ui": 7,
+            "save": 1
+          },
+          "error": null,
+          "day": 58,
+          "minute": 1331.1310999994748,
+          "colonists": 8,
+          "buildings": 32,
+          "piles": 0,
+          "canvas": [
+            390,
+            844
+          ],
+          "audio": "running",
+          "paused": true,
+          "saveProtection": false,
+          "heap": null,
+          "visibility": "visible"
+        }
+      },
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "source_commit": "b8708d9103e149b2b6428bb6ccfc3071937ccb22",
+  "workflow_run": 43490252593,
+  "artifact_id": 14069632882,
+  "artifact_zip_sha256": "5639f5f64365ca6e015aca8279f135ef2372f46cd9cc93da632831d0b5d506ad",
+  "source_video": "neighbourhood-review-actua-eb481-x-without-task-route-grants-chromium/video.webm",
+  "source_video_sha256": "b2d477251851c49332e5fcb1322d553db9188434f1fb3fb661a45b814db64c5b",
+  "source_duration_seconds": 16.12,
+  "clip_start_seconds": 3.32,
+  "clip_duration_seconds": 11,
+  "clip_frames": 275,
+  "clip_fps": 25,
+  "width": 390,
+  "height": 844,
+  "speed": "1x simulation and playback; no speed filters, scaling, mid-take cuts or overlays",
+  "video_codec": "H264, yuv420p, CRF20",
+  "render_proxy": {
+    "environment": "separate remote desktop Chromium 390x844 iframe; 8 residents; 40 synchronous paused world draws",
+    "median_ms": 1.5,
+    "p95_ms": 6,
+    "max_ms": 76.6,
+    "limit": "CPU submission only; excludes simulation and GPU completion. Outlier remains recorded. Not physical iPhone FPS or sustained/large-colony verification."
+  }
+}

@@ -226,6 +226,7 @@ window.FarwakeBuildings = (() => {
   return {
     entrance,
     shadow(ctx,type,x,y,w,h,minute,b) {
+      if(window.FarwakeNeighbourhood?.shadow(ctx,b,minute))return;
       if(window.FarwakeFrontierArt?.sizes[type]){FarwakeFrontierArt.shadow(ctx,type,x,y,w,h,minute,b);return}
       if(!sizes[type] || type==='path')return;
       const key=type+variant(b);

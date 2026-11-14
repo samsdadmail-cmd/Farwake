@@ -1,0 +1,55 @@
+name: Home composition checkpoint
+on:
+  push:
+    branches: [home-composition-checkpoint]
+    paths-ignore: ['docs/vision/evidence/**']
+permissions:
+  contents: read
+jobs:
+  targeted-home-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build and save protections
+        run: |
+          python3 build.py --check
+          node tests/frontier-content.cjs
+          node tests/life-migration.cjs
+          node tests/housing.cjs
+          node tests/lamplight.cjs
+          node tests/neighbourhood.cjs
+          node tests/home-resident.cjs
+          node tests/aya-gait.cjs
+          node tests/architecture.cjs
+          node tests/world-hud.cjs
+      - name: Install browser test tools
+        run: npm ci && npx playwright install --with-deps chromium webkit
+      - name: E3-C save compatibility and gameplay smoke regression
+        if: contains(github.event.head_commit.message, '[E3-C]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/saves.spec.mjs tests/headless/smoke.spec.mjs --max-failures=3
+      - name: E3-A environment checkpoint
+        if: contains(github.event.head_commit.message, '[E3-A]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3.spec.mjs tests/headless/neighbourhood-review.spec.mjs
+      - name: E3-B architecture and truthful light checkpoint
+        if: contains(github.event.head_commit.message, '[E3-B]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3-b.spec.mjs tests/headless/neighbourhood-review.spec.mjs tests/headless/home-composition.spec.mjs --grep 'E3-B|pairs real|complete home entry'
+      - name: E3-C integrated field interface and actual neighbourhood
+        if: contains(github.event.head_commit.message, '[E3-C]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3-c.spec.mjs tests/headless/home-composition.spec.mjs --grep 'E3-C|complete home entry' --max-failures=3
+      - name: E3-C focused WebKit drawer comparison
+        if: contains(github.event.head_commit.message, '[E3-C-PERF]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3-c-perf.spec.mjs --project=webkit
+      - name: Home, camera and recovered regressions
+        if: ${{ !contains(github.event.head_commit.message, '[E3-A]') && !contains(github.event.head_commit.message, '[E3-B]') && !contains(github.event.head_commit.message, '[E3-C]') && !contains(github.event.head_commit.message, '[E3-C-PERF]') }}
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/home-composition.spec.mjs tests/headless/experience-overhaul.spec.mjs tests/headless/living-evening.spec.mjs tests/headless/baseline-risks.spec.mjs tests/headless/home-resident.spec.mjs tests/headless/aya-walk-review.spec.mjs tests/headless/neighbourhood-review.spec.mjs
+      - name: Keep actual gameplay screenshots and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-composition-evidence
+          path: test-results/

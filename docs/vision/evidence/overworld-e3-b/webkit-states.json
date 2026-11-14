@@ -1,0 +1,1627 @@
+{
+  "day": {
+    "day": 58,
+    "minute": 700.1632999992376,
+    "weather": "clear",
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 61,
+      "used": 51,
+      "generation": 61,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 0,
+      "washPlates": 0,
+      "shadowPlates": 11,
+      "rotorPlates": 8,
+      "toneBakes": 2,
+      "cachePixels": 160544
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "attendance": []
+  },
+  "dusk": {
+    "day": 58,
+    "minute": 1080.068299999253,
+    "weather": "clear",
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 61,
+      "used": 51,
+      "generation": 61,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "awake",
+          "strength": 0.4006829999925299,
+          "exposure": 0.4006829999925299,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "research"
+          ],
+          "people": [
+            {
+              "id": 5,
+              "name": "Nell Ardent",
+              "task": "research",
+              "action": 0.5500000000000002
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 0.4006829999925299,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 1,
+      "washPlates": 1,
+      "shadowPlates": 11,
+      "rotorPlates": 11,
+      "toneBakes": 3,
+      "cachePixels": 202092
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "attendance": [
+      {
+        "id": 2,
+        "name": "Tomas Venn",
+        "task": {
+          "type": "craft",
+          "id": 117,
+          "x": 50,
+          "y": 33,
+          "w": 3,
+          "h": 2
+        },
+        "action": 9.800000000000072,
+        "visit": {
+          "building": 117,
+          "x": 51.53125,
+          "y": 34.71875,
+          "streetX": 51.5,
+          "streetY": 35.5,
+          "job": "craft",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 5,
+        "name": "Nell Ardent",
+        "task": {
+          "type": "research",
+          "x": 26,
+          "y": 26,
+          "w": 3,
+          "h": 3
+        },
+        "action": 0.5500000000000002,
+        "visit": {
+          "building": 1,
+          "x": 27.5,
+          "y": 28.34375,
+          "streetX": 27.5,
+          "streetY": 29.5,
+          "job": "research",
+          "stage": "inside"
+        }
+      }
+    ]
+  },
+  "settling": {
+    "day": 58,
+    "minute": 1239.4082999994587,
+    "weather": "clear",
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 52,
+      "used": 51,
+      "generation": 52,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "settling",
+          "strength": 0.58,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 3,
+              "name": "Mira Solis",
+              "task": "life_home",
+              "action": 0.15
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "settling",
+          "strength": 0.58,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 8,
+              "name": "Ari Vale",
+              "task": "life_home",
+              "action": 0
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 3,
+      "washPlates": 3,
+      "shadowPlates": 11,
+      "rotorPlates": 14,
+      "toneBakes": 4,
+      "cachePixels": 259032
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "attendance": [
+      {
+        "id": 3,
+        "name": "Mira Solis",
+        "task": {
+          "type": "life_home",
+          "id": 7,
+          "x": 21,
+          "y": 30,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "action": 0.15,
+        "visit": {
+          "building": 7,
+          "x": 22.40625,
+          "y": 31.6875,
+          "streetX": 22.5,
+          "streetY": 32.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Ari Vale",
+        "task": {
+          "type": "life_home",
+          "id": 55,
+          "x": 29,
+          "y": 32,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "action": 0,
+        "visit": {
+          "building": 55,
+          "x": 30.5,
+          "y": 33.75,
+          "streetX": 30.5,
+          "streetY": 34.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      }
+    ]
+  },
+  "night": {
+    "day": 58,
+    "minute": 1248.7857999994708,
+    "weather": "clear",
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 52,
+      "used": 51,
+      "generation": 52,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 3,
+              "name": "Mira Solis",
+              "task": "life_home",
+              "action": 3.1749999999999927
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 8,
+              "name": "Ari Vale",
+              "task": "life_home",
+              "action": 3.0249999999999932
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 3,
+      "washPlates": 3,
+      "shadowPlates": 11,
+      "rotorPlates": 14,
+      "toneBakes": 5,
+      "cachePixels": 259032
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "attendance": [
+      {
+        "id": 3,
+        "name": "Mira Solis",
+        "task": {
+          "type": "life_home",
+          "id": 7,
+          "x": 21,
+          "y": 30,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "action": 3.1749999999999927,
+        "visit": {
+          "building": 7,
+          "x": 22.40625,
+          "y": 31.6875,
+          "streetX": 22.5,
+          "streetY": 32.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Ari Vale",
+        "task": {
+          "type": "life_home",
+          "id": 55,
+          "x": 29,
+          "y": 32,
+          "w": 3,
+          "h": 2,
+          "afterLeisure": true
+        },
+        "action": 3.0249999999999932,
+        "visit": {
+          "building": 55,
+          "x": 30.5,
+          "y": 33.75,
+          "streetX": 30.5,
+          "streetY": 34.5,
+          "job": "life_home",
+          "stage": "inside"
+        }
+      }
+    ]
+  },
+  "resting": {
+    "day": 58,
+    "minute": 1279.3207999995102,
+    "weather": "clear",
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "grid": {
+      "supply": 52,
+      "used": 51,
+      "generation": 52,
+      "cap": 600,
+      "charge": 600,
+      "output": 0
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "sleeping",
+          "strength": 0.14,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "rest"
+          ],
+          "people": [
+            {
+              "id": 3,
+              "name": "Mira Solis",
+              "task": "rest",
+              "action": 1.0000000000000004
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "sleeping",
+          "strength": 0.14,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "rest"
+          ],
+          "people": [
+            {
+              "id": 8,
+              "name": "Ari Vale",
+              "task": "rest",
+              "action": 1.0000000000000004
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 3,
+      "washPlates": 3,
+      "shadowPlates": 11,
+      "rotorPlates": 15,
+      "toneBakes": 6,
+      "cachePixels": 261948
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "attendance": [
+      {
+        "id": 3,
+        "name": "Mira Solis",
+        "task": {
+          "type": "rest",
+          "id": 7,
+          "x": 21,
+          "y": 30,
+          "w": 3,
+          "h": 2
+        },
+        "action": 1.0000000000000004,
+        "visit": {
+          "building": 7,
+          "x": 22.40625,
+          "y": 31.6875,
+          "streetX": 22.5,
+          "streetY": 32.5,
+          "job": "rest",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 5,
+        "name": "Nell Ardent",
+        "task": {
+          "type": "rest",
+          "id": 24,
+          "x": 51,
+          "y": 30,
+          "w": 3,
+          "h": 2
+        },
+        "action": 6.000000000000018,
+        "visit": {
+          "building": 24,
+          "x": 52.84375,
+          "y": 31.6875,
+          "streetX": 52.5,
+          "streetY": 32.5,
+          "job": "rest",
+          "stage": "inside"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Ari Vale",
+        "task": {
+          "type": "rest",
+          "id": 55,
+          "x": 29,
+          "y": 32,
+          "w": 3,
+          "h": 2
+        },
+        "action": 1.0000000000000004,
+        "visit": {
+          "building": 55,
+          "x": 30.5,
+          "y": 33.75,
+          "streetX": 30.5,
+          "streetY": 34.5,
+          "job": "rest",
+          "stage": "inside"
+        }
+      }
+    ]
+  },
+  "profile": {
+    "before": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 3,
+              "name": "Mira Solis",
+              "task": "life_home",
+              "action": 3.1749999999999927
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 8,
+              "name": "Ari Vale",
+              "task": "life_home",
+              "action": 3.0249999999999932
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 3,
+      "washPlates": 3,
+      "shadowPlates": 11,
+      "rotorPlates": 14,
+      "toneBakes": 5,
+      "cachePixels": 259032
+    },
+    "after": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 3,
+              "name": "Mira Solis",
+              "task": "life_home",
+              "action": 3.1749999999999927
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "awake",
+          "strength": 1,
+          "exposure": 1,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "life_home"
+          ],
+          "people": [
+            {
+              "id": 8,
+              "name": "Ari Vale",
+              "task": "life_home",
+              "action": 3.0249999999999932
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "empty",
+          "strength": 0,
+          "exposure": 1,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 3,
+      "washPlates": 3,
+      "shadowPlates": 11,
+      "rotorPlates": 14,
+      "toneBakes": 5,
+      "cachePixels": 259032
+    },
+    "environmentBefore": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "environmentAfter": {
+      "bakes": 1,
+      "lastBakeMs": 88,
+      "maxBakeMs": 88,
+      "phases": {
+        "sprites": 37,
+        "routes": 4,
+        "lattice": 11,
+        "raster": 31,
+        "composition": 5
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "pausedDraw": {
+      "median": 1,
+      "p95": 1,
+      "max": 1
+    }
+  },
+  "errors": []
+}
