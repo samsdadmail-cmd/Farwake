@@ -29,6 +29,9 @@ jobs:
           node tests/world-hud.cjs
       - name: Install browser test tools
         run: npm ci && npx playwright install --with-deps chromium webkit
+      - name: E3-C save compatibility and gameplay smoke regression
+        if: contains(github.event.head_commit.message, '[E3-C]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/saves.spec.mjs tests/headless/smoke.spec.mjs --max-failures=3
       - name: E3-A environment checkpoint
         if: contains(github.event.head_commit.message, '[E3-A]')
         run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3.spec.mjs tests/headless/neighbourhood-review.spec.mjs
