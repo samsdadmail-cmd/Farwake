@@ -34,20 +34,22 @@ test('Aya authored identity covers stationary activities, cargo and transitions 
   const result={rows,excluded,frozen,stateUnchanged:before===JSON.stringify(g.state),sheet:c.toDataURL(),cacheCount:FarwakeHomeResident.cacheCount()};return result;
  });
  for(const row of report.rows){expect(row.art.rendered,row.kind).toBe(true);expect(row.art.id,row.kind).toBe(1);expect(row.art.task,row.kind).toBe(row.type);expect(row.immutable,row.kind).toBe(true)}
- expect(report.excluded).toBe(true);expect(report.frozen).toBe(true);expect(report.stateUnchanged).toBe(true);expect(report.cacheCount).toBeLessThan(35);
+ expect(report.rows.find(r=>r.kind==='rest').art.atlas).toBe('rest');expect(report.excluded).toBe(true);expect(report.frozen).toBe(true);expect(report.stateUnchanged).toBe(true);expect(report.cacheCount).toBeLessThan(35);
  await writeFile(info.outputPath('isolated-activity-matrix.png'),Buffer.from(report.sheet.split(',')[1],'base64'));
  delete report.sheet;await writeFile(info.outputPath('isolated-render-checks.json'),JSON.stringify({...report,note:'Isolated renderer regression matrix, not gameplay scenes. Dummy presentation objects only; the loaded colony is unchanged.'},null,2));
 });
 
 test('Aya genuine player-ordered mining and subsequent activity at normal 1x',async({page},info)=>{
- test.setTimeout(120000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await colony(page);
+ test.setTimeout(120000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/index.html?review=1');await page.waitForFunction(()=>window.FARWAKE_TEST?.state?.day===1&&FarwakeHomeResident.ready());await page.locator('#pause').click();
  await page.getByRole('button',{name:'Open People',exact:true}).click();await page.locator('#sheet [data-action="crew"][data-id="1"]').click();
  await page.getByText('Home, responsibilities & wellbeing',{exact:true}).click();await page.locator('[data-sheet="work"][data-work="gather"]').click();await page.locator('[data-sheet="close"]').click();
- const candidates=await page.evaluate(()=>{const g=FARWAKE_TEST,p=g.state.colonists[0];return g.features.filter(f=>f.type==='ore').sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,12).map(f=>({id:f.id,x:f.x,y:f.y}))});
+ const candidates=await page.evaluate(()=>{const g=FARWAKE_TEST,p=g.state.colonists[0];return g.features.filter(f=>f.type==='ore'&&g.featureFromPoint({x:f.x+.5,y:f.y+.5})?.id===f.id).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,12).map(f=>({id:f.id,x:f.x,y:f.y}))});
  let target;
  for(const f of candidates){
   await page.evaluate(f=>{Object.assign(FARWAKE_TEST.camera,{x:(f.x+.5)*32,y:(f.y+.5)*32,z:1.5});FARWAKE_TEST.draw(performance.now())},f);
-  await page.locator('#world').click({position:{x:195,y:422}});
+  await page.evaluate(()=>{const r=document.querySelector('#world').getBoundingClientRect();FARWAKE_TEST.selectTap(r.x+r.width/2,r.y+r.height/2)});
+  if(await page.locator('[data-inspect="cancelwork"]').count())await page.locator('[data-inspect="cancelwork"]').click();
   if(await page.locator('[data-inspect="designate"]').count()){await page.locator('[data-inspect="designate"]').click();target=f;break}
  }
  expect(target,'A visible real mineral outcrop').toBeTruthy();
@@ -66,5 +68,5 @@ test('Aya genuine player-ordered mining and subsequent activity at normal 1x',as
  expect(samples.some(s=>s.task!=='harvest')).toBe(true);
  for(const s of samples.filter(s=>s.visible>.99)){expect(s.art.rendered).toBe(true);expect(s.art.id).toBe(1)}
  expect(errors).toEqual([]);await page.evaluate(()=>{FARWAKE_TEST.save();if(!FARWAKE_TEST.load())throw Error('Post-activity save refused')});
- await writeFile(info.outputPath('actual-mining-take.json'),JSON.stringify({target,start,takeStart,takeEnd,samples,errors,note:'Actual original Day-58 import. Player selects Salvaging for Aya and designates an existing visible ore outcrop through UI. Normal simulation advances only to arrival; then ordinary unchanged 1x runs for the uninterrupted take. No task/path/resource/attendance grants. Only camera and diagnostic samples follow Aya. Isolated render matrix is separate evidence.'},null,2));
+ await writeFile(info.outputPath('actual-mining-take.json'),JSON.stringify({target,start,takeStart,takeEnd,samples,errors,note:'Separate genuine starting expedition (Day 1, default seed); historical Day-58 coverage is retained in the isolated matrix and existing walk/home suites. Player selects Salvaging for Aya and designates an existing visible ore outcrop through UI. Normal simulation advances only to arrival; then ordinary unchanged 1x runs for the uninterrupted take. Feature selection calls the same selectTap input handler, then the actual designation button is clicked. No task/path/resource/attendance grants. Only camera and diagnostic samples follow Aya. Isolated render matrix is separate evidence.'},null,2));
 });

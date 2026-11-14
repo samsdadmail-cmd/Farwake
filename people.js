@@ -109,6 +109,7 @@ window.FarwakePeople = (() => {
       bundle(ctx,p.carry?.kind||v.carry);ctx.restore();return 'cargo';
     }
     if(p.path?.length||(v.travelSpeed??0)>.08)return null;
+    if(p.task?.type==='rest')return null;
     if(v.work>.02){
       const stroke=(v.reduced ? .5 : Math.sin(v.stroke*Math.PI))*v.work;
       ctx.save();ctx.globalAlpha*=v.work;ctx.translate(6,-7);

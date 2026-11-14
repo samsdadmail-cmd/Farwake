@@ -42,9 +42,9 @@ window.FarwakeHomeResident=(()=>{
  }
  function sprite(kind,index,light='daylight'){
   const key=kind+':'+index+':'+light;if(cutouts.has(key))return cutouts.get(key);
-  const im=atlas(kind);if(!im.complete||!im.naturalWidth)return null;
-  const r=(kind==='home'?HOME_FRAMES:WORLD_FRAMES)[index];
-  const scale=kind==='world'?28/r.h:index===5||index===6?104/r.w:124/HOME_FRAMES[0].h;
+  const im=atlas(kind==='rest'?'home':kind);if(!im.complete||!im.naturalWidth)return null;
+  const r=(kind==='world'?WORLD_FRAMES:HOME_FRAMES)[index];
+  const scale=kind==='world'?28/r.h:kind==='rest'?28/r.w:index===5||index===6?104/r.w:124/HOME_FRAMES[0].h;
   const out=document.createElement('canvas');out.width=Math.ceil(r.w*scale);out.height=Math.ceil(r.h*scale);
   const c=out.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(im,r.x,r.y,r.w,r.h,0,0,r.w*scale,r.h*scale);
   c.globalCompositeOperation='source-atop';
@@ -84,16 +84,17 @@ window.FarwakeHomeResident=(()=>{
   // Identity must not change when locomotion yields to work, needs or leisure.
   // The approved atlas supplies walking/standing bodies, not specialist work rigs.
   // Keep its body and layer only props justified by current presentation state.
-  const {direction,walking,beat,cycle,frame:i}=gait(v),im=sprite('world',i);
+  const gaitState=gait(v),resting=!gaitState.walking&&!p.path?.length&&p.task?.type==='rest';
+  const {direction,walking,beat,cycle}=gaitState,i=resting?5:gaitState.frame,im=sprite(resting?'rest':'world',i);
   if(!im){Object.assign(worldInfo,{rendered:false,id:p.id,pending:true});return true;}
   c.save();c.translate(v.x*tileSize,v.y*tileSize);c.imageSmoothingEnabled=false;
   c.fillStyle='#18221f50';c.beginPath();c.ellipse(1,3,7,2.5,0,0,Math.PI*2);c.fill();
   if(selected){c.strokeStyle='#f2ca86';c.lineWidth=1.5;c.beginPath();c.ellipse(0,3,9,4,0,0,Math.PI*2);c.stroke()}
   const bob=walking&&!v.reduced?-.5*Math.sin(cycle*Math.PI*4)**2*Math.min(1,v.travelSpeed/.7):0;
-  const hip=(WORLD_HIPS[i]-WORLD_FRAMES[i].x)*28/WORLD_FRAMES[i].h;
+  const hip=resting?im.width/2:(WORLD_HIPS[i]-WORLD_FRAMES[i].x)*28/WORLD_FRAMES[i].h;
   c.drawImage(im,-Math.round(hip),4-im.height+bob);
   const prop=window.FarwakePeople?.identityProps(c,p,v)||null;
-  c.restore();Object.assign(worldInfo,{rendered:true,pending:false,id:p.id,frame:i,direction,walking,beat,cycle,prop,task:p.task?.type||null,speed:v.travelSpeed||0,x:v.x,y:v.y,phase:v.phase});return true;
+  c.restore();Object.assign(worldInfo,{rendered:true,pending:false,id:p.id,atlas:resting?'rest':'world',frame:i,direction,walking,beat,cycle,prop,task:p.task?.type||null,speed:v.travelSpeed||0,x:v.x,y:v.y,phase:v.phase});return true;
  }
  return{identity,eligible,plan,draw,drawWorld,gait,preload:()=>{atlas('home');atlas('world')},ready:()=>!!images.home?.complete&&!!images.home?.naturalWidth,cacheCount:()=>cutouts.size,worldInfo:()=>worldInfo};
 })();
