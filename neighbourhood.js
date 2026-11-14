@@ -17,8 +17,10 @@ window.FarwakeNeighbourhood=(()=>{
   const next=home?s.buildings.filter(b=>b.finished&&supported.has(b.type)&&Math.hypot(b.x+b.w/2-home.x-home.w/2,b.y+b.h/2-home.y-home.h/2)<=RADIUS):[];
   const key=next.map(b=>[b.id,b.x,b.y,b.type].join(',')).join(';');
   if(key!==layoutKey||next.some(b=>!membership.has(b))){layoutKey=key;members=next;membership=new Set(next);groundCache=null;lights.clear()}
+  window.FarwakeArchitecture?.prepare(s,grid,members,layoutKey);
   const night=s?.minute<360||s?.minute>1140;
   for(const b of members){
+   if(window.FarwakeArchitecture?.matches(b)){lights.set(b,FarwakeArchitecture.lightFor(b));continue}
    const d=FarwakeDoors.state(b),mode=!night?'daylight':!d.occupied?'empty':grid.supply<grid.used?'unpowered':d.actions.some(a=>a!=='rest')?'awake':'sleeping';
    const l=lights.get(b)||{};l.mode=mode;l.strength=mode==='awake'?1:mode==='sleeping'?.24:0;lights.set(b,l);
   }
@@ -86,6 +88,7 @@ window.FarwakeNeighbourhood=(()=>{
  }
  function draw(c,b,d){
   if(!matches(b))return false;
+  if(window.FarwakeArchitecture?.draw(c,b,d))return true;
   if(b===home)return FarwakeLamplight.draw(c,b,d);
   c.save();c.translate(b.x*32,b.y*32);c.imageSmoothingEnabled=false;c.drawImage(plate(b),0,0);FarwakeHearth.history(c,b);
   const p=FarwakeBuildings.entrance(b),l=lights.get(b)||blank;
@@ -98,6 +101,7 @@ window.FarwakeNeighbourhood=(()=>{
  }
  function shadow(c,b,minute){
   if(!matches(b))return false;
+  if(window.FarwakeArchitecture?.shadow(c,b,minute))return true;
   if(b===home)return FarwakeLamplight.shadow(c,b,minute);
   const key=b.type+':'+Math.abs(b.id)%4;
   if(!masks.has(key)){const out=canvas(b.w*32,b.h*32),p=out.getContext('2d');p.drawImage(plate(b),0,0);if(b.type==='wind')p.drawImage(rotor(0),2,0);p.globalCompositeOperation='source-in';box(p,0,0,out.width,out.height,'#142e39');masks.set(key,out)}
@@ -159,11 +163,12 @@ window.FarwakeNeighbourhood=(()=>{
   c.drawImage(groundCache,ox,oy);
  }
  function screenLight(c,camera,sx,sy){
-  FarwakeLamplight.screenLight(c,camera,sx,sy);
+  if(!window.FarwakeArchitecture?.matches(home))FarwakeLamplight.screenLight(c,camera,sx,sy);
   if(!home)return;
   if(!lamp){lamp=canvas(96,96);const p=lamp.getContext('2d'),g=p.createRadialGradient(48,48,0,48,48,48);g.addColorStop(0,'#ffcc9180');g.addColorStop(.35,'#efb16d29');g.addColorStop(1,'#e8a16000');p.fillStyle=g;p.fillRect(0,0,96,96)}
   c.save();c.globalCompositeOperation='screen';
-  for(const b of members){if(b===home)continue;const l=lights.get(b);if(!l.strength)continue;c.globalAlpha=l.strength*.8;for(const [x,y,w,h] of windowFor(b)){const px=sx(b.x*32+x+w/2),py=sy(b.y*32+y+h),r=34*camera.z;c.drawImage(lamp,px-r,py-r,r*2,r*2);box(c,sx(b.x*32+x),sy(b.y*32+y),w*camera.z,h*camera.z,'#ffd49a3b')}}c.restore();
+  for(const b of members){if(b===home||window.FarwakeArchitecture?.matches(b))continue;const l=lights.get(b);if(!l.strength)continue;c.globalAlpha=l.strength*.8;for(const [x,y,w,h] of windowFor(b)){const px=sx(b.x*32+x+w/2),py=sy(b.y*32+y+h),r=34*camera.z;c.drawImage(lamp,px-r,py-r,r*2,r*2);box(c,sx(b.x*32+x),sy(b.y*32+y),w*camera.z,h*camera.z,'#ffd49a3b')}}c.restore();
+  window.FarwakeArchitecture?.screenLight(c,camera,sx,sy);
  }
  return{prepare,matches,draw,shadow,ground,screenLight,diagnostics:()=>({home:home?.id,radius:RADIUS,buildings:members.map(b=>({id:b.id,type:b.type,...lights.get(b)})),plates:plates.size,groundPixels:groundCache?SIZE*SIZE:0,rotors:rotors.size})};
 })();

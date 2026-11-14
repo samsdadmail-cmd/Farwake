@@ -123,3 +123,15 @@ separate measurements. Preserve all gameplay and saves. Present actual 390×844
 same-colony day/night, E2/E3 comparison and a contextual close view. E3-B remains
 held until environmental coherence and technical verification are established;
 no world-wide rollout or new asset catalogue is authorised by this refinement.
+
+
+### E3-A foundation approved; E3-B authorised, 14 November 2026
+
+Kyle & Atlas approve refined E3-A as the environmental foundation at de1829d.
+Definitive overworld quality is not approved. E3-B refines the same 13-structure
+neighbourhood's architecture, materials, grounding and simulation-driven lamplight.
+Begin with a small pilot and inspect real gameplay before extending it. Preserve
+E3-A, interiors, characters, gameplay, saves and all outstanding technical issues.
+Deliver real saved-colony day/dusk/night, close material/light evidence, an E3-A
+comparison, uninterrupted genuine activity, exact source/preview and CPU limits.
+Stop for creative review before E3-C, other districts or production promotion.
