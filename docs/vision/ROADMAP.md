@@ -135,3 +135,20 @@ E3-A, interiors, characters, gameplay, saves and all outstanding technical issue
 Deliver real saved-colony day/dusk/night, close material/light evidence, an E3-A
 comparison, uninterrupted genuine activity, exact source/preview and CPU limits.
 Stop for creative review before E3-C, other districts or production promotion.
+
+
+### E3-B conditionally approved; E3-C authorised, 14 November 2026
+
+Kyle & Atlas accept E3-B's coordinated architectural materials, foundations,
+building distinctions and truthful occupancy/activity/power lighting as foundations.
+The definitive overworld identity is not approved. Retain the overall composition
+and depth gap, repeated roof courses/simple silhouettes, WebKit callback gaps,
+cold environmental bake, and physical iPhone requirements as remaining limitations.
+
+E3-C unifies the existing overworld instruments, context drawers and witnessed
+resident notifications, fixes bounded presentation defects, and verifies the same
+Day-58 neighbourhood in real 390×844 day/dusk/night gameplay. No new art catalogue,
+renderer restart, other-district rollout or production merge. Deliver close views,
+E3-A comparison, uninterrupted genuine movement/HUD interaction, actual night
+attendance and power evidence, and qualified CPU measurements. Stop for creative
+review. All TECHNICAL_ISSUES.md items remain open unless individually verified.
