@@ -81,15 +81,19 @@ window.FarwakeHomeResident=(()=>{
  }
  function drawWorld(c,p,v,tileSize,selected){
   if(!identity(p))return false;
-  const standingPause=v.leisure&&['settling','finishing'].includes(v.leisure.phase);
-  if(!p.path?.length&&(v.travelSpeed??0)<.08&&v.walk<.08&&(v.work>.02||v.leisure&&!standingPause||['eat','rest','social'].includes(p.task?.type))){worldInfo.rendered=false;return false;}
-  const {direction,walking,beat,cycle,frame:i}=gait(v),im=sprite('world',i);if(!im)return false;
+  // Identity must not change when locomotion yields to work, needs or leisure.
+  // The approved atlas supplies walking/standing bodies, not specialist work rigs.
+  // Keep its body and layer only props justified by current presentation state.
+  const {direction,walking,beat,cycle,frame:i}=gait(v),im=sprite('world',i);
+  if(!im){Object.assign(worldInfo,{rendered:false,id:p.id,pending:true});return true;}
   c.save();c.translate(v.x*tileSize,v.y*tileSize);c.imageSmoothingEnabled=false;
   c.fillStyle='#18221f50';c.beginPath();c.ellipse(1,3,7,2.5,0,0,Math.PI*2);c.fill();
   if(selected){c.strokeStyle='#f2ca86';c.lineWidth=1.5;c.beginPath();c.ellipse(0,3,9,4,0,0,Math.PI*2);c.stroke()}
   const bob=walking&&!v.reduced?-.5*Math.sin(cycle*Math.PI*4)**2*Math.min(1,v.travelSpeed/.7):0;
   const hip=(WORLD_HIPS[i]-WORLD_FRAMES[i].x)*28/WORLD_FRAMES[i].h;
-  c.drawImage(im,-Math.round(hip),4-im.height+bob);c.restore();Object.assign(worldInfo,{rendered:true,id:p.id,frame:i,direction,walking,beat,cycle,speed:v.travelSpeed||0,x:v.x,y:v.y,phase:v.phase});return true;
+  c.drawImage(im,-Math.round(hip),4-im.height+bob);
+  const prop=window.FarwakePeople?.identityProps(c,p,v)||null;
+  c.restore();Object.assign(worldInfo,{rendered:true,pending:false,id:p.id,frame:i,direction,walking,beat,cycle,prop,task:p.task?.type||null,speed:v.travelSpeed||0,x:v.x,y:v.y,phase:v.phase});return true;
  }
  return{identity,eligible,plan,draw,drawWorld,gait,preload:()=>{atlas('home');atlas('world')},ready:()=>!!images.home?.complete&&!!images.home?.naturalWidth,cacheCount:()=>cutouts.size,worldInfo:()=>worldInfo};
 })();

@@ -99,6 +99,42 @@ window.FarwakePeople = (() => {
     }
   }
 
+  // Aya's authored body remains authoritative in every exterior activity.
+  // These small overlays reuse actual carried cargo/work progress; no save writes,
+  // wall-clock activity or invented work animation/production are introduced.
+  function identityProps(ctx,p,v){
+    const box=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)};
+    if(p.carry||v.drop>0){
+      ctx.save();ctx.translate(1,-7+5*(v.held?v.lift:1-v.drop));ctx.globalAlpha*=v.held?1:v.drop;
+      bundle(ctx,p.carry?.kind||v.carry);ctx.restore();return 'cargo';
+    }
+    if(p.path?.length||(v.travelSpeed??0)>.08)return null;
+    if(v.work>.02){
+      const stroke=(v.reduced ? .5 : Math.sin(v.stroke*Math.PI))*v.work;
+      ctx.save();ctx.globalAlpha*=v.work;ctx.translate(6,-7);
+      if(['research','craft'].includes(v.kind)){
+        box(-1,-2,6,4,'#445b59');box(0,-2,4,2,'#a1c1b9');box(1+stroke,-1,1,1,'#e5c17c');
+      }else if(['bush','forage','farm','harvest'].includes(v.kind)){
+        ctx.rotate(.5-stroke*.85);box(0,-5,2,8,strap);box(-1,-6,4,3,'#b1b7a4');box(0,-8,2,2,'#b1b7a4');
+      }else{
+        ctx.rotate(.98-2.45*stroke);box(0,-10,2,13,'#b79467');
+        if(v.kind==='tree'){box(-2,-11,5,3,'#c2cbba');box(2,-12,3,5,'#9daaa2')}
+        else if(v.kind==='ore'){box(-3,-11,8,2,'#c4cfcb');box(4,-10,2,2,'#95a7a2')}
+        else box(-2,-12,6,4,'#b6c2be');
+      }
+      ctx.restore();return v.kind;
+    }
+    // Preserve the existing truthful handheld leisure/need cues. The atlas has
+    // no authored seated/kneeling exterior rigs; do not substitute an old body.
+    const kind=v.leisure?.kind;
+    if(p.task?.type==='eat'){box(4,-7,7,3,'#bfae88');box(5,-8,5,1,'#78885c');return 'meal'}
+    if(kind==='plants'){box(5,-7,2,7,'#8eab78');box(3,-7,3,2,'#b7c28c');return kind}
+    if(['tinkering','project'].includes(kind)){box(4,-7,7,4,'#637879');box(6,-8,2,6,'#c2b69a');return kind}
+    if(kind==='sky'){box(4,-18,5,3,'#bfa574');box(7,-19,2,5,'#536b6d');return kind}
+    if(kind==='reading'){box(4,-8,7,5,'#c6b790');box(7,-8,1,5,'#786954');return kind}
+    return null;
+  }
+
   function drawClassic(ctx,p,tileSize,time,selected,zoom) {
     const v=pose(p),dir=v.dir,side=dir==='right'||dir==='left',back=dir==='back';
     const swing=Math.sin(v.phase)*v.walk,working=v.work>.02, lift=v.held?v.lift:v.drop;
@@ -270,5 +306,5 @@ window.FarwakePeople = (() => {
     }
     ctx.restore();
   }
-  return {draw,pile,advance,pose,bundle};
+  return {draw,pile,advance,pose,bundle,identityProps};
 })();
