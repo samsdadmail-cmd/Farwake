@@ -30,8 +30,10 @@ jobs:
       - name: Install browsers
         run: npm ci && npx playwright install --with-deps chromium webkit
       - name: Current pinned preview and repeated callback attribution
+        env:
+          READINESS_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ '${{ github.event.head_commit.message }}' == *'[E3-HOST]'* ]]; then
+          if [[ "$READINESS_MESSAGE" == *'[E3-HOST]'* ]]; then
             npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs --grep 'pinned preview'
           else
             npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs

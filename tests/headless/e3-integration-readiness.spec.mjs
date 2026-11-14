@@ -8,7 +8,7 @@ async function importColony(page,host=''){
  await page.goto(host+'/index.html?review=1');
  await page.getByRole('button',{name:'Game and Save',exact:true}).tap();
  await page.locator('#import-expedition-file').setInputFiles('tests/fixtures/home-composition-day58.json');
- await page.waitForFunction(()=>FARWAKE_TEST.state.day===58&&FarwakeEnvironment.ready());
+ await page.waitForFunction(()=>window.FARWAKE_TEST?.state?.day===58&&window.FarwakeEnvironment?.ready());
  await page.getByRole('button',{name:'Pause simulation',exact:true}).tap();
 }
 
@@ -48,12 +48,14 @@ test('pinned preview real-save touch management and reload',async({browser,reque
   await page.locator('[data-inspect="manage"]').tap();await expect(page.locator('[data-editor="demolish"]')).toBeVisible();
   await page.locator('[data-editor="demolish"]').tap();await page.locator('[data-editor="apply-demolish"]').tap();
   expect(await page.evaluate(()=>FARWAKE_TEST.state.buildings.find(b=>b.id===7).editOrder?.kind||FARWAKE_TEST.state.buildings.find(b=>b.id===7).editOrder?.mode)).toBeTruthy();
+  await page.locator('[data-inspect="manage"]').tap();
   await page.locator('[data-editor="withdraw"]').tap();
   expect(await page.evaluate(()=>!!FARWAKE_TEST.state.buildings.find(b=>b.id===7).editOrder)).toBe(false);
+  await page.locator('[data-inspect="manage"]').tap();
   await page.locator('[data-home-enter]').tap();await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='inside');
   await page.locator('#homeexit').tap();await page.waitForFunction(()=>FARWAKE_TEST.homePhase==='idle');
   await page.getByRole('button',{name:'Game and Save',exact:true}).tap();await page.getByRole('button',{name:'Save Expedition',exact:true}).tap();
-  await page.reload();await page.waitForFunction(()=>FARWAKE_TEST.state.day===58);
+  await page.reload();await page.waitForFunction(()=>window.FARWAKE_TEST?.state?.day===58);
   const restored=await page.evaluate(()=>({seed:FARWAKE_TEST.state.seed,people:FARWAKE_TEST.state.colonists.map(p=>p.id),buildings:FARWAKE_TEST.state.buildings.map(b=>b.id),health:FARWAKE_TEST.healthSnapshot()}));
   expect(restored.seed).toBe(original.seed);expect(restored.people).toEqual(original.people);expect(restored.buildings).toEqual(original.buildings);expect(restored.health.saveProtection).toBe(false);
   expect(errors).toEqual([]);
