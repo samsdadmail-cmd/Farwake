@@ -9,7 +9,7 @@ body:not(.in-home) .clock{min-width:57px;padding:6px 4px 0 0;font:10px/1.6 ui-mo
 body:not(.in-home) .iconbtn{min-width:44px;width:44px;min-height:44px;height:44px;background:none;border:1px solid transparent;border-radius:50%;color:var(--field-ink);font:12px ui-monospace,monospace}
 body:not(.in-home) .iconbtn.on{background:#bbd1c51c;border-color:var(--field-line)}
 body:not(.in-home) .resbar{top:calc(54px + env(safe-area-inset-top));left:16px;right:auto;display:flex;height:44px;border:0;background:none;padding:0;gap:0}
-body:not(.in-home) .resource{height:44px;min-height:44px;border:0;padding:0 12px 0 0;margin-right:12px;gap:6px;background:none;position:relative}
+body:not(.in-home) .resource{height:44px;min-height:44px;min-width:44px;flex-shrink:0;border:0;padding:0 12px 0 0;margin-right:12px;gap:6px;background:none;position:relative}
 body:not(.in-home) .resource::after{content:'';position:absolute;right:0;top:15px;height:14px;width:1px;background:var(--field-line)}
 body:not(.in-home) .resource .k{font:9px ui-monospace,monospace;color:var(--field-muted);letter-spacing:.08em}
 body:not(.in-home) .resource .v{font:12px ui-monospace,monospace;color:var(--field-ink)}
@@ -27,7 +27,7 @@ body:not(.in-home) .navbutton,body:not(.in-home) .field-save{flex:1;min-width:44
 body:not(.in-home) .navbutton .word{font:10px system-ui,sans-serif;letter-spacing:0}
 body:not(.in-home) .navbutton .sym svg{width:19px;height:19px}
 body:not(.in-home) .navbutton.active,body:not(.in-home) .field-save.active{color:#edf1de;background:#c7d7b51c;box-shadow:inset 0 -1px #bfd0b1}
-body:not(.in-home) .field-save{position:static;padding:0;flex:1;min-width:0;text-shadow:none}
+body:not(.in-home) .field-save{position:static;padding:0;flex:1;min-width:44px;text-shadow:none}
 body:not(.in-home) .field-save svg{margin:0}
 body:not(.in-home) .mapbottom{bottom:calc(84px + env(safe-area-inset-bottom));left:auto;right:20px}
 body:not(.in-home) .weather{font:9px ui-monospace,monospace;letter-spacing:.13em;color:#bdd1ce}
@@ -62,3 +62,5 @@ body:not(.in-home) .sheet .progress i,body:not(.in-home) .sheet .workmeter i{bac
 body:not(.in-home) :is(button,input,select):focus-visible{outline:2px solid #edf2d2;outline-offset:2px}
 @media(max-width:350px){body:not(.in-home) .identity{min-width:65px}body:not(.in-home) .logo{font-size:9px;letter-spacing:.1em}body:not(.in-home) .clock{min-width:51px;font-size:9px}body:not(.in-home) .resource{margin-right:7px;padding-right:7px}body:not(.in-home) .navbutton .word{font-size:9px}}
 @media(orientation:landscape) and (max-height:520px){body:not(.in-home) .lower{left:12px;transform:none;bottom:8px;width:350px}body:not(.in-home) .navbutton,body:not(.in-home) .field-save{height:46px;min-height:46px}body:not(.in-home) .mapbottom{bottom:16px}body:not(.in-home) .toast{bottom:76px}body:not(.in-home) .world-moment{bottom:110px;max-width:260px}body:not(.in-home) .inspector{bottom:74px}body:not(.in-home) .sheet{height:95dvh;max-height:95dvh}}
+
+body:not(.in-home) .capacityline{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin:14px 0 8px}
