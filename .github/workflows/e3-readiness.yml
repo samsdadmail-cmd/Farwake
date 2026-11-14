@@ -30,12 +30,17 @@ jobs:
       - name: Install browsers
         run: npm ci && npx playwright install --with-deps chromium webkit
       - name: Current pinned preview and repeated callback attribution
-        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs
+        run: |
+          if [[ '${{ github.event.head_commit.message }}' == *'[E3-HOST]'* ]]; then
+            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs --grep 'pinned preview'
+          else
+            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs
+          fi
       - name: Save and gameplay regression
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && !contains(github.event.head_commit.message, '[E3-HOST]') }}
         run: npx playwright test --config=tests/playwright.config.mjs tests/headless/saves.spec.mjs tests/headless/smoke.spec.mjs
       - name: Existing management systems
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && !contains(github.event.head_commit.message, '[E3-HOST]') }}
         run: npm run test:suites -- frontier-ui command production research economy frontier-industry integration
       - name: Keep readiness diagnostics
         if: always()

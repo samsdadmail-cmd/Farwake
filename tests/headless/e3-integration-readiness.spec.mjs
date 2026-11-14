@@ -17,10 +17,17 @@ test('pinned preview real-save touch management and reload',async({browser,reque
  // Prove the host serves the retained runtime, rather than testing only a local copy.
  const html=await readFile('index.html','utf8');
  const paths=['index.html',...[...html.matchAll(/(?:src|href)="([^"?]+\.(?:js|css))"/g)].map(m=>m[1])];
- const hashes=[];
+ const hashes=[];let hostedFeedbackScript=null;
  for(const path of paths){
   const response=await request.get(preview+'/'+path);expect(response.ok(),path).toBe(true);
-  const actual=createHash('sha256').update(await response.body()).digest('hex');
+  let body=await response.body();
+  // Vercel appends this identified hosting-only script after the complete document.
+  // Do not normalise or discard any game source to make the comparison pass.
+  if(path==='index.html'){
+   const text=body.toString('utf8'),suffix=text.match(/\n(<script async data-explicit-opt-in="true" data-deployment-id="[A-Za-z0-9_]+" src="https:\/\/vercel\.live\/_next-live\/feedback\/feedback\.js"><\/script>)\s*$/);
+   if(suffix){hostedFeedbackScript=suffix[1];body=Buffer.from(text.slice(0,suffix.index)+'\n')}
+  }
+  const actual=createHash('sha256').update(body).digest('hex');
   const expected=createHash('sha256').update(await readFile(path)).digest('hex');
   expect(actual,path).toBe(expected);hashes.push({path,sha256:actual});
  }
@@ -51,7 +58,7 @@ test('pinned preview real-save touch management and reload',async({browser,reque
   expect(restored.seed).toBe(original.seed);expect(restored.people).toEqual(original.people);expect(restored.buildings).toEqual(original.buildings);expect(restored.health.saveProtection).toBe(false);
   expect(errors).toEqual([]);
   await page.screenshot({path:info.outputPath('pinned-preview-day58.png'),animations:'disabled'});
-  await writeFile(info.outputPath('pinned-preview-check.json'),JSON.stringify({preview,hashes,original,restored,errors,note:'Fresh browser context and QA save key; actual touch handlers, reversible home maintenance, entry/exit and saved reload. No manual export-delivery or physical-phone claim.'},null,2));
+  await writeFile(info.outputPath('pinned-preview-check.json'),JSON.stringify({preview,hashes,hostedFeedbackScript,original,restored,errors,note:'Fresh browser context and QA save key; actual touch handlers, reversible home maintenance, entry/exit and saved reload. No manual export-delivery or physical-phone claim.'},null,2));
  }finally{await context.close()}
 });
 
