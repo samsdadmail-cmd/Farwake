@@ -38,8 +38,11 @@ jobs:
       - name: E3-C integrated field interface and actual neighbourhood
         if: contains(github.event.head_commit.message, '[E3-C]')
         run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3-c.spec.mjs tests/headless/home-composition.spec.mjs --grep 'E3-C|complete home entry' --max-failures=3
+      - name: E3-C focused WebKit drawer comparison
+        if: contains(github.event.head_commit.message, '[E3-C-PERF]')
+        run: npx playwright test --config=tests/playwright.config.mjs tests/headless/frontier-e3-c-perf.spec.mjs --project=webkit
       - name: Home, camera and recovered regressions
-        if: ${{ !contains(github.event.head_commit.message, '[E3-A]') && !contains(github.event.head_commit.message, '[E3-B]') && !contains(github.event.head_commit.message, '[E3-C]') }}
+        if: ${{ !contains(github.event.head_commit.message, '[E3-A]') && !contains(github.event.head_commit.message, '[E3-B]') && !contains(github.event.head_commit.message, '[E3-C]') && !contains(github.event.head_commit.message, '[E3-C-PERF]') }}
         run: npx playwright test --config=tests/playwright.config.mjs tests/headless/home-composition.spec.mjs tests/headless/experience-overhaul.spec.mjs tests/headless/living-evening.spec.mjs tests/headless/baseline-risks.spec.mjs tests/headless/home-resident.spec.mjs tests/headless/aya-walk-review.spec.mjs tests/headless/neighbourhood-review.spec.mjs
       - name: Keep actual gameplay screenshots and failures
         if: always()
