@@ -1,0 +1,45 @@
+{
+  "evening": {
+    "day": 60,
+    "minute": 1200.8651999987362,
+    "action": 0,
+    "task": "life_home",
+    "visit": {
+      "building": 7,
+      "x": 22.40625,
+      "y": 31.6875,
+      "streetX": 22.5,
+      "streetY": 32.5,
+      "job": "life_home",
+      "stage": "inside"
+    },
+    "home": 7,
+    "memories": 6
+  },
+  "rest": {
+    "task": "rest",
+    "stage": "inside",
+    "building": 7,
+    "action": 1.0498999999999972,
+    "v": 4,
+    "diagnostics": {
+      "id": 1,
+      "name": "Aya Mercer",
+      "pose": "sleeping",
+      "activity": "Resting in her bunk",
+      "frame": 5,
+      "source": {
+        "x": 139,
+        "y": 879,
+        "w": 105,
+        "h": 49
+      },
+      "screen": {
+        "x": -16.76265060240968,
+        "y": 464.3525301204819,
+        "w": 90.755421686747,
+        "h": 42.35253012048193
+      }
+    }
+  }
+}

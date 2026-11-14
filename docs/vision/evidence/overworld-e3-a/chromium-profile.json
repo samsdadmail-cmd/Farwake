@@ -1,0 +1,117 @@
+{
+  "unchanged": true,
+  "environment": {
+    "bakes": 1,
+    "lastBakeMs": 47.39999999999418,
+    "maxBakeMs": 47.39999999999418,
+    "pixels": 495616,
+    "waterMarks": 18,
+    "sway": 16,
+    "atlasReady": true
+  },
+  "district": {
+    "home": 7,
+    "radius": 9.5,
+    "buildings": [
+      {
+        "id": 1,
+        "type": "lander",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 2,
+        "type": "supplies",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 3,
+        "type": "camp",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 7,
+        "type": "shelter",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 11,
+        "type": "garden",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 14,
+        "type": "solar",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 32,
+        "type": "sawmill",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 55,
+        "type": "cabin",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 86,
+        "type": "wind",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 144,
+        "type": "wind",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 160,
+        "type": "dining",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 204,
+        "type": "wind",
+        "mode": "daylight",
+        "strength": 0
+      },
+      {
+        "id": 242,
+        "type": "wind",
+        "mode": "daylight",
+        "strength": 0
+      }
+    ],
+    "plates": 10,
+    "groundPixels": 0,
+    "rotors": 8
+  },
+  "day": 58,
+  "minute": 700.2429699992379,
+  "camera": {
+    "x": 825.6,
+    "y": 1008,
+    "z": 1
+  },
+  "districtPrepare": {
+    "median": 0,
+    "p95": 0.09999999999126885,
+    "max": 0.10000000000582077
+  },
+  "pausedDraw": {
+    "median": 0.40000000000873115,
+    "p95": 1.3999999999941792,
+    "max": 56.79999999998836
+  },
+  "errors": []
+}

@@ -1,0 +1,315 @@
+{
+  "note": "Desktop CI CPU proxy. Three independent module-cold browser/storage contexts per version, each imported from the same real colony; no whole-process/uncached-network claim. Sixty-draw bursts exclude simulation/GPU completion. A separate fresh page then samples 120 draw regions in the unchanged live game loop (district prepare through final moments pass); callback gaps also include normal simulation/UI/browser scheduling. Physical iPhone performance remains unverified.",
+  "runs": [
+    {
+      "version": "before",
+      "repeat": 0,
+      "coldTotal": 51.5,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 48.10000000000582,
+        "maxBakeMs": 48.10000000000582,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6000000000058208,
+        "p95": 1.1000000000058208,
+        "max": 56.79999999998836
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 48.10000000000582,
+        "maxBakeMs": 48.10000000000582,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "unchanged": true
+    },
+    {
+      "version": "refined",
+      "repeat": 0,
+      "coldTotal": 49.39999999999418,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 45.29999999998836,
+        "maxBakeMs": 45.29999999998836,
+        "phases": {
+          "sprites": 0.8999999999941792,
+          "routes": 6.399999999994179,
+          "lattice": 10.89999999999418,
+          "raster": 21.900000000023283,
+          "composition": 5.199999999982538
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6000000000058208,
+        "p95": 1.5,
+        "max": 57.79999999998836
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 45.29999999998836,
+        "maxBakeMs": 45.29999999998836,
+        "phases": {
+          "sprites": 0.8999999999941792,
+          "routes": 6.399999999994179,
+          "lattice": 10.89999999999418,
+          "raster": 21.900000000023283,
+          "composition": 5.199999999982538
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "unchanged": true
+    },
+    {
+      "version": "before",
+      "repeat": 1,
+      "coldTotal": 51,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 47.70000000001164,
+        "maxBakeMs": 47.70000000001164,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6000000000058208,
+        "p95": 1.8000000000174623,
+        "max": 56.70000000001164
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 47.70000000001164,
+        "maxBakeMs": 47.70000000001164,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "unchanged": true
+    },
+    {
+      "version": "refined",
+      "repeat": 1,
+      "coldTotal": 58.59999999997672,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 54.30000000001746,
+        "maxBakeMs": 54.30000000001746,
+        "phases": {
+          "sprites": 1.1000000000058208,
+          "routes": 6.7000000000116415,
+          "lattice": 15.89999999999418,
+          "raster": 25.10000000000582,
+          "composition": 5.600000000005821
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6999999999825377,
+        "p95": 1.3999999999941792,
+        "max": 58.80000000001746
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 54.30000000001746,
+        "maxBakeMs": 54.30000000001746,
+        "phases": {
+          "sprites": 1.1000000000058208,
+          "routes": 6.7000000000116415,
+          "lattice": 15.89999999999418,
+          "raster": 25.10000000000582,
+          "composition": 5.600000000005821
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "unchanged": true
+    },
+    {
+      "version": "before",
+      "repeat": 2,
+      "coldTotal": 58.20000000001164,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 54.79999999998836,
+        "maxBakeMs": 54.79999999998836,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6000000000058208,
+        "p95": 1.2999999999883585,
+        "max": 57.20000000001164
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 54.79999999998836,
+        "maxBakeMs": 54.79999999998836,
+        "pixels": 495616,
+        "waterMarks": 18,
+        "sway": 16,
+        "atlasReady": true
+      },
+      "unchanged": true
+    },
+    {
+      "version": "refined",
+      "repeat": 2,
+      "coldTotal": 55.60000000000582,
+      "cold": {
+        "bakes": 1,
+        "lastBakeMs": 51.29999999998836,
+        "maxBakeMs": 51.29999999998836,
+        "phases": {
+          "sprites": 0.8999999999941792,
+          "routes": 6.100000000005821,
+          "lattice": 13.5,
+          "raster": 25.699999999982538,
+          "composition": 5.100000000005821
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "burst": {
+        "median": 0.6000000000058208,
+        "p95": 1.1999999999825377,
+        "max": 57.20000000001164
+      },
+      "end": {
+        "bakes": 1,
+        "lastBakeMs": 51.29999999998836,
+        "maxBakeMs": 51.29999999998836,
+        "phases": {
+          "sprites": 0.8999999999941792,
+          "routes": 6.100000000005821,
+          "lattice": 13.5,
+          "raster": 25.699999999982538,
+          "composition": 5.100000000005821
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "unchanged": true
+    }
+  ],
+  "paced": {
+    "reason": "complete",
+    "frames": 120,
+    "draw": {
+      "median": 0.6999999999825377,
+      "p95": 0.8999999999941792,
+      "max": 1.3000000000174623
+    },
+    "callbackGap": {
+      "median": 16.699999999982538,
+      "p95": 16.89999999999418,
+      "max": 17.79999999998836
+    },
+    "slow": [],
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 67,
+      "maxBakeMs": 67,
+      "phases": {
+        "sprites": 16.89999999999418,
+        "routes": 6.399999999994179,
+        "lattice": 12.700000000011642,
+        "raster": 25.599999999976717,
+        "composition": 5.400000000023283
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    },
+    "health": {
+      "probe": "freeze-probe-2",
+      "frames": 129,
+      "ticks": 127,
+      "saves": 0,
+      "resizes": 2,
+      "contextLosses": 0,
+      "contextRestores": 0,
+      "phase": "draw",
+      "phaseStarted": 2377.399999999994,
+      "maxPhaseMs": {
+        "tick": 16.39999999999418,
+        "presentation": 0.20000000001164153,
+        "draw": 166.5,
+        "idle": 48.19999999998254,
+        "ui": 0.8000000000174623
+      },
+      "error": null,
+      "day": 58,
+      "minute": 706.3738399992412,
+      "colonists": 8,
+      "buildings": 32,
+      "piles": 1,
+      "canvas": [
+        390,
+        844
+      ],
+      "audio": "running",
+      "paused": true,
+      "saveProtection": false,
+      "heap": 24500000,
+      "visibility": "visible"
+    },
+    "day": 58,
+    "minute": 706.3738399992412
+  }
+}

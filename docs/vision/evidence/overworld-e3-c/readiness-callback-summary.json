@@ -1,0 +1,924 @@
+{
+  "run": 43601896472,
+  "sourceCommit": "0b9592e11708bc70ef25e211eed945b9da593976",
+  "probe": "tests/headless/e3-integration-readiness.spec.mjs",
+  "note": "Exact console diagnostic objects from twelve fresh desktop WebKit contexts. Original Day-58 save; same evening/camera. Each condition repeated three times. Milliseconds; no screenshot/resident polling during timing. Body measures synchronous callback; outside is not proof of OS-only scheduling. Original full per-frame JSON/video were cleaned by later regression invocations before artifact upload; exact console objects, slow frames and timing/event summaries remain in the CI log and this file. Dedicated output-directory retention is configured for future runs. First run had a separate draw outlier. Not physical iPhone or sustained large-colony evidence.",
+  "rows": [
+    {
+      "mode": "live-drawers-no-video",
+      "repeat": 0,
+      "summary": {
+        "gap": {
+          "n": 712,
+          "p95": 32,
+          "max": 616,
+          "over100": 5,
+          "over250": 3
+        },
+        "body": {
+          "n": 712,
+          "p95": 2,
+          "max": 197,
+          "over100": 1,
+          "over250": 0
+        },
+        "outside": {
+          "n": 712,
+          "p95": 28,
+          "max": 613,
+          "over100": 5,
+          "over250": 2
+        },
+        "draw": {
+          "n": 712,
+          "p95": 2,
+          "max": 197,
+          "over100": 1,
+          "over250": 0
+        }
+      },
+      "slow": [
+        {
+          "at": 318,
+          "gap": 105,
+          "outside": 102,
+          "body": 3,
+          "draw": 2,
+          "end": 4391,
+          "hidden": false
+        },
+        {
+          "at": 936,
+          "gap": 22,
+          "outside": 20,
+          "body": 197,
+          "draw": 197,
+          "end": 5203,
+          "hidden": false
+        },
+        {
+          "at": 1354,
+          "gap": 418,
+          "outside": 221,
+          "body": 2,
+          "draw": 2,
+          "end": 5426,
+          "hidden": false
+        },
+        {
+          "at": 4448,
+          "gap": 254,
+          "outside": 253,
+          "body": 1,
+          "draw": 1,
+          "end": 8519,
+          "hidden": false
+        },
+        {
+          "at": 4668,
+          "gap": 146,
+          "outside": 144,
+          "body": 1,
+          "draw": 1,
+          "end": 8739,
+          "hidden": false
+        },
+        {
+          "at": 14019,
+          "gap": 616,
+          "outside": 613,
+          "body": 2,
+          "draw": 2,
+          "end": 18091,
+          "hidden": false
+        }
+      ],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4224
+        },
+        {
+          "action": "Close panel",
+          "at": 6430
+        },
+        {
+          "action": "View all resources",
+          "at": 10697
+        },
+        {
+          "action": "Close panel",
+          "at": 12908
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 549,
+          "ms": 0
+        },
+        {
+          "at": 549,
+          "ms": 0
+        },
+        {
+          "at": 12236,
+          "ms": 0
+        },
+        {
+          "at": 12236,
+          "ms": 0
+        },
+        {
+          "at": 14670,
+          "ms": 0
+        },
+        {
+          "at": 14670,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-drawers-no-video",
+      "repeat": 1,
+      "summary": {
+        "gap": {
+          "n": 749,
+          "p95": 31,
+          "max": 97,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 749,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 749,
+          "p95": 28,
+          "max": 91,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 749,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4245
+        },
+        {
+          "action": "Close panel",
+          "at": 6443
+        },
+        {
+          "action": "View all resources",
+          "at": 10737
+        },
+        {
+          "action": "Close panel",
+          "at": 12950
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 11518,
+          "ms": 0
+        },
+        {
+          "at": 11518,
+          "ms": 0
+        },
+        {
+          "at": 13477,
+          "ms": 0
+        },
+        {
+          "at": 13477,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-drawers-no-video",
+      "repeat": 2,
+      "summary": {
+        "gap": {
+          "n": 796,
+          "p95": 30,
+          "max": 69,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 796,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 796,
+          "p95": 28,
+          "max": 67,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 796,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4187
+        },
+        {
+          "action": "Close panel",
+          "at": 6366
+        },
+        {
+          "action": "View all resources",
+          "at": 10628
+        },
+        {
+          "action": "Close panel",
+          "at": 12865
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 525,
+          "ms": 0
+        },
+        {
+          "at": 525,
+          "ms": 0
+        },
+        {
+          "at": 11465,
+          "ms": 0
+        },
+        {
+          "at": 11465,
+          "ms": 0
+        },
+        {
+          "at": 13426,
+          "ms": 0
+        },
+        {
+          "at": 13426,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-drawers-video",
+      "repeat": 0,
+      "summary": {
+        "gap": {
+          "n": 708,
+          "p95": 34,
+          "max": 74,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 708,
+          "p95": 3,
+          "max": 7,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 708,
+          "p95": 30,
+          "max": 72,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 708,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4238
+        },
+        {
+          "action": "Close panel",
+          "at": 6430
+        },
+        {
+          "action": "View all resources",
+          "at": 10710
+        },
+        {
+          "action": "Close panel",
+          "at": 12918
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 534,
+          "ms": 0
+        },
+        {
+          "at": 534,
+          "ms": 0
+        },
+        {
+          "at": 11566,
+          "ms": 0
+        },
+        {
+          "at": 11566,
+          "ms": 0
+        },
+        {
+          "at": 13363,
+          "ms": 0
+        },
+        {
+          "at": 13363,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-drawers-video",
+      "repeat": 1,
+      "summary": {
+        "gap": {
+          "n": 713,
+          "p95": 34,
+          "max": 71,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 713,
+          "p95": 3,
+          "max": 12,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 713,
+          "p95": 30,
+          "max": 70,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 713,
+          "p95": 2,
+          "max": 7,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4241
+        },
+        {
+          "action": "Close panel",
+          "at": 6429
+        },
+        {
+          "action": "View all resources",
+          "at": 10656
+        },
+        {
+          "action": "Close panel",
+          "at": 12862
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 11378,
+          "ms": 0
+        },
+        {
+          "at": 11378,
+          "ms": 0
+        },
+        {
+          "at": 13414,
+          "ms": 0
+        },
+        {
+          "at": 13414,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-drawers-video",
+      "repeat": 2,
+      "summary": {
+        "gap": {
+          "n": 703,
+          "p95": 34,
+          "max": 74,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 703,
+          "p95": 3,
+          "max": 7,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 703,
+          "p95": 31,
+          "max": 72,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 703,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4260
+        },
+        {
+          "action": "Close panel",
+          "at": 6463
+        },
+        {
+          "action": "View all resources",
+          "at": 10757
+        },
+        {
+          "action": "Close panel",
+          "at": 12939
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 523,
+          "ms": 0
+        },
+        {
+          "at": 11444,
+          "ms": 0
+        },
+        {
+          "at": 11444,
+          "ms": 0
+        },
+        {
+          "at": 13438,
+          "ms": 0
+        },
+        {
+          "at": 13438,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-idle-no-video",
+      "repeat": 0,
+      "summary": {
+        "gap": {
+          "n": 768,
+          "p95": 28,
+          "max": 36,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 768,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 768,
+          "p95": 26,
+          "max": 34,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 768,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 526,
+          "ms": 0
+        },
+        {
+          "at": 526,
+          "ms": 0
+        },
+        {
+          "at": 11444,
+          "ms": 0
+        },
+        {
+          "at": 11444,
+          "ms": 0
+        },
+        {
+          "at": 13429,
+          "ms": 0
+        },
+        {
+          "at": 13429,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-idle-no-video",
+      "repeat": 1,
+      "summary": {
+        "gap": {
+          "n": 778,
+          "p95": 28,
+          "max": 36,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 778,
+          "p95": 2,
+          "max": 9,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 778,
+          "p95": 26,
+          "max": 35,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 778,
+          "p95": 2,
+          "max": 5,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 520,
+          "ms": 0
+        },
+        {
+          "at": 520,
+          "ms": 0
+        },
+        {
+          "at": 11437,
+          "ms": 0
+        },
+        {
+          "at": 11437,
+          "ms": 0
+        },
+        {
+          "at": 13436,
+          "ms": 0
+        },
+        {
+          "at": 13436,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "live-idle-no-video",
+      "repeat": 2,
+      "summary": {
+        "gap": {
+          "n": 777,
+          "p95": 28,
+          "max": 36,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 777,
+          "p95": 2,
+          "max": 7,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 777,
+          "p95": 26,
+          "max": 34,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 777,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 518,
+          "ms": 0
+        },
+        {
+          "at": 518,
+          "ms": 0
+        },
+        {
+          "at": 11461,
+          "ms": 0
+        },
+        {
+          "at": 11461,
+          "ms": 0
+        },
+        {
+          "at": 13415,
+          "ms": 0
+        },
+        {
+          "at": 13415,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "paused-drawers-no-video",
+      "repeat": 0,
+      "summary": {
+        "gap": {
+          "n": 706,
+          "p95": 34,
+          "max": 70,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 706,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 706,
+          "p95": 31,
+          "max": 69,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 706,
+          "p95": 2,
+          "max": 4,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4264
+        },
+        {
+          "action": "Close panel",
+          "at": 6486
+        },
+        {
+          "action": "View all resources",
+          "at": 10761
+        },
+        {
+          "action": "Close panel",
+          "at": 12969
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 11447,
+          "ms": 0
+        },
+        {
+          "at": 11447,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "paused-drawers-no-video",
+      "repeat": 1,
+      "summary": {
+        "gap": {
+          "n": 730,
+          "p95": 33,
+          "max": 71,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 730,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 730,
+          "p95": 31,
+          "max": 69,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 730,
+          "p95": 2,
+          "max": 3,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4270
+        },
+        {
+          "action": "Close panel",
+          "at": 6503
+        },
+        {
+          "action": "View all resources",
+          "at": 10785
+        },
+        {
+          "action": "Close panel",
+          "at": 12997
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 11481,
+          "ms": 0
+        },
+        {
+          "at": 11481,
+          "ms": 0
+        }
+      ]
+    },
+    {
+      "mode": "paused-drawers-no-video",
+      "repeat": 2,
+      "summary": {
+        "gap": {
+          "n": 728,
+          "p95": 33,
+          "max": 68,
+          "over100": 0,
+          "over250": 0
+        },
+        "body": {
+          "n": 728,
+          "p95": 2,
+          "max": 6,
+          "over100": 0,
+          "over250": 0
+        },
+        "outside": {
+          "n": 728,
+          "p95": 30,
+          "max": 67,
+          "over100": 0,
+          "over250": 0
+        },
+        "draw": {
+          "n": 728,
+          "p95": 2,
+          "max": 4,
+          "over100": 0,
+          "over250": 0
+        }
+      },
+      "slow": [],
+      "events": [
+        {
+          "action": "Open People",
+          "at": 4264
+        },
+        {
+          "action": "Close panel",
+          "at": 6468
+        },
+        {
+          "action": "View all resources",
+          "at": 10733
+        },
+        {
+          "action": "Close panel",
+          "at": 12929
+        }
+      ],
+      "visibility": [],
+      "storage": [
+        {
+          "at": 11438,
+          "ms": 0
+        },
+        {
+          "at": 11438,
+          "ms": 0
+        }
+      ]
+    }
+  ]
+}

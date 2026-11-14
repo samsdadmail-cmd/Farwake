@@ -1,0 +1,26 @@
+{
+  "sourceCommit": "205b8ac72a48eaef2769868c4f07fad1625aaee0",
+  "workflowRun": 43474466803,
+  "artifactId": 14062681498,
+  "testsPassed": 74,
+  "video": {
+    "file": "aya-walk-turn-stop.mp4",
+    "sourceDurationSeconds": 13.04,
+    "trimStartSeconds": 1.4,
+    "durationSeconds": 11.2,
+    "playbackSpeed": 1,
+    "simulationSpeed": 1,
+    "viewport": [
+      390,
+      844
+    ],
+    "cameraZoom": 2.35
+  },
+  "files": {
+    "home-direct-entry-390.png": "b114f7b40e7497af79d9e37488c22686129193e646a94ecaff46336a4da82ffd",
+    "aya-outdoor-stop-state.json": "ba3b727225757a84f312051b10be1f2063408a26bb9ea891c73563cc95e89d80",
+    "aya-stopped-390.png": "b7d3a3d149ef22cd9c45815da5a7009c7dc239d6bb42b2aec7812e512e7a97cf",
+    "aya-walk-turn-stop.mp4": "ad1772404051d9ab6894bcd9a4021283593eafc9d2d0bfbe343d9702e00cab5b",
+    "aya-home-route-state.json": "47469a8b5f6464e6715ddce05df3abc541a938be7cd8816c3d6e46e50291a0d5"
+  }
+}

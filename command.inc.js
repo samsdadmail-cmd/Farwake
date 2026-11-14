@@ -65,7 +65,7 @@ function showBuilding(id){
  const housing=housingBeds(b)?housingPanel(b):'';
  const storage=storageBuildings().includes(b)?freightStorePanel(b):'';
  showSheet(sectionHeader(facilityName(b),'FACILITY • '+b.x+', '+b.y)+
- (experienceRoom(b)||frontierFacilityHero(b))+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
+ (b.finished&&b.type==='shelter'?'<button class="primary" data-home-enter="'+b.id+'">Enter home</button>':'')+(experienceRoom(b)||frontierFacilityHero(b))+'<div id="facility-readout" class="facility-readout">'+facilityReadout(b)+'</div>'+
  '<details><summary>History of this place</summary>'+frontierHistoryPanel(b)+'</details>'+(housing?'<details><summary>Residents & beds</summary>'+housing+'</details>':'')+storage+industryDetails(b)+frontierCivicPanel(b)+frontierProjectPanel(b)+frontierUpgradeControls(b)+editorControls(b)+
  '<button class="secondary" data-guide="'+(housing?'Housing':storage?'Logistics':b.type==='garden'?'Agriculture':b.type==='workshop'?'Manufacturing':'Construction')+'">Field guide</button>');
  renderNavState();
@@ -124,3 +124,5 @@ $('sheet').addEventListener('click',e=>{
  if(guide)showGuide(guide.dataset.guide);
 });
 $('sheet').addEventListener('input',e=>{if(e.target.id==='guide-query')$('guide-entries').innerHTML=guideResults(e.target.value)});
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-home-enter]');if(b)FarwakeHomeVisit.enter(+b.dataset.homeEnter)});

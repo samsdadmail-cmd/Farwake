@@ -20,15 +20,20 @@ window.FarwakePeople = (() => {
     v.reduced=!!options.reduced;v.leisure=options.life;const settled=options.life&&!['waiting','greeting','settling','goodbye','finishing'].includes(options.life.phase);v.settle=(v.settle||0)+((settled?1:0)-(v.settle||0))*(v.reduced?1:1-Math.exp(-dt*7));
     const blend=1-Math.exp(-dt*23*Math.sqrt(speed||1));
     const dx=x-v.x,dy=y-v.y,dist=Math.hypot(dx,dy);
-    if(dist>2){v.x=x;v.y=y;v.walk=0;return v}
+    if(dist>2){v.x=x;v.y=y;v.walk=0;v.travelSpeed=0;return v}
     const moved=dist*blend;
+    // Actual damped presentation speed, including the final approach to rest.
+    // Kept outside save state; authored locomotion must not use lingering blend
+    // strength as evidence that a stationary person is still taking steps.
+    v.travelSpeed=moved/dt;
     v.x+=dx*blend;v.y+=dy*blend;
     const strength=Math.min(1,moved/Math.max(.001,dt)/(1.15*(speed||1)));
     v.walk+=(strength-v.walk)*(1-Math.exp(-dt*15));
     if(dist>.015)v.dir=face(dx,dy);else if(options.life?.look)v.dir=face(options.life.look.x-p.x,options.life.look.y-p.y);
     const phase=v.phase;
     v.phase+=moved*(p.carry?8.8:8);
-    if(v.walk>.17&&Math.floor(phase/Math.PI)!==Math.floor(v.phase/Math.PI))options.onSound?.('step',p);
+    const stepRate=window.FarwakeHomeResident?.identity(p) ? .75 : 1;
+    if(v.walk>.17&&Math.floor(phase*stepRate/Math.PI)!==Math.floor(v.phase*stepRate/Math.PI))options.onSound?.('step',p);
     if(v.held!==!!p.carry){
       if(p.carry){v.lift=1;v.carry=p.carry.kind;v.drop=0}
       else v.drop=1;
@@ -92,6 +97,43 @@ window.FarwakePeople = (() => {
         box(x+2,y+1,5,1,refined?'#e0e6d8':'#ceb28b');
       }
     }
+  }
+
+  // Aya's authored body remains authoritative in every exterior activity.
+  // These small overlays reuse actual carried cargo/work progress; no save writes,
+  // wall-clock activity or invented work animation/production are introduced.
+  function identityProps(ctx,p,v){
+    const box=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)};
+    if(p.carry||v.drop>0){
+      ctx.save();ctx.translate(1,-7+5*(v.held?v.lift:1-v.drop));ctx.globalAlpha*=v.held?1:v.drop;
+      bundle(ctx,p.carry?.kind||v.carry);ctx.restore();return 'cargo';
+    }
+    if(p.path?.length||(v.travelSpeed??0)>.08)return null;
+    if(p.task?.type==='rest')return null;
+    if(v.work>.02){
+      const stroke=(v.reduced ? .5 : Math.sin(v.stroke*Math.PI))*v.work;
+      ctx.save();ctx.globalAlpha*=v.work;ctx.translate(6,-7);
+      if(['research','craft'].includes(v.kind)){
+        box(-1,-2,6,4,'#445b59');box(0,-2,4,2,'#a1c1b9');box(1+stroke,-1,1,1,'#e5c17c');
+      }else if(['bush','forage','farm','harvest'].includes(v.kind)){
+        ctx.rotate(.5-stroke*.85);box(0,-5,2,8,strap);box(-1,-6,4,3,'#b1b7a4');box(0,-8,2,2,'#b1b7a4');
+      }else{
+        ctx.rotate(.98-2.45*stroke);box(0,-10,2,13,'#b79467');
+        if(v.kind==='tree'){box(-2,-11,5,3,'#c2cbba');box(2,-12,3,5,'#9daaa2')}
+        else if(v.kind==='ore'){box(-3,-11,8,2,'#c4cfcb');box(4,-10,2,2,'#95a7a2')}
+        else box(-2,-12,6,4,'#b6c2be');
+      }
+      ctx.restore();return v.kind;
+    }
+    // Preserve the existing truthful handheld leisure/need cues. The atlas has
+    // no authored seated/kneeling exterior rigs; do not substitute an old body.
+    const kind=v.leisure?.kind;
+    if(p.task?.type==='eat'){box(4,-7,7,3,'#bfae88');box(5,-8,5,1,'#78885c');return 'meal'}
+    if(kind==='plants'){box(5,-7,2,7,'#8eab78');box(3,-7,3,2,'#b7c28c');return kind}
+    if(['tinkering','project'].includes(kind)){box(4,-7,7,4,'#637879');box(6,-8,2,6,'#c2b69a');return kind}
+    if(kind==='sky'){box(4,-18,5,3,'#bfa574');box(7,-19,2,5,'#536b6d');return kind}
+    if(kind==='reading'){box(4,-8,7,5,'#c6b790');box(7,-8,1,5,'#786954');return kind}
+    return null;
   }
 
   function drawClassic(ctx,p,tileSize,time,selected,zoom) {
@@ -184,6 +226,7 @@ window.FarwakePeople = (() => {
   // sequence; changing the camera or skipping frames cannot advance a meeting.
   function draw(ctx,p,tileSize,time,selected,zoom){
     const v=pose(p),life=v.leisure,arrived=!p.path?.length;
+    if(window.FarwakeHomeResident?.drawWorld(ctx,p,v,tileSize,selected))return;
     const need=arrived&&['eat','rest','social'].includes(p.task?.type);
     if(!life&&!need){drawClassic(ctx,p,tileSize,time,selected,zoom);return}
     const kind=life?.kind||(p.task.type==='eat'?'eating':p.task.type==='rest'?'resting':'conversation');
@@ -264,5 +307,5 @@ window.FarwakePeople = (() => {
     }
     ctx.restore();
   }
-  return {draw,pile,advance,pose,bundle};
+  return {draw,pile,advance,pose,bundle,identityProps};
 })();

@@ -1,0 +1,18 @@
+{
+  "source": "da6abd71bb3674ffd6ca9d8f19e30f2218e69bc7",
+  "branch": "home-composition-checkpoint",
+  "sourceCI": 43582068613,
+  "artifact": 14108354952,
+  "artifactSHA256": "55a38090bcbcf849f74fe7638ce73a865d93a3256bc69999efe533937bceb922",
+  "preview": "https://farwake-founders-p3ovxn3y9-atlas-8c31.vercel.app/",
+  "video": {
+    "source": "frontier-e3-b-E3-B-uninter-8276a-normal-live-CPU-draw-sample-chromium/video.webm",
+    "offsetSeconds": 4.122,
+    "durationSeconds": 10,
+    "testWallStart": 1794649615381,
+    "takeStart": 1794649616503,
+    "takeEnd": 1794649630640,
+    "trim": "Leading setup/trailing pause only. No internal cuts, retiming, resizing or assigned activity. Original video and complete state remain in source CI artifact.",
+    "encodedDurationSeconds": 9.96
+  }
+}

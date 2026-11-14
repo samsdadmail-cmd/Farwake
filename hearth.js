@@ -219,5 +219,5 @@ window.FarwakeHearth = (() => {
     }
     c.restore();
   }
-  return {draw,configure,historyTier,clearCache(){plates.clear()}};
+  return {draw,configure,history(c,b){c.drawImage(historyPlate(b,historyTier(b)),0,0)},historyTier,clearCache(){plates.clear()}};
 })();

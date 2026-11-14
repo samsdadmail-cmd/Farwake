@@ -1,0 +1,6846 @@
+{
+  "testWallStart": 1794649615381,
+  "takeStart": 1794649616503,
+  "takeEnd": 1794649630640,
+  "start": {
+    "day": 58,
+    "minute": 717.9979099992347,
+    "camera": {
+      "x": 825.6,
+      "y": 1008,
+      "z": 1
+    },
+    "speed": "1×",
+    "people": [
+      {
+        "id": 1,
+        "x": 46.036249999999974,
+        "y": 42.5,
+        "task": {
+          "type": "haul_pickup",
+          "pileId": "lot-608",
+          "dest": 107,
+          "amount": 2,
+          "x": 30,
+          "y": 25
+        },
+        "path": [
+          {
+            "x": 46.5,
+            "y": 42.5
+          },
+          {
+            "x": 47.5,
+            "y": 42.5
+          },
+          {
+            "x": 48.5,
+            "y": 42.5
+          },
+          {
+            "x": 49.5,
+            "y": 42.5
+          },
+          {
+            "x": 50.5,
+            "y": 42.5
+          },
+          {
+            "x": 51.5,
+            "y": 42.5
+          },
+          {
+            "x": 52.5,
+            "y": 42.5
+          },
+          {
+            "x": 53.5,
+            "y": 42.5
+          },
+          {
+            "x": 54.5,
+            "y": 42.5
+          },
+          {
+            "x": 54.5,
+            "y": 41.5
+          },
+          {
+            "x": 54.5,
+            "y": 40.5
+          },
+          {
+            "x": 54.5,
+            "y": 39.5
+          },
+          {
+            "x": 54.5,
+            "y": 38.5
+          },
+          {
+            "x": 54.5,
+            "y": 37.5
+          },
+          {
+            "x": 54.5,
+            "y": 36.5
+          },
+          {
+            "x": 54.5,
+            "y": 35.5
+          },
+          {
+            "x": 54.5,
+            "y": 34.5
+          },
+          {
+            "x": 54.5,
+            "y": 33.5
+          },
+          {
+            "x": 54.5,
+            "y": 32.5
+          },
+          {
+            "x": 54.5,
+            "y": 31.5
+          },
+          {
+            "x": 54.5,
+            "y": 30.5
+          },
+          {
+            "x": 54.5,
+            "y": 29.5
+          },
+          {
+            "x": 53.5,
+            "y": 29.5
+          },
+          {
+            "x": 52.5,
+            "y": 29.5
+          },
+          {
+            "x": 51.5,
+            "y": 29.5
+          },
+          {
+            "x": 50.5,
+            "y": 29.5
+          },
+          {
+            "x": 49.5,
+            "y": 29.5
+          },
+          {
+            "x": 48.5,
+            "y": 29.5
+          },
+          {
+            "x": 47.5,
+            "y": 29.5
+          },
+          {
+            "x": 47.5,
+            "y": 28.5
+          },
+          {
+            "x": 47.5,
+            "y": 27.5
+          },
+          {
+            "x": 47.5,
+            "y": 26.5
+          },
+          {
+            "x": 46.5,
+            "y": 26.5
+          },
+          {
+            "x": 46.5,
+            "y": 25.5
+          },
+          {
+            "x": 45.5,
+            "y": 25.5
+          },
+          {
+            "x": 44.5,
+            "y": 25.5
+          },
+          {
+            "x": 43.5,
+            "y": 25.5
+          },
+          {
+            "x": 42.5,
+            "y": 25.5
+          },
+          {
+            "x": 41.5,
+            "y": 25.5
+          },
+          {
+            "x": 40.5,
+            "y": 25.5
+          },
+          {
+            "x": 39.5,
+            "y": 25.5
+          },
+          {
+            "x": 38.5,
+            "y": 25.5
+          },
+          {
+            "x": 37.5,
+            "y": 25.5
+          },
+          {
+            "x": 36.5,
+            "y": 25.5
+          },
+          {
+            "x": 35.5,
+            "y": 25.5
+          },
+          {
+            "x": 34.5,
+            "y": 25.5
+          },
+          {
+            "x": 33.5,
+            "y": 25.5
+          },
+          {
+            "x": 32.5,
+            "y": 25.5
+          },
+          {
+            "x": 31.5,
+            "y": 25.5
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "x": 20.03625000000002,
+        "y": 37.5,
+        "task": {
+          "type": "craft",
+          "id": 32,
+          "x": 23,
+          "y": 32,
+          "w": 3,
+          "h": 2
+        },
+        "path": [
+          {
+            "x": 20.5,
+            "y": 37.5
+          },
+          {
+            "x": 21.5,
+            "y": 37.5
+          },
+          {
+            "x": 22.5,
+            "y": 37.5
+          },
+          {
+            "x": 23.5,
+            "y": 37.5
+          },
+          {
+            "x": 24.5,
+            "y": 37.5
+          },
+          {
+            "x": 24.5,
+            "y": 36.5
+          },
+          {
+            "x": 24.5,
+            "y": 35.5
+          },
+          {
+            "x": 24.5,
+            "y": 34.5
+          },
+          {
+            "x": 25.5,
+            "y": 34.5
+          },
+          {
+            "x": 25.5,
+            "y": 34.5,
+            "portal": true
+          },
+          {
+            "x": 25.03125,
+            "y": 33.77875,
+            "portal": true
+          },
+          {
+            "x": 25.03125,
+            "y": 33.53875,
+            "portal": true
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "x": 38.005000000000024,
+        "y": 25.5,
+        "task": {
+          "type": "farm",
+          "id": 11,
+          "x": 29,
+          "y": 30,
+          "w": 3,
+          "h": 2
+        },
+        "path": [
+          {
+            "x": 37.5,
+            "y": 25.5
+          },
+          {
+            "x": 36.5,
+            "y": 25.5
+          },
+          {
+            "x": 35.5,
+            "y": 25.5
+          },
+          {
+            "x": 34.5,
+            "y": 25.5
+          },
+          {
+            "x": 33.5,
+            "y": 25.5
+          },
+          {
+            "x": 32.5,
+            "y": 25.5
+          },
+          {
+            "x": 32.5,
+            "y": 26.5
+          },
+          {
+            "x": 32.5,
+            "y": 27.5
+          },
+          {
+            "x": 32.5,
+            "y": 28.5
+          },
+          {
+            "x": 32.5,
+            "y": 29.5
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "x": 29.522545604022547,
+        "y": 28.147057211852143,
+        "task": null,
+        "path": []
+      },
+      {
+        "id": 5,
+        "x": 27.5,
+        "y": 29.5,
+        "task": null,
+        "path": []
+      },
+      {
+        "id": 6,
+        "x": 27.5,
+        "y": 29.5,
+        "task": null,
+        "path": []
+      },
+      {
+        "id": 7,
+        "x": 13.871249999999998,
+        "y": 39.5,
+        "task": {
+          "type": "craft",
+          "id": 65,
+          "x": 32,
+          "y": 32,
+          "w": 3,
+          "h": 2
+        },
+        "path": [
+          {
+            "x": 14.5,
+            "y": 39.5
+          },
+          {
+            "x": 14.5,
+            "y": 38.5
+          },
+          {
+            "x": 15.5,
+            "y": 38.5
+          },
+          {
+            "x": 16.5,
+            "y": 38.5
+          },
+          {
+            "x": 16.5,
+            "y": 37.5
+          },
+          {
+            "x": 17.5,
+            "y": 37.5
+          },
+          {
+            "x": 18.5,
+            "y": 37.5
+          },
+          {
+            "x": 19.5,
+            "y": 37.5
+          },
+          {
+            "x": 20.5,
+            "y": 37.5
+          },
+          {
+            "x": 21.5,
+            "y": 37.5
+          },
+          {
+            "x": 22.5,
+            "y": 37.5
+          },
+          {
+            "x": 23.5,
+            "y": 37.5
+          },
+          {
+            "x": 24.5,
+            "y": 37.5
+          },
+          {
+            "x": 24.5,
+            "y": 36.5
+          },
+          {
+            "x": 24.5,
+            "y": 35.5
+          },
+          {
+            "x": 24.5,
+            "y": 34.5
+          },
+          {
+            "x": 25.5,
+            "y": 34.5
+          },
+          {
+            "x": 26.5,
+            "y": 34.5
+          },
+          {
+            "x": 27.5,
+            "y": 34.5
+          },
+          {
+            "x": 28.5,
+            "y": 34.5
+          },
+          {
+            "x": 29.5,
+            "y": 34.5
+          },
+          {
+            "x": 30.5,
+            "y": 34.5
+          },
+          {
+            "x": 31.5,
+            "y": 34.5
+          },
+          {
+            "x": 32.5,
+            "y": 34.5
+          },
+          {
+            "x": 33.5,
+            "y": 34.5
+          },
+          {
+            "x": 34.5,
+            "y": 34.5
+          },
+          {
+            "x": 34.5,
+            "y": 34.5,
+            "portal": true
+          },
+          {
+            "x": 34.140625,
+            "y": 33.77875,
+            "portal": true
+          },
+          {
+            "x": 34.140625,
+            "y": 33.53875,
+            "portal": true
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "x": 33.27643500000046,
+        "y": 25.5,
+        "task": null,
+        "path": []
+      }
+    ],
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 0,
+      "washPlates": 0,
+      "shadowPlates": 11,
+      "rotorPlates": 12,
+      "toneBakes": 3,
+      "cachePixels": 172208
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 55.40000000000873,
+      "maxBakeMs": 55.40000000000873,
+      "phases": {
+        "sprites": 14.700000000011642,
+        "routes": 5.19999999999709,
+        "lattice": 11,
+        "raster": 19.59999999999127,
+        "composition": 4.900000000008731
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    }
+  },
+  "samples": [
+    {
+      "day": 58,
+      "minute": 719.5475999992356,
+      "people": [
+        {
+          "id": 1,
+          "x": 46.85738999999998,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 20.85739,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 37.197555000000015,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 29.508802360812844,
+          "y": 28.97177771025814
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 14.5,
+          "y": 39.30761000000001,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 32.451600000000504,
+          "y": 25.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 3,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 721.0975999992364,
+      "people": [
+        {
+          "id": 1,
+          "x": 47.66499999999999,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 21.665,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 36.389945000000004,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 28.794948702611933,
+          "y": 29.301436931376305
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 14.5,
+          "y": 38.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 31.626600000000526,
+          "y": 25.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 4,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 722.6990599992373,
+      "people": [
+        {
+          "id": 1,
+          "x": 48.5,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 22.5,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 35.53755500000005,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.95240613708342,
+          "y": 29.43062956805757
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 15.352390000000005,
+          "y": 38.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 30.77421000000053,
+          "y": 25.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 4,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 724.2493699992382,
+      "people": [
+        {
+          "id": 1,
+          "x": 49.32516499999998,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 23.325164999999995,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 34.72994500000003,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 16.160165000000006,
+          "y": 38.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 29.96474487713642,
+          "y": 25.524874366059798
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 4,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 725.799059999239,
+      "people": [
+        {
+          "id": 1,
+          "x": 50.13244499999997,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 24.132444999999997,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 33.92266500000003,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 16.5,
+          "y": 38.03255500000002,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 29.68622368993043,
+          "y": 26.29299457304763
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 5,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 727.3490599992399,
+      "people": [
+        {
+          "id": 1,
+          "x": 50.93988999999998,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 24.5,
+          "y": 37.06011000000002,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 33.11505500000002,
+          "y": 25.5,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 16.775055,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 29.568922738526727,
+          "y": 27.10921089677235
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 5,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 728.9505199992408,
+      "people": [
+        {
+          "id": 1,
+          "x": 51.77489000000001,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 24.5,
+          "y": 36.22510999999999,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 32.5,
+          "y": 25.719945,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 17.60989,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 29.52673298738566,
+          "y": 27.960556148123814
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 5,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 730.5005199992416,
+      "people": [
+        {
+          "id": 1,
+          "x": 52.5825,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 24.5,
+          "y": 35.4175,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 32.5,
+          "y": 26.52739,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 18.434889999999996,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 29.511556481140865,
+          "y": 28.78538794907875
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 6,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 732.0505199992425,
+      "people": [
+        {
+          "id": 1,
+          "x": 53.40750000000004,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 24.5,
+          "y": 34.59249999999996,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 32.5,
+          "y": 27.352389999999996,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 19.242499999999996,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.962365026000647,
+          "y": 29.264122563637827
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 6,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 733.6005199992434,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.214945000000036,
+          "y": 42.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.214944999999997,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 3,
+          "x": 32.5,
+          "y": 28.159999999999997,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 20.049944999999997,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.14789216168119,
+          "y": 29.3954958991638
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 6,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 735.2022899992443,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 41.94988999999999,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.215150389341655,
+          "y": 34.06171139906703,
+          "task": "craft",
+          "visit": "entering"
+        },
+        {
+          "id": 3,
+          "x": 32.5,
+          "y": 28.994999999999997,
+          "task": "farm"
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 20.885109999999997,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 7,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 736.7519799992451,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 41.142610000000005,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 32.224945000000005,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.775055,
+          "y": 29.5,
+          "task": "haul_dropoff"
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 21.692555,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.802445,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 0.1333000000000002
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 7,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 738.301669999246,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 40.335164999999996,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 31.40011000000002,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 28.5825,
+          "y": 29.5,
+          "task": "haul_dropoff"
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 22.5,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 0.6331999999999998
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 7,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 739.8519799992469,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 39.51000000000002,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 30.574945000000024,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 29.407664999999994,
+          "y": 29.5,
+          "task": "haul_dropoff"
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 23.325164999999995,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 1.1333000000000004
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 7,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 741.4534399992477,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 38.67499999999999,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 29.722555000000032,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 29.5,
+          "y": 28.757500000000007,
+          "task": "haul_dropoff"
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 24.159834999999994,
+          "y": 37.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 1.649900000000001
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 8,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 743.0034399992486,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 37.867389999999986,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 28.897555000000047,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 29.5,
+          "y": 29.022554999999993
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 24.5,
+          "y": 37.03255499999999,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 2.1499000000000015
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 8,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 744.5534399992495,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 37.059944999999985,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 28.07255500000006,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 28.73424480091417,
+          "y": 29.309149803487003
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 24.5,
+          "y": 36.22494499999999,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 2.6499000000000006
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 8,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 746.1548999992503,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 36.225109999999994,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.89186602059687,
+          "y": 29.43940609919338
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 24.5,
+          "y": 35.389945,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 3.1664999999999974
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 9,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 747.7048999992512,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 35.4175,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 24.5,
+          "y": 34.56494499999997,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 3.666499999999996
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 9,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 749.2548999992521,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 34.592499999999966,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 25.242499999999996,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.5,
+          "y": 29.5,
+          "task": "farm"
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 4.166499999999997
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 9,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 750.856359999253,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 33.75749999999997,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 26.077499999999997,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 28.335,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 4.683100000000005
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 10,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 752.4063599992538,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 32.95005499999996,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 26.884945,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.510000000000005,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 5.18310000000001
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 10,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 753.9563599992547,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 32.14244499999999,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 27.692555,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 5.6831000000000165
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 10,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 755.5578199992556,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 31.30761,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 28.52739,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 6.199700000000023
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 11,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 757.1078199992564,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 30.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 29.352389999999968,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 6.69970000000003
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 11,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 758.6575099992573,
+      "people": [
+        {
+          "id": 1,
+          "x": 54.5,
+          "y": 29.675165000000018,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 30.159834999999983,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 7.199600000000033
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 11,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 760.2078199992582,
+      "people": [
+        {
+          "id": 1,
+          "x": 53.867389999999986,
+          "y": 29.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 30.967444999999994,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 7.699700000000038
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 12,
+        "cachePixels": 183872
+      }
+    },
+    {
+      "day": 58,
+      "minute": 761.809279999259,
+      "people": [
+        {
+          "id": 1,
+          "x": 53.03255499999998,
+          "y": 29.5,
+          "task": "haul_pickup"
+        },
+        {
+          "id": 2,
+          "x": 25.03125,
+          "y": 33.53875,
+          "task": "craft",
+          "visit": "inside"
+        },
+        {
+          "id": 3,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 4,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 5,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 6,
+          "x": 27.5,
+          "y": 29.5
+        },
+        {
+          "id": 7,
+          "x": 31.802445,
+          "y": 34.5,
+          "task": "craft",
+          "visit": "approach"
+        },
+        {
+          "id": 8,
+          "x": 27.5,
+          "y": 29.5
+        }
+      ],
+      "architecture": {
+        "buildings": [
+          {
+            "id": 1,
+            "type": "lander",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 2,
+            "type": "supplies",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 3,
+            "type": "camp",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 7,
+            "type": "shelter",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 11,
+            "type": "garden",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 14,
+            "type": "solar",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 32,
+            "type": "sawmill",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 1,
+            "powered": true,
+            "activities": [
+              "craft"
+            ],
+            "people": [
+              {
+                "id": 2,
+                "name": "Tomas Venn",
+                "task": "craft",
+                "action": 8.216300000000038
+              }
+            ]
+          },
+          {
+            "id": 55,
+            "type": "cabin",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 86,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 144,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 160,
+            "type": "dining",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 204,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          },
+          {
+            "id": 242,
+            "type": "wind",
+            "mode": "daylight",
+            "strength": 0,
+            "exposure": 0,
+            "occupied": 0,
+            "powered": true,
+            "activities": [],
+            "people": []
+          }
+        ],
+        "basePlates": 11,
+        "spillPlates": 0,
+        "washPlates": 0,
+        "shadowPlates": 11,
+        "rotorPlates": 16,
+        "toneBakes": 12,
+        "cachePixels": 183872
+      }
+    }
+  ],
+  "movedIds": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    8
+  ],
+  "profile": {
+    "draw": {
+      "n": 848,
+      "median": 0.7999999999883585,
+      "p95": 1,
+      "max": 2.8000000000029104
+    },
+    "callbackGap": {
+      "n": 847,
+      "median": 16.69999999999709,
+      "p95": 16.89999999999418,
+      "max": 21.10000000000582
+    },
+    "slow": [],
+    "health": {
+      "probe": "freeze-probe-2",
+      "frames": 878,
+      "ticks": 1085,
+      "saves": 3,
+      "resizes": 2,
+      "contextLosses": 0,
+      "contextRestores": 0,
+      "phase": "idle",
+      "phaseStarted": 14893.699999999997,
+      "maxPhaseMs": {
+        "tick": 13.10000000000582,
+        "presentation": 1.5999999999912689,
+        "draw": 150.5,
+        "idle": 104,
+        "ui": 0.8000000000029104,
+        "save": 0.8000000000029104
+      },
+      "error": null,
+      "day": 58,
+      "minute": 761.809279999259,
+      "colonists": 8,
+      "buildings": 32,
+      "piles": 1,
+      "canvas": [
+        390,
+        844
+      ],
+      "audio": "running",
+      "paused": true,
+      "saveProtection": false,
+      "heap": 11200000,
+      "visibility": "visible"
+    },
+    "architecture": {
+      "buildings": [
+        {
+          "id": 1,
+          "type": "lander",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 2,
+          "type": "supplies",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 3,
+          "type": "camp",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 7,
+          "type": "shelter",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 11,
+          "type": "garden",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 14,
+          "type": "solar",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 32,
+          "type": "sawmill",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 1,
+          "powered": true,
+          "activities": [
+            "craft"
+          ],
+          "people": [
+            {
+              "id": 2,
+              "name": "Tomas Venn",
+              "task": "craft",
+              "action": 8.216300000000038
+            }
+          ]
+        },
+        {
+          "id": 55,
+          "type": "cabin",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 86,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 144,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 160,
+          "type": "dining",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 204,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        },
+        {
+          "id": 242,
+          "type": "wind",
+          "mode": "daylight",
+          "strength": 0,
+          "exposure": 0,
+          "occupied": 0,
+          "powered": true,
+          "activities": [],
+          "people": []
+        }
+      ],
+      "basePlates": 11,
+      "spillPlates": 0,
+      "washPlates": 0,
+      "shadowPlates": 11,
+      "rotorPlates": 16,
+      "toneBakes": 12,
+      "cachePixels": 183872
+    },
+    "environment": {
+      "bakes": 1,
+      "lastBakeMs": 55.40000000000873,
+      "maxBakeMs": 55.40000000000873,
+      "phases": {
+        "sprites": 14.700000000011642,
+        "routes": 5.19999999999709,
+        "lattice": 11,
+        "raster": 19.59999999999127,
+        "composition": 4.900000000008731
+      },
+      "pixels": 495616,
+      "latticeSamples": 7921,
+      "plants": 69,
+      "clusters": 44,
+      "trackSegments": 53,
+      "waterMarks": 17,
+      "sway": 14,
+      "atlasReady": true
+    }
+  },
+  "errors": [],
+  "note": "Normal unchanged game loop at 1×. No assigned tasks, routes, residents or resource grants. CPU draw regions exclude GPU completion; callback gaps include real simulation/UI/browser scheduling. Desktop CI is not physical iPhone verification."
+}

@@ -28,7 +28,10 @@ test('founders choose visible evenings and a completed meeting creates reciproca
  await page.evaluate(()=>FARWAKE_TEST.save());await page.reload();await run(page,10);
  expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.filter(p=>p.life?.bonds.length).map(p=>p.life.bonds[0].shared))).toEqual([1,1]);
  await page.evaluate(()=>{FARWAKE_TEST.state.minute=1201;for(const p of FARWAKE_TEST.state.colonists){p.task=null;p.path=[]}});
- await run(page,20);
+ await run(page,10);
+ expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.every(p=>p.task?.type==='life_home'&&p.visit?.stage==='inside'&&p.visit.building===p.home))).toBe(true);
+ // Quiet home time is awake; sleeping starts at each resident's later bedtime.
+ await page.evaluate(()=>FARWAKE_TEST.state.minute=1300);await run(page,10);
  expect(await page.evaluate(()=>FARWAKE_TEST.state.colonists.every(p=>p.task?.type==='rest'&&p.visit?.stage==='inside'&&p.visit.building===p.home))).toBe(true);
 });
 test('an invitation alone never creates a friendship; hunger interrupts without rewards',async({page})=>{
