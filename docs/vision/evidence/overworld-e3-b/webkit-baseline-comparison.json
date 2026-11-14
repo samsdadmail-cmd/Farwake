@@ -1,0 +1,200 @@
+{
+  "sourceBaseline": "de1829df9395ef09af4ff21faa748a00790cba47",
+  "note": "One fresh isolated 14-second ordinary-loop sample per version in desktop WebKit, same historical save/camera. E3-A exact neighbourhood and landscape are injected for its sample; E3-B is the normal build. No task/resource/occupancy grants. Host variance and GPU completion are not controlled; this investigates callback gaps, not physical iPhone performance.",
+  "versions": [
+    "E3-A",
+    "E3-B"
+  ],
+  "reports": [
+    {
+      "draw": {
+        "n": 667,
+        "median": 1,
+        "p95": 1,
+        "max": 3
+      },
+      "callbackGap": {
+        "n": 666,
+        "median": 20,
+        "p95": 25,
+        "max": 31
+      },
+      "initialEnvironment": {
+        "bakes": 1,
+        "lastBakeMs": 84,
+        "maxBakeMs": 84,
+        "phases": {
+          "sprites": 34,
+          "routes": 4,
+          "lattice": 12,
+          "raster": 29,
+          "composition": 5
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "environment": {
+        "bakes": 1,
+        "lastBakeMs": 84,
+        "maxBakeMs": 84,
+        "phases": {
+          "sprites": 34,
+          "routes": 4,
+          "lattice": 12,
+          "raster": 29,
+          "composition": 5
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "health": {
+        "probe": "freeze-probe-2",
+        "frames": 701,
+        "ticks": 677,
+        "saves": 3,
+        "resizes": 2,
+        "contextLosses": 0,
+        "contextRestores": 0,
+        "phase": "idle",
+        "phaseStarted": 15298,
+        "maxPhaseMs": {
+          "tick": 14,
+          "presentation": 2,
+          "draw": 158,
+          "idle": 134,
+          "ui": 5,
+          "save": 1
+        },
+        "error": null,
+        "day": 58,
+        "minute": 744.1863999992443,
+        "colonists": 8,
+        "buildings": 32,
+        "piles": 1,
+        "canvas": [
+          390,
+          844
+        ],
+        "audio": "running",
+        "paused": true,
+        "saveProtection": false,
+        "heap": null,
+        "visibility": "visible"
+      },
+      "camera": {
+        "x": 825.6,
+        "y": 1008,
+        "z": 1
+      },
+      "day": 58,
+      "minute": 744.1863999992443
+    },
+    {
+      "draw": {
+        "n": 737,
+        "median": 1,
+        "p95": 2,
+        "max": 2
+      },
+      "callbackGap": {
+        "n": 736,
+        "median": 19,
+        "p95": 22,
+        "max": 31
+      },
+      "initialEnvironment": {
+        "bakes": 1,
+        "lastBakeMs": 84,
+        "maxBakeMs": 84,
+        "phases": {
+          "sprites": 33,
+          "routes": 6,
+          "lattice": 11,
+          "raster": 29,
+          "composition": 5
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "environment": {
+        "bakes": 1,
+        "lastBakeMs": 84,
+        "maxBakeMs": 84,
+        "phases": {
+          "sprites": 33,
+          "routes": 6,
+          "lattice": 11,
+          "raster": 29,
+          "composition": 5
+        },
+        "pixels": 495616,
+        "latticeSamples": 7921,
+        "plants": 69,
+        "clusters": 44,
+        "trackSegments": 53,
+        "waterMarks": 17,
+        "sway": 14,
+        "atlasReady": true
+      },
+      "health": {
+        "probe": "freeze-probe-2",
+        "frames": 774,
+        "ticks": 748,
+        "saves": 3,
+        "resizes": 2,
+        "contextLosses": 0,
+        "contextRestores": 0,
+        "phase": "idle",
+        "phaseStarted": 15172,
+        "maxPhaseMs": {
+          "tick": 15,
+          "presentation": 1,
+          "draw": 229,
+          "idle": 97,
+          "ui": 2,
+          "save": 1
+        },
+        "error": null,
+        "day": 58,
+        "minute": 743.98799999923,
+        "colonists": 8,
+        "buildings": 32,
+        "piles": 1,
+        "canvas": [
+          390,
+          844
+        ],
+        "audio": "running",
+        "paused": true,
+        "saveProtection": false,
+        "heap": null,
+        "visibility": "visible"
+      },
+      "camera": {
+        "x": 825.6,
+        "y": 1008,
+        "z": 1
+      },
+      "day": 58,
+      "minute": 743.98799999923
+    }
+  ]
+}
