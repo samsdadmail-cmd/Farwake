@@ -1,6 +1,13 @@
 # Roadmap — checkpoint driven
 
-Status on 13 November 2026: Experience Overhaul remains in development. No creative
+## Current gate — 14 November 2026
+
+E3-C is conditionally approved as a unified neighbourhood foundation; definitive
+art identity remains unapproved. Preserve PR #25, assess real-save/management
+integration and WebKit stalls, retain physical iPhone and delivered-save requirements,
+and stop for the next creative decision. No new visual expansion is selected.
+
+Historical roadmap status on 13 November 2026: Experience Overhaul remains in development. No creative
 approval or production release is implied by earlier milestone reports.
 
 ## A — One playable home: composition review

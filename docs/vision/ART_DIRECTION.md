@@ -113,3 +113,18 @@ The first HUD replacement uses restrained field marks, sans/monospace labels,
 contextual controls and 44px touch areas. It preserves existing navigation and
 management while removing the idle black/gold dashboard. Overall richness and
 final UI identity still require review; no landscape or physical-phone approval.
+
+## E3-C conditional creative approval — 14 November 2026
+
+Kyle & Atlas conditionally approve the complete E3 implementation as the unified
+neighbourhood foundation: environmental cohesion, architectural material family,
+truthful household lamplight and unified field interface. This supersedes the
+earlier pending-review status; it does not grant definitive overworld approval.
+
+Preserve the E3 review at `f54f8b19061fc9a0e83e77e7627ee14a046f2869` on PR #25.
+Remaining repetition in roof patterns/silhouettes, limited environmental depth and
+hierarchy, peripheral terrain blending and small/muted interface text are retained
+limitations. Do not continue an unbounded cosmetic cycle or spread this artwork
+across the entire world. Select the next major visual milestone only after the
+readiness assessment and Kyle/Atlas's next decision, based on the complete living
+colony experience. Physical iPhone performance/usability remains an acceptance gate.

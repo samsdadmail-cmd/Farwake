@@ -3,7 +3,7 @@
 Kyle & Atlas conditionally approved E3-B's architecture and simulation-driven
 lighting foundation on 14 November 2026, with the overall scene-quality gap and
 performance limits retained. E3-C is implemented and technically verified here;
-**creative approval is pending**. The same 13-structure pilot remains bounded.
+**conditionally approved as the unified neighbourhood foundation by Kyle & Atlas on 14 November 2026**. Definitive overworld identity remains unapproved. The same 13-structure pilot remains bounded.
 No production merge, other-district art rollout or new art collection.
 
 Runtime/source: `56063cae2cc23dbda54ab346cd62c86022a175d1`.
@@ -189,7 +189,7 @@ beyond this bounded overworld presentation. **Physical iPhone performance is
 unverified.** Neither export-to-Files delivery nor sustained 40-resident behaviour
 is proved by these tests. Substantial WebKit callback stalls remain open.
 
-Stop here for Kyle & Atlas's creative review. No protected-branch merge, production
+E3-C's conditional creative review is now recorded. Stop before another major visual implementation pending Kyle & Atlas's next decision. No protected-branch merge, production
 promotion, next milestone or world-wide rollout is authorised by test success.
 
 ## Recovered-session final verification — 14 November 2026

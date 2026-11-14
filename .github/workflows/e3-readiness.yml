@@ -34,9 +34,9 @@ jobs:
           READINESS_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           if [[ "$READINESS_MESSAGE" == *'[E3-HOST]'* ]]; then
-            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs --grep 'pinned preview'
+            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs --output=readiness-results --grep 'pinned preview'
           else
-            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs
+            npx playwright test --config=tests/playwright.config.mjs tests/headless/e3-integration-readiness.spec.mjs --output=readiness-results
           fi
       - name: Save and gameplay regression
         if: ${{ !cancelled() && !contains(github.event.head_commit.message, '[E3-HOST]') }}
@@ -49,4 +49,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e3-integration-readiness
-          path: test-results/
+          path: |
+            readiness-results/
+            test-results/
