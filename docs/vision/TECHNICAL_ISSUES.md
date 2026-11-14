@@ -46,7 +46,7 @@ requirements remain explicit and independent of automated pass counts:
 | --- | --- |
 | WEBKIT-GAP-01 | OPEN. Recorded 300 ms callback gap; previous E3-B/E3-C pair also showed 352/368 ms gaps. Twelve repeated contexts: 11 had no gap >100 ms; first live/no-video context had a 616 ms gap (613 ms outside the preceding callback) and a separate 197 ms synchronous draw outlier. Not consistently reproduced; exact cause unresolved. See readiness assessment. A scheduling hypothesis is not a fix. |
 | TERRAIN-BAKE-01 | OPEN. Synchronous cold terrain bake measured up to 102 ms WebKit in the focused E3-C run. Warm frame samples do not resolve startup hitches. |
-| IPHONE-PLAY-01 | OPEN / physical device not tested. Actual iPhone Safari play with existing save, drawers, text contrast, safe areas, zoom/pan, entry/exit, management and sustained interaction is required. Desktop WebKit/touch emulation is supporting evidence only. |
+| IPHONE-PLAY-01 | PARTIAL user-reported evidence: Kyle reports ordinary physical-iPhone play felt stable and found Aya reverting during activities. Sustained play, higher speeds, larger colonies, complete usability and Files delivery remain unverified. Desktop WebKit/touch emulation cannot close these gates. |
 | COLONY-PERF-01 | OPEN. Sustained 5/20/40-resident behaviour and large-colony spikes remain unverified by the eight-resident Day-58 checkpoint. |
 | SAVE-EXPORT-01 | OPEN. Obtain the actual downloaded JSON, validate it and re-import through transfer controls; verify iPhone Files delivery separately. No success from a toast or ordinary save/load test. |
 | E3-VISUAL-01 | RETAINED. Roof-course/silhouette repetition and limited architectural individuality. |

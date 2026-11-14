@@ -1,0 +1,63 @@
+{
+  "runtime": "a0840f3ae7abeb8f9b0fc457220b6edca70aa0a8",
+  "branch": "home-composition-checkpoint",
+  "workflowRun": 43652838492,
+  "artifact": 14137246422,
+  "artifactZipSha256": "63194f744930c9cbf95b539593d1de42da2bd55da1e7cf40e52f891cbf656823",
+  "preview": "https://farwake-founders-q8jfjl60l-atlas-8c31.vercel.app/index.html?review=1",
+  "checks": {
+    "activityAndSaveBrowserChecks": 40,
+    "broaderBrowserChecks": 78
+  },
+  "video": {
+    "source": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp9",
+          "width": 390,
+          "height": 844,
+          "avg_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "22.400000",
+        "size": "3075699"
+      }
+    },
+    "output": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 390,
+          "height": 844,
+          "avg_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "22.400000",
+        "size": "1500105"
+      }
+    },
+    "sourceSha256": "85bb9a7053155987cf3979cfe33e5266b596eceff1e84a4b41ce85aef733444a",
+    "outputSha256": "1cfa415e4d12d9ad820f71060d2c1b15ba531a6e258b0010a9c1b357246ead97",
+    "note": "Full original recording converted to H.264 without cuts, cropping, resizing or retiming. Setup includes player role/order controls and normal-simulation search to arrival. The actual uninterrupted ordinary 1x take lasts 20.232 seconds. Entire video is 22.4 seconds at 390x844. No fake animation or activity grants."
+  },
+  "files": {
+    "webkit-aya-mining-390.png": "6ed51d89183ff0bf78f3e6c3ce776a8544779b0575ef81ad590cb027c0f96de7",
+    "original-chromium.webm": "85bb9a7053155987cf3979cfe33e5266b596eceff1e84a4b41ce85aef733444a",
+    "webkit-isolated-render-checks.json": "c1df82d4747d58b320ea2e750472aa6fee2dc1d91b243bf62cbd3880460a2dd7",
+    "chromium-isolated-activity-matrix.png": "f694974a49e21a2f9c3e1462cd7ec7229c549d3f14d4f5da77e0f452d0f62f46",
+    "aya-mining-to-hauling.mp4": "1cfa415e4d12d9ad820f71060d2c1b15ba531a6e258b0010a9c1b357246ead97",
+    "webkit-actual-mining-take.json": "4987c6f326ff9bc4f7b2554b5241fcdce845dbb0a01d69d7bcf75949e7aa8d1f",
+    "webkit-isolated-activity-matrix.png": "4b0ea98cb3c69048f2013d7351b33bcdc0e06a33021e9c675af32bd7c2fcf025",
+    "chromium-actual-mining-take.json": "21058e059765c917194f9520908236a39681b3304acf165979e9ac315f0a0780",
+    "webkit-aya-after-mining-390.png": "9595828f0071c268fc15ce9b92acaa365a5631bfde912b47e2db01d567f9256f",
+    "chromium-aya-after-mining-390.png": "e4750963abee70cf9b26fc9cf608fd8fd8766b1a5a5cb8abb67c4b3fadf3c866",
+    "chromium-aya-mining-390.png": "cdc0bdcbd59ccf92985d5ca76e5a5c0af6bb7d780ce9c35de9ecab6086cd7d18",
+    "chromium-isolated-render-checks.json": "c1df82d4747d58b320ea2e750472aa6fee2dc1d91b243bf62cbd3880460a2dd7"
+  }
+}

@@ -27,3 +27,8 @@ See [readiness assessment](E3_INTEGRATION_READINESS.md) and
 The original [Grok technical handover](../immersive-homes/HANDOVER.md) is preserved
 unchanged. Historical engineering records remain useful evidence, not creative
 approval. No scene is creatively approved merely because it appears in a preview.
+
+Aya's focused activity-identity correction is recorded separately in
+[evidence/aya-activity-continuity/README.md](evidence/aya-activity-continuity/README.md).
+[Experience-quality priorities](EXPERIENCE_QUALITY_PRIORITIES.md) are recommendations
+only; they await the next creative decision and do not expand the current scope.
