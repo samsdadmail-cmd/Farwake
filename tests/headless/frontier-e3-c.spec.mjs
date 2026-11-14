@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 import {writeFile,readFile} from 'node:fs/promises';
 test.use({viewport:{width:390,height:844},video:{mode:'on',size:{width:390,height:844}}});
 async function colony(page){
+ page.setDefaultTimeout(12000);
  await page.goto('/index.html?review=1');page.on('dialog',d=>d.accept());
  await page.getByRole('button',{name:'Game and Save',exact:true}).click();
  await page.locator('#import-expedition-file').setInputFiles('tests/fixtures/home-composition-day58.json');
@@ -68,7 +69,7 @@ test('E3-C uninterrupted real neighbourhood activity and normal live CPU draw sa
   if(i===13){await page.screenshot({path:info.outputPath('e3-c-people-390.png')});await page.getByRole('button',{name:'Close panel',exact:true}).click();}
   if(i===22)await page.getByRole('button',{name:'View all resources',exact:true}).click();
   if(i===27){await page.screenshot({path:info.outputPath('e3-c-resources-390.png')});await page.getByRole('button',{name:'Close panel',exact:true}).click();}
-  await page.waitForTimeout(500);samples.push(await page.evaluate(()=>({day:FARWAKE_TEST.state.day,minute:FARWAKE_TEST.state.minute,people:FARWAKE_TEST.state.colonists.map(p=>({id:p.id,x:p.x,y:p.y,task:p.task?.type,visit:p.visit?.stage})),architecture:FarwakeArchitecture.diagnostics()})))}
+  await page.waitForTimeout(500);samples.push(await page.evaluate(()=>({day:FARWAKE_TEST.state.day,minute:FARWAKE_TEST.state.minute,people:FARWAKE_TEST.state.colonists.map(p=>({id:p.id,x:p.x,y:p.y,task:p.task?.type,visit:p.visit?.stage})),architecture:FarwakeArchitecture.diagnostics(),moment:FarwakeMoments.active,caption:document.querySelector('#world-moment').hidden?null:{speaker:document.querySelector('#world-speaker').textContent,text:document.querySelector('#world-words').textContent}})))}
  const takeEnd=await page.evaluate(()=>{E3C_LIVE.collect=false;document.querySelector('#pause').click();return Date.now()});
  const profile=await page.evaluate(()=>{const a=E3C_LIVE;a.stop();const stats=v=>{v.sort((a,b)=>a-b);return{n:v.length,median:v[Math.floor(v.length*.5)],p95:v[Math.floor(v.length*.95)],max:v.at(-1)}};return{draw:stats(a.draw),callbackGap:stats(a.gaps),slow:a.slow,health:FARWAKE_TEST.healthSnapshot(),architecture:FarwakeArchitecture.diagnostics(),environment:FarwakeEnvironment.diagnostics()}});
  expect(profile.environment.bakes).toBe(start.environment.bakes);expect(profile.architecture.cachePixels).toBeLessThan(1000000);expect(profile.health.saveProtection).toBe(false);expect(profile.draw.n).toBeGreaterThan(120);
@@ -92,7 +93,7 @@ for(const viewport of [{width:390,height:844},{width:320,height:568},{width:375,
    await page.getByRole('button',{name,exact:true}).click();await expect(page.locator('#sheetbg')).toHaveClass(/open/);await expect(page.locator('#sheet')).toBeVisible();await page.getByRole('button',{name:'Close panel',exact:true}).click();
   }
   expect(await page.evaluate(()=>({...FARWAKE_TEST.camera}))).toEqual(camera);
-  await page.locator('#pause').focus();expect(await page.locator('#pause').evaluate(e=>e.matches(':focus-visible'))).toBe(true);await page.keyboard.press('Enter');await expect(page.locator('#pause')).toHaveAttribute('aria-label','Pause simulation');await page.keyboard.press('Enter');
+  await page.keyboard.press('Tab');await page.locator('#pause').focus();expect(await page.locator('#pause').evaluate(e=>e.matches(':focus-visible'))).toBe(true);await page.keyboard.press('Enter');await expect(page.locator('#pause')).toHaveAttribute('aria-label','Pause simulation');await page.keyboard.press('Enter');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:info.outputPath('e3-c-controls-'+viewport.width+'.png')});
  });
