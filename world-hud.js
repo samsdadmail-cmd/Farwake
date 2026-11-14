@@ -3,6 +3,12 @@ window.FarwakeHUD = (() => {
  'use strict';
  const caption=document.getElementById('world-moment'),speaker=document.getElementById('world-speaker'),words=document.getElementById('world-words');
  let key='';
+ // Layout changes, rather than frames, reserve room above the real context card.
+ const inspector=document.getElementById('inspector'),app=document.getElementById('app');
+ if(inspector&&app&&typeof ResizeObserver!=='undefined'){
+  let last=-1;new ResizeObserver(entries=>{const height=Math.ceil(entries[0].contentRect.height);if(height!==last){app.style.setProperty('--inspect-height',height+'px');last=height;}}).observe(inspector);
+ }
+
  function moment(c,s,width,height,sx,sy,zoom,active,pose,elapsed){
   if(!caption)return;
   const p=active&&s.colonists.find(p=>p.id===active.id),pos=p&&(pose?.(p)||p);

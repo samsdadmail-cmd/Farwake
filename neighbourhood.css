@@ -64,3 +64,5 @@ body:not(.in-home) :is(button,input,select):focus-visible{outline:2px solid #edf
 @media(orientation:landscape) and (max-height:520px){body:not(.in-home) .lower{left:12px;transform:none;bottom:8px;width:350px}body:not(.in-home) .navbutton,body:not(.in-home) .field-save{height:46px;min-height:46px}body:not(.in-home) .mapbottom{bottom:16px}body:not(.in-home) .toast{bottom:76px}body:not(.in-home) .world-moment{bottom:110px;max-width:260px}body:not(.in-home) .inspector{bottom:74px}body:not(.in-home) .sheet{height:95dvh;max-height:95dvh}}
 
 body:not(.in-home) .capacityline{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin:14px 0 8px}
+
+body:not(.in-home) .app:has(.inspectcard) .toast{bottom:calc(94px + var(--inspect-height,0px) + env(safe-area-inset-bottom))}

@@ -35,9 +35,9 @@ test('E3-C actual saved neighbourhood day dusk night and material-light close vi
  await page.evaluate(()=>FARWAKE_TEST.draw(performance.now()));
  const unpowered=await page.evaluate(read);expect(unpowered.grid.supply).toBeLessThan(unpowered.grid.used);
  expect(unpowered.architecture.buildings.filter(b=>b.occupied>0).every(b=>!b.powered&&b.strength===0)).toBe(true);
- await page.screenshot({path:info.outputPath('e3-c-unpowered-390.png')});
+ await page.locator('#inspector [data-inspect=cancel]').click();await page.screenshot({path:info.outputPath('e3-c-unpowered-390.png')});
  for(const id of ordered){await page.evaluate(id=>FARWAKE_TEST.showBuilding(id),id);await page.locator('[data-editor="withdraw"]').click()}
- await page.evaluate(()=>FARWAKE_TEST.draw(performance.now()));const restored=await page.evaluate(read);expect(restored.grid).toEqual(night.grid);
+ await page.evaluate(()=>FARWAKE_TEST.draw(performance.now()));const restored=await page.evaluate(read);expect(restored.grid).toEqual(night.grid);await page.locator('#inspector [data-inspect=cancel]').click();
  expect(await page.evaluate(()=>FARWAKE_TEST.state.buildings.some(b=>b.editOrder))).toBe(false);
 
  // Cache reuse and CPU draw proxy are explicit; neither proves physical phone FPS.
@@ -97,6 +97,10 @@ for(const viewport of [{width:390,height:844},{width:320,height:568},{width:375,
   expect(await page.evaluate(()=>({...FARWAKE_TEST.camera}))).toEqual(camera);
   await page.keyboard.press('Tab');await page.locator('#pause').focus();expect(await page.locator('#pause').evaluate(e=>e.matches(':focus-visible'))).toBe(true);await page.keyboard.press('Enter');await expect(page.locator('#pause')).toHaveAttribute('aria-label','Pause simulation');await page.keyboard.press('Enter');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.evaluate(()=>FARWAKE_TEST.showBuilding(7));await page.getByRole('button',{name:'Close panel',exact:true}).click();
+  await page.locator('#pause').click();await page.locator('#pause').click();
+  await expect.poll(()=>page.evaluate(()=>{const t=document.querySelector('#toast').getBoundingClientRect(),i=document.querySelector('#inspector').getBoundingClientRect();return i.top-t.bottom})).toBeGreaterThanOrEqual(4);
+  await page.screenshot({path:info.outputPath('e3-c-context-'+viewport.width+'.png')});await page.locator('#inspector [data-inspect=cancel]').click();
   await page.screenshot({path:info.outputPath('e3-c-controls-'+viewport.width+'.png')});
  });
 }
