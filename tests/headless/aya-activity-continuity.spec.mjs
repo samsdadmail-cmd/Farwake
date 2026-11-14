@@ -41,7 +41,7 @@ test('Aya authored identity covers stationary activities, cargo and transitions 
 
 test('Aya genuine player-ordered mining and subsequent activity at normal 1x',async({page},info)=>{
  test.setTimeout(120000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await colony(page);
- await page.getByRole('button',{name:'Open People',exact:true}).click();await page.locator('[data-action="crew"][data-id="1"]').click();
+ await page.getByRole('button',{name:'Open People',exact:true}).click();await page.locator('#sheet [data-action="crew"][data-id="1"]').click();
  await page.getByText('Home, responsibilities & wellbeing',{exact:true}).click();await page.locator('[data-sheet="work"][data-work="gather"]').click();await page.locator('[data-sheet="close"]').click();
  const candidates=await page.evaluate(()=>{const g=FARWAKE_TEST,p=g.state.colonists[0];return g.features.filter(f=>f.type==='ore').sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,12).map(f=>({id:f.id,x:f.x,y:f.y}))});
  let target;
